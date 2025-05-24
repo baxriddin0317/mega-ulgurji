@@ -1,5 +1,5 @@
 "use client"
-import { ProductForm } from '@/components/admin/ProductForm';
+import { ProductForm, ProductFormData } from '@/components/admin/ProductForm';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
@@ -23,6 +23,7 @@ const UpdateProduct = ({ params }: { params: Promise<{ id: string }> }) => {
       try {
         // const product = await getProductById(productId);
         // setExistingProduct(product);
+        setExistingProduct(null)
         console.log('get product by id');
         
       } catch (error) {
@@ -35,7 +36,7 @@ const UpdateProduct = ({ params }: { params: Promise<{ id: string }> }) => {
     fetchProduct();
   }, [productId]);
 
-  const handleUpdateProduct = async (data: any) => {
+  const handleUpdateProduct = async (data: ProductFormData) => {
     try {
       setIsLoading(true);
       

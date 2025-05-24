@@ -2,7 +2,6 @@
 import PanelTitle from '@/components/admin/PanelTitle';
 import ProductTable from '@/components/admin/ProductTable';
 import Search from '@/components/admin/Search';
-import { Button } from '@/components/ui/button';
 import React, { useState } from 'react'
 
 const Dashboard = () => {

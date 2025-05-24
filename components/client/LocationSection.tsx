@@ -8,13 +8,13 @@ const LocationSection = () => {
         <div data-aos="fade-up" className="text-center mb-12">
           <h2 className="text-[#d1d1d1] text-3xl font-bold mb-4">Bizning manzil</h2>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
-            Bizning do'konimizga tashrif buyuring va mahsulotlarimizni o'z ko'zingiz bilan ko'ring.
+            Bizning do&apos;konimizga tashrif buyuring va mahsulotlarimizni o&apos;z ko&apos;zingiz bilan ko&apos;ring.
           </p>
         </div>
         
         <div data-aos="fade-up" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="bg-transparent p-6">
-            <h3 className="text-[#d1d1d1] text-xl font-bold mb-4">Aloqa ma'lumotlari</h3>
+            <h3 className="text-[#d1d1d1] text-xl font-bold mb-4">Aloqa ma&apos;lumotlari</h3>
             
             <div className="space-y-4">
               <div className="flex items-start">
@@ -24,7 +24,7 @@ const LocationSection = () => {
                 <div>
                   <h4 className="text-[#d1d1d1] font-medium">Manzil:</h4>
                   <p className="text-white/80">
-                    Andijon shahar, Boburshox ko'chasi, 26 uy
+                    Andijon shahar, Boburshox ko&apos;chasi, 26 uy
                   </p>
                 </div>
               </div>

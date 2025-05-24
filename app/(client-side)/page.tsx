@@ -3,7 +3,6 @@ import AOSWrapper from "@/components/client/AOSWrapper";
 import CategorySection from "@/components/client/CategorySection";
 import Header from "@/components/client/Header";
 import LocationSection from "@/components/client/LocationSection";
-import { useScrollBodyColor } from "@/hooks/useScrollBodyColor";
 
 export default function Home() {
 

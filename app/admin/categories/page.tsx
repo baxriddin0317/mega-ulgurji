@@ -2,7 +2,6 @@
 import CategoryTable from '@/components/admin/CategoryTable';
 import PanelTitle from '@/components/admin/PanelTitle'
 import Search from '@/components/admin/Search';
-import { Button } from '@/components/ui/button';
 import React, { useState } from 'react'
 
 const Categories = () => {

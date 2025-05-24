@@ -49,7 +49,7 @@ const CategorySection = () => {
           Mahsulot kategoriyalari
         </h2>
         <p className='text-lg text-gray-600 max-w-2xl mx-auto'>
-          Bizning mahsulotlarimizni kategoriyalar bo'yicha ko'rishingiz mumkin. Har bir kategoriya sifatli maxsulotlar bilan to'ldirilgan.
+          Bizning mahsulotlarimizni kategoriyalar bo&apos;yicha ko&apos;rishingiz mumkin. Har bir kategoriya sifatli maxsulotlar bilan to&apos;ldirilgan.
         </p>
       </div>
       {categories.map((item, idx) => (
@@ -65,7 +65,7 @@ const CategorySection = () => {
               {item.description}
             </p>
             <Link className='transition-all duration-500 border border-black hover:border-[#00bad8] text-brand-gray-200 font-bold py-3 px-7 text-xs lg:ml-4' href={`/category/${item.id}`}>
-              Katalogni ko'rish
+              Katalogni ko&apos;rish
             </Link>
           </div>
         </div>

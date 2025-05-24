@@ -11,7 +11,7 @@ import MobileMenu from './MobileMenu';
 import Link from 'next/link';
 
 const AdminHeader = () => {
-  const { isOpen, toggle } = useSidebarStore();
+  const { toggle } = useSidebarStore();
   return (
     <header className="sticky z-50 top-0 bg-white shadow-bottom-only p-4 px-6 flex items-center justify-between">
       <div>

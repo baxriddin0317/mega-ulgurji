@@ -13,6 +13,7 @@ export interface UserProfile {
   isActive: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface AuthUser extends User {}
 
 export interface AuthState {

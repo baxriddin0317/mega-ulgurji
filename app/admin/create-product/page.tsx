@@ -1,12 +1,12 @@
 "use client"
 import React from 'react'
-import { ProductForm } from '@/components/admin/ProductForm';
+import { ProductForm, ProductFormData } from '@/components/admin/ProductForm';
 import { useRouter } from 'next/navigation';
 
 const AddProduct = () => {
   const router = useRouter();
 
-  const handleAddProduct = async (data: any) => {
+  const handleAddProduct = async (data: ProductFormData) => {
     try {
       // Add product logic
       const newProduct = {

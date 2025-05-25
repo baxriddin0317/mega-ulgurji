@@ -1,62 +1,77 @@
-'use client';
-
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+"use client"
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore'
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requireAdmin?: boolean;
-  redirectTo?: string;
+  children: React.ReactNode
+  requireAuth?: boolean
+  adminOnly?: boolean
+  redirectTo?: string
 }
 
-export default function ProtectedRoute({ 
+const ProtectedRoute = ({ 
   children, 
-  requireAdmin = false,
-  redirectTo = '/'
-}: ProtectedRouteProps) {
-  const { user, profile, loading, isAdmin } = useAuth();
-  const router = useRouter();
+  requireAuth = true, 
+  adminOnly = false,
+  redirectTo 
+}: ProtectedRouteProps) => {
+  const router = useRouter()
+  const { isAuthenticated, userData, isLoading, isAdmin } = useAuthStore()
 
   useEffect(() => {
-    if (!loading) {
-      // Agar user yo'q bo'lsa login sahifasiga yo'naltir
-      if (!user) {
-        router.push('/login');
-        return;
+    if (!isLoading) {
+      // Agar authentication talab qilinsa va user login qilmagan bo'lsa
+      if (requireAuth && !isAuthenticated) {
+        router.push('/')
+        return
       }
 
-      // Agar profile yo'q bo'lsa (ma'lumotlar yuklanmagan)
-      if (!profile) {
-        return;
+      // Agar admin faqat sahifa bo'lsa va user admin bo'lmasa
+      if (adminOnly && isAuthenticated && !isAdmin()) {
+        router.push('/') // yoki boshqa sahifa
+        return
       }
 
-      // Agar admin kerak bo'lib, lekin user admin bo'lmasa
-      if (requireAdmin && !isAdmin) {
-        router.push(redirectTo);
-        return;
+      // Agar custom redirect kerak bo'lsa
+      if (redirectTo && isAuthenticated) {
+        if (isAdmin()) {
+          router.push('/admin')
+        } else {
+          router.push('/')
+        }
+        return
       }
     }
-  }, [user, profile, loading, isAdmin, requireAdmin, redirectTo, router]);
+  }, [isAuthenticated, userData, isLoading, requireAuth, adminOnly, redirectTo, router, isAdmin])
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
       </div>
-    );
+    )
   }
 
-  // Agar user yo'q bo'lsa
-  if (!user || !profile) {
-    return null;
+  // Agar authentication talab qilinsa va user login qilmagan bo'lsa
+  if (requireAuth && !isAuthenticated) {
+    return null // router.push ishga tushguncha
   }
 
-  // Agar admin kerak bo'lib, lekin user admin bo'lmasa
-  if (requireAdmin && !isAdmin) {
-    return null;
+  // Agar admin faqat sahifa bo'lsa va user admin bo'lmasa
+  if (adminOnly && isAuthenticated && !isAdmin()) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+          <p className="text-gray-600 mt-2">You don&apos;t have permission to access this page.</p>
+        </div>
+      </div>
+    )
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
+
+export default ProtectedRoute

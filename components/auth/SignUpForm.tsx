@@ -131,7 +131,6 @@ const SignUpForm = () => {
             break
           default:
             toast.error("Signup failed. Please try again")
-            console.log('Unhandled error code:', error.code)
         }
       } else {
         toast.error("Noma'lum xatolik yuz berdi")

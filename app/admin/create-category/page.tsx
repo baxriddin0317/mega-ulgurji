@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { fireStorage } from '@/firebase/config';
 import { CategoryI, ImageT } from '@/lib/types';
 import useCategoryStore from '@/store/useCategoryStore';
+import useDraftStore from '@/store/useDraftStore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -11,8 +12,6 @@ import toast from 'react-hot-toast';
 import { CgClose } from 'react-icons/cg';
 import { GrGallery } from 'react-icons/gr';
 import { v4 as uuidv4 } from 'uuid';
-
-const DRAFT_KEY = 'category_draft';
 
 const CreateCategory = () => {
   const [imageUploading, setImageUploading] = useState(false);
@@ -26,29 +25,25 @@ const CreateCategory = () => {
   });
   const { addCategory, loading } = useCategoryStore();
   const navigate = useRouter();
+  const { 
+    saveCategoryDraft, 
+    loadCategoryDraft, 
+    deleteCategoryDraft, 
+    removeCategoryDraft,
+    hasCategoryDraft 
+  } = useDraftStore();
 
   // Component yuklanganda draft'ni tekshirish
   useEffect(() => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    if (savedDraft) {
+    if (hasCategoryDraft()) {
       setShowDraftModal(true);
     }
-  }, []);
-
-  // Draft'ni saqlash
-  const saveDraft = () => {
-    const draftData = {
-      newCategory,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
-  };
+  }, [hasCategoryDraft]);
 
   // Draft'ni yuklash
-  const loadDraft = () => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    if (savedDraft) {
-      const draftData = JSON.parse(savedDraft);
+  const handleLoadDraft = () => {
+    const draftData = loadCategoryDraft();
+    if (draftData) {
       setNewCategory(draftData.newCategory || {
         id: "",
         name: "",
@@ -62,38 +57,24 @@ const CreateCategory = () => {
   };
 
   // Draft'ni o'chirish
-  const deleteDraft = async () => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    if (savedDraft) {
-      const draftData = JSON.parse(savedDraft);
-      // Draft'dagi rasmlarni storage'dan o'chirish
-      if (draftData.newCategory?.categoryImgUrl?.length > 0) {
-        await Promise.all(
-          draftData.newCategory.categoryImgUrl.map(async (img: ImageT) => {
-            try {
-              const imageRef = ref(fireStorage, img.path);
-              await deleteObject(imageRef);
-            } catch (error) {
-              console.error("Error deleting draft image:", error);
-            }
-          })
-        );
-      }
-    }
-    localStorage.removeItem(DRAFT_KEY);
+  const handleDeleteDraft = async () => {
+    await deleteCategoryDraft();
     setShowDraftModal(false);
+    toast.success("Draft deleted successfully");
   };
 
   // Ma'lumotlar o'zgarganda draft'ni saqlash
   useEffect(() => {
     if (newCategory.categoryImgUrl.length > 0) {
       const timeoutId = setTimeout(() => {
-        saveDraft();
-      }, 1000); // 1 soniya kechikish bilan saqlash
+        saveCategoryDraft({
+          newCategory
+        });
+      }, 1000);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [newCategory]);
+  }, [newCategory, saveCategoryDraft]);
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -152,22 +133,7 @@ const CreateCategory = () => {
 
   // handle cencel
   const handleCancel = async () => {
-    // Yuklangan rasmlarni storage'dan o'chirish
-    if (newCategory.categoryImgUrl.length > 0) {
-      await Promise.all(
-        newCategory.categoryImgUrl.map(async (img) => {
-          try {
-            const imageRef = ref(fireStorage, img.path);
-            await deleteObject(imageRef);
-          } catch (error) {
-            console.error("Error deleting image during cancel:", error);
-          }
-        })
-      );
-    }
-    
-    // Draft'ni ham o'chirish
-    localStorage.removeItem(DRAFT_KEY);
+    await deleteCategoryDraft();
     
     // State'ni tozalash
     setNewCategory({
@@ -192,12 +158,12 @@ const CreateCategory = () => {
     
     try {
       await addCategory(newCategory);
-      localStorage.removeItem(DRAFT_KEY);
+      removeCategoryDraft();
       toast.success("Add category successfully");
       navigate.push("/admin/categories");
     } catch (error) {
       console.log(error);
-      toast.error("Add product failed");
+      toast.error("Add category failed");
     }
   };
   
@@ -209,27 +175,27 @@ const CreateCategory = () => {
           <div className="bg-white p-6 rounded-lg max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-4">Draft topildi</h3>
             <p className="text-gray-600 mb-6">
-              Avval yaratilgan category draft'i mavjud. Uni tiklashni xohlaysizmi?
+              Avval yaratilgan category draft&apos;i mavjud. Uni tiklashni xohlaysizmi?
             </p>
             <div className="flex gap-3">
               <Button
-                onClick={loadDraft}
+                onClick={handleLoadDraft}
                 className="flex-1"
               >
                 Ha, tiklash
               </Button>
               <Button
-                onClick={deleteDraft}
+                onClick={handleDeleteDraft}
                 variant="outline"
                 className="flex-1"
               >
-                Yo'q, o'chirish
+                Yo&apos;q, o&apos;chirish
               </Button>
             </div>
           </div>
         </div>
       )}
-      
+
       <div className="relative flex size-full justify-center">
         <div className="flex flex-col gap-4 md:w-[512px] py-5 max-w-[960px] flex-1 px-4">
           <div className="flex flex-wrap justify-between gap-3 mb-5">
@@ -318,7 +284,7 @@ const CreateCategory = () => {
               onClick={handleAddCategory}
               className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
             >
-              Add category
+              {loading ? 'Loading..' : 'Add category'}
             </Button>
           </div>
         </div>

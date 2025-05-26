@@ -1,6 +1,6 @@
 "use client"
 import Image from 'next/image';
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
@@ -11,13 +11,28 @@ import { fireStorage } from '@/firebase/config';
 import { deleteObject, listAll, ref } from 'firebase/storage';
 import toast from 'react-hot-toast';
 
-const ProductTable = () => {
+interface ProductTableProps {
+  search: string;
+}
+
+const ProductTable = ({ search }: ProductTableProps) => {
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProductStore();
-
+  
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // Search filter logic
+  const filteredProducts = useMemo(() => {
+    if (search.length < 2) {
+      return products;
+    }
+    
+    return products.filter(product =>
+      product.title.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [products, search]);
 
   const handleEdit = (id: string) => {
     router.push(`/admin/update-product/${id}`);
@@ -54,7 +69,13 @@ const ProductTable = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
+            {filteredProducts.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-500">
+                  {search.length >= 2 ? 'No products found' : 'No products available'}
+                </td>
+              </tr>
+            ) : (filteredProducts.map((product, index) => (
               <tr key={index} className="border-t border-gray-200">
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">
                   {product.title}
@@ -81,14 +102,18 @@ const ProductTable = () => {
                   </Button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>
 
       {/* Mobile view - Card layout */}
       <div className="md:hidden space-y-4">
-        {products.map((product, index) => (
+        {filteredProducts.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
+            {search.length >= 2 ? 'No products found' : 'No products available'}
+          </div>
+        ) : (filteredProducts.map((product, index) => (
           <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-black">{product.title}</h3>
@@ -128,7 +153,7 @@ const ProductTable = () => {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
     </div>
   )

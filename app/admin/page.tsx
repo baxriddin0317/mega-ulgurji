@@ -13,7 +13,7 @@ const Dashboard = () => {
     <div>
       <PanelTitle title='products' />
       <Search search={search} handleSearchChange={handleSearchChange} placeholder='Search for products' />
-      <ProductTable />
+      <ProductTable search={search} />
     </div>
   )
 }

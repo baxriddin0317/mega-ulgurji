@@ -13,7 +13,7 @@ const Categories = () => {
     <div>
       <PanelTitle title='Categories' />
       <Search search={search} handleSearchChange={handleSearchChange} placeholder='Search for categories' />
-      <CategoryTable />
+      <CategoryTable search={search} />
     </div>
   )
 }

@@ -9,9 +9,13 @@ import {
 } from "@/components/ui/sheet"
 import MobileMenu from './MobileMenu';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { useAuthStore } from '@/store/authStore';
 
 const AdminHeader = () => {
   const { toggle } = useSidebarStore();
+  const {logout} = useAuthStore();
   return (
     <header className="sticky z-50 top-0 bg-white shadow-bottom-only p-4 px-6 flex items-center justify-between">
       <div>
@@ -28,9 +32,18 @@ const AdminHeader = () => {
           Go to Home
         </Link>
         {/* avatar */}
-        <div className='size-10 rounded-full bg-link-hover cursor-pointer'>
-
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className='cursor-pointer'>
+            <Avatar className='size-10'>
+              <AvatarImage src="" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem className='cursor-pointer' onClick={logout}>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

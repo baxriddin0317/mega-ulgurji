@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
 import Image from 'next/image';
@@ -9,7 +9,11 @@ import { deleteObject, listAll, ref } from 'firebase/storage';
 import { fireStorage } from '@/firebase/config';
 import toast from 'react-hot-toast';
 
-const CategoryTable = () => {
+interface CategoryTableProps {
+  search: string;
+}
+
+const CategoryTable = ({ search }: CategoryTableProps) => {
   const { categories, fetchCategories, deleteCategory } = useCategoryStore();
 
   const navigate = useRouter()
@@ -17,6 +21,17 @@ const CategoryTable = () => {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  // Search filter logic
+  const filteredCategories = useMemo(() => {
+    if (search.length < 2) {
+      return categories;
+    }
+    
+    return categories.filter(category =>
+      category.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [categories, search]);
 
   const handleEdit = (id: string) => {
     navigate.push(`/admin/update-category/${id}`);
@@ -53,7 +68,13 @@ const CategoryTable = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map((category) => (
+            {filteredCategories.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-500">
+                  {search.length >= 2 ? 'No category found' : 'No category available'}
+                </td>
+              </tr>
+            ) : (filteredCategories.map((category) => (
               <tr key={category.id} className="border-t border-gray-200">
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">
                   {category.name}
@@ -74,14 +95,18 @@ const CategoryTable = () => {
                   </Button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>
 
       {/* Mobile view - Card layout */}
       <div className="md:hidden space-y-4">
-        {categories.map((category, index) => (
+        {filteredCategories.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
+            {search.length >= 2 ? 'No category found' : 'No category available'}
+          </div>
+        ) : (filteredCategories.map((category, index) => (
           <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-black">{category.name}</h3>
@@ -113,7 +138,7 @@ const CategoryTable = () => {
               </div>
             </div>
           </div>
-        ))}
+        )))}
       </div>
     </div>
   )

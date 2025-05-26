@@ -4,6 +4,10 @@ import { BiEdit, BiTrash } from 'react-icons/bi';
 import Image from 'next/image';
 import useCategoryStore from '@/store/useCategoryStore';
 import { useRouter } from 'next/navigation';
+import { CategoryI } from '@/lib/types';
+import { deleteObject, listAll, ref } from 'firebase/storage';
+import { fireStorage } from '@/firebase/config';
+import toast from 'react-hot-toast';
 
 const CategoryTable = () => {
   const { categories, fetchCategories, deleteCategory } = useCategoryStore();
@@ -18,9 +22,22 @@ const CategoryTable = () => {
     navigate.push(`/admin/update-category/${id}`);
   }
 
-  const handleDelete = async (id: string) => {
-    await deleteCategory(id)
-  }
+  const handleDelete = async (item: CategoryI) => {
+    if (item.id) {
+      const imageFolderRef = ref(
+        fireStorage,
+        `categories/${item.storageFileId}`
+      );
+      const imageRefs = await listAll(imageFolderRef);
+
+      const deleteImagePromises = imageRefs.items.map(async (itemRef) => {
+        await deleteObject(itemRef);
+      });
+      await Promise.all(deleteImagePromises);
+      deleteCategory(item.id);
+      toast.success("Product Deleted Successfully");
+    }
+  };
 
   return (
      <div className="w-full px-4 py-3">
@@ -52,7 +69,7 @@ const CategoryTable = () => {
                   </Button>
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-sm font-normal">
-                  <Button onClick={() => handleDelete(category.id)} className="flex items-center justify-center mx-auto cursor-pointer" variant={'default'}>
+                  <Button onClick={() => handleDelete(category)} className="flex items-center justify-center mx-auto cursor-pointer" variant={'default'}>
                     <BiTrash size={24} />
                   </Button>
                 </td>
@@ -87,7 +104,7 @@ const CategoryTable = () => {
                   <span className="truncate">Update</span>
                 </Button>
                 <Button
-                  onClick={() => handleDelete(category.id)}
+                  onClick={() => handleDelete(category)}
                   variant={'default'}
                   className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
                 >

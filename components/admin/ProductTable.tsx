@@ -5,6 +5,11 @@ import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import useProductStore from '@/store/useProductStore';
+import { FormattedPrice } from '@/hooks';
+import { ProductT } from '@/lib/types';
+import { fireStorage } from '@/firebase/config';
+import { deleteObject, listAll, ref } from 'firebase/storage';
+import toast from 'react-hot-toast';
 
 const ProductTable = () => {
   const router = useRouter();
@@ -18,9 +23,20 @@ const ProductTable = () => {
     router.push(`/admin/update-product/${id}`);
   }
 
-  const handleDelete = async (id: string) => {
-    await deleteProduct(id);
-  }
+  const handleDelete = async (item: ProductT) => {
+    if (item.id) {
+      const imageFolderRef = ref(fireStorage, `products/${item.storageFileId}`);
+      const imageRefs = await listAll(imageFolderRef);
+      
+      const deleteImagePromises = imageRefs.items.map(async (itemRef) => {
+        await deleteObject(itemRef);
+      });
+      await Promise.all(deleteImagePromises);
+
+      await deleteProduct(item.id);
+      toast.success('Product Deleted Successfully');
+    }
+  };
   
   return (
      <div className="w-full px-4 py-3">
@@ -48,7 +64,7 @@ const ProductTable = () => {
                     <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
                   </div>
                 </td>
-                <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{product.price}</td>
+                <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{FormattedPrice(product.price)} UZS</td>
                 <td className="max-w-xs h-20 px-4 py-2 text-sm font-normal">
                   <span className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-xl h-8 px-4 bg-gray-100 text-black text-sm font-medium w-full">
                     {product.category}
@@ -60,7 +76,7 @@ const ProductTable = () => {
                   </Button>
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-sm font-normal">
-                  <Button onClick={() => handleDelete(product.id)} className="flex items-center justify-center mx-auto cursor-pointer" variant={'default'}>
+                  <Button onClick={() => handleDelete(product)} className="flex items-center justify-center mx-auto cursor-pointer" variant={'default'}>
                     <BiTrash size={24} />
                   </Button>
                 </td>
@@ -76,7 +92,7 @@ const ProductTable = () => {
           <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-black">{product.title}</h3>
-              <span className="text-gray-700">{product.price}</span>
+              <span className="text-gray-700">{FormattedPrice(product.price)} UZS</span>
             </div>
             
             <div className="space-y-2">
@@ -103,7 +119,7 @@ const ProductTable = () => {
                   <span className="truncate">Update</span>
                 </Button>
                 <Button
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => handleDelete(product)}
                   variant={'default'}
                   className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
                 >

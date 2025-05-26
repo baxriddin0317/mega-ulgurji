@@ -165,8 +165,6 @@ const AddProduct = () => {
 
   // handle create product
   const handleCreateProduct = async () => {
-    console.log(product);
-    
     if (
       product.title == "" ||
       product.price == "" ||

@@ -7,9 +7,16 @@ import { Switch } from '@/components/ui/switch';
 import { CgClose } from 'react-icons/cg';
 import { GrGallery } from 'react-icons/gr';
 import Image from 'next/image';
+import { useState } from 'react';
+import { ImageT } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { fireStorage } from '@/firebase/config';
+import toast from 'react-hot-toast';
 
 // Form validation schema
 const productSchema = z.object({
+  id: z.string(),
   title: z.string().min(1, 'Product name is required'),
   price: z.string().min(1, 'Price is required'),
   category: z.string().min(1, 'Category is required'),
@@ -19,6 +26,7 @@ const productSchema = z.object({
   isNew: z.boolean(),
   quantity: z.number().min(0),
   productImageUrl: z.array(z.any()).optional(),
+  storageFileId: z.string()
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
@@ -40,12 +48,15 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   title = 'Add Product',
   isLoading = false,
 }) => {
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<ImageT[]>([]);
+
   const {
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -59,25 +70,65 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       isNew: initialData?.isNew || false,
       quantity: initialData?.quantity || 0,
       productImageUrl: initialData?.productImageUrl || [],
+      storageFileId: initialData?.storageFileId || ""
     },
   });
 
-  const watchedImages = watch('productImageUrl');
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files) return;
+    setImageUploading(true);
+    try {
+      // Get current storageFileId from form or create new one
+      const currentStorageFileId = getValues('storageFileId');
+      const uuid = currentStorageFileId || uuidv4();
+      
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const storageRef = currentStorageFileId.length === 0 
+          ? ref(fireStorage, `products/${uuid}/${file.name}`) 
+          : ref(fireStorage, `products/${currentStorageFileId}/${file.name}`);
+        
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
+        return { url: downloadUrl, path: storageRef.fullPath };
+      });
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      // Handle file upload logic here
-      // Convert to your ImageT format and update form
-      console.log('Files selected:', files);
+      const imageUrls = await Promise.all(uploadPromises);
+      const newImages = [...uploadedImages, ...imageUrls];
+      
+      setUploadedImages(newImages);
+      setValue('productImageUrl', newImages);
+      setValue('storageFileId', uuid);
+      
+      toast.success(`${imageUrls.length} image(s) uploaded successfully`);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast.error("Failed to upload images");
+    } finally {
+      setImageUploading(false);
     }
   };
 
-  const removeImage = (index: number) => {
-    const currentImages = watchedImages || [];
-    const updatedImages = currentImages.filter((_, i) => i !== index);
+  const removeImage = async (index: number) => {
+    const imageToDelete = uploadedImages[index];
+    const updatedImages = uploadedImages.filter((_, i) => i !== index);
+    
+    // Update state and form
+    setUploadedImages(updatedImages);
     setValue('productImageUrl', updatedImages);
+    
+    // Delete from Firebase Storage
+    if (imageToDelete?.path) {
+      try {
+        const imageRef = ref(fireStorage, imageToDelete.path);
+        await deleteObject(imageRef);
+        toast.success("Image deleted successfully");
+      } catch (error) {
+        console.error("Error deleting image:", error);
+        toast.error("Failed to delete image from storage");
+      }
+    }
   };
+
 
   return (
     <form 
@@ -90,40 +141,47 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </h2>
       </div>
 
-      {/* Upload Image */}
-      <div className='flex items-center gap-x-4'>
-        {watchedImages && watchedImages.length > 0 && (
-          <div className='size-28 relative overflow-hidden rounded-2xl'>
-            <Image 
-              className='absolute size-full object-cover' 
-              src="https://picsum.photos/200/300" 
-              fill 
-              alt="product image" 
-            />
-            <Button 
-              type='button' 
-              className='absolute top-2 right-2 cursor-pointer z-10 bg-white size-6' 
-              variant={'ghost'}
-              onClick={() => removeImage(0)}
-            >
-              <CgClose size={12} />
-            </Button>
-          </div>
+      {/* Upload Images */}
+      <div className='flex flex-col gap-4'>
+        <div className='flex items-center gap-x-4 flex-wrap'>
+          {uploadedImages.map((img, index) => (
+            <div key={index} className='size-28 relative overflow-hidden rounded-2xl'>
+              <Image 
+                className='absolute size-full object-cover' 
+                src={img.url}
+                fill 
+                alt={`product image ${index + 1}`}
+              />
+              <Button 
+                type='button' 
+                className='absolute top-2 right-2 cursor-pointer z-10 bg-white size-6 hover:bg-gray-100' 
+                variant={'ghost'}
+                onClick={() => removeImage(index)}
+              >
+                <CgClose size={12} className="text-black" />
+              </Button>
+            </div>
+          ))}
+          
+          <label 
+            className='flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 cursor-pointer' 
+            htmlFor='upload'
+          >
+            <GrGallery />
+            <span>{imageUploading ? 'Uploading...' : 'Upload img'}</span>
+          </label>
+          <input 
+            className='sr-only' 
+            id='upload' 
+            type="file" 
+            multiple
+            onChange={(e) => handleImageUpload(e.target.files)}
+            accept="image/*"
+          />
+        </div>
+        {uploadedImages.length === 0 && (
+          <p className="text-red-500 text-sm">At least one product image is required</p>
         )}
-        <label 
-          className='flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all h-9 px-4 py-2 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 cursor-pointer' 
-          htmlFor='upload'
-        >
-          <GrGallery />
-          <span>Upload img</span>
-        </label>
-        <input 
-          className='sr-only' 
-          id='upload' 
-          type="file" 
-          onChange={handleFileUpload}
-          accept="image/*"
-        />
       </div>
 
       {/* Product Name */}

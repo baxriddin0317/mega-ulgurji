@@ -20,16 +20,6 @@ const Menu = () => {
 
   return (
     <div className="flex flex-col gap-2 py-4">
-      <Link href={'/admin'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
-        <div className="text-black" data-icon="Table" data-size="24px" data-weight="fill">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-            <path
-              d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM40,112H80v32H40Zm56,0H216v32H96ZM40,160H80v32H40Zm176,32H96V160H216v32Z"
-            ></path>
-          </svg>
-        </div>
-        <p className="text-black text-sm font-medium leading-normal">Products</p>
-      </Link>
       <Link href={'/admin/categories'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/categories') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Package" data-size="24px" data-weight="regular">
           <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -40,13 +30,23 @@ const Menu = () => {
         </div>
         <p className="text-black text-sm font-medium leading-normal">Categories</p>
       </Link>
-      <Link href={'/admin/create-product'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-product') ? 'bg-brand-gray-100' : ''}`}>
-        <BiFolderPlus size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Add product</p>
+      <Link href={'/admin'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
+        <div className="text-black" data-icon="Table" data-size="24px" data-weight="fill">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM40,112H80v32H40Zm56,0H216v32H96ZM40,160H80v32H40Zm176,32H96V160H216v32Z"
+            ></path>
+          </svg>
+        </div>
+        <p className="text-black text-sm font-medium leading-normal">Products</p>
       </Link>
       <Link href={'/admin/create-category'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-category') ? 'bg-brand-gray-100' : ''}`}>
         <LuBookPlus size={24} />
         <p className="text-black text-sm font-medium leading-normal">Add category</p>
+      </Link>
+      <Link href={'/admin/create-product'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-product') ? 'bg-brand-gray-100' : ''}`}>
+        <BiFolderPlus size={24} />
+        <p className="text-black text-sm font-medium leading-normal">Add product</p>
       </Link>
     </div>
   )

@@ -1,13 +1,32 @@
 "use client"
 import { ProductForm, ProductFormData } from '@/components/admin/ProductForm';
+import { ImageT, ProductT } from '@/lib/types';
+import useCategoryStore from '@/store/useCategoryStore';
+import useProductStore from '@/store/useProductStore';
+import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
-const UpdateProduct = ({ params }: { params: Promise<{ id: string }> }) => {
+const emptyTimestamp = new Timestamp(0, 0);
+
+const UpdateProduct = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const [existingProduct, setExistingProduct] = useState(null);
+  const { product, loading, fetchSingleProduct, updateProduct } = useProductStore();
   const [isLoading, setIsLoading] = useState(true);
   const [productId, setProductId] = useState("");
+  const { categories, fetchCategories } = useCategoryStore();
+  const [existingProduct, setExistingProduct] = useState<ProductT>({
+    id: params.id || '',
+    title: '',
+    price: "0",
+    productImageUrl: [] as ImageT[],
+    category: '',
+    description: '',
+    quantity: 0,
+    time: product?.time || emptyTimestamp,
+    date: product?.date || emptyTimestamp,
+    storageFileId: ''
+  });
 
   useEffect(() => {
     const getId = async () => {
@@ -15,26 +34,34 @@ const UpdateProduct = ({ params }: { params: Promise<{ id: string }> }) => {
       setProductId(id)
     }
     getId()
-  }, [params])
+  }, [params]);
 
   useEffect(() => {
-    // Fetch existing product data
-    const fetchProduct = async () => {
-      try {
-        // const product = await getProductById(productId);
-        // setExistingProduct(product);
-        setExistingProduct(null)
-        console.log('get product by id');
-        
-      } catch (error) {
-        console.error('Error fetching product:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (productId) {
+      fetchSingleProduct(productId as string);
+    }
+  }, [productId, fetchSingleProduct]);
 
-    fetchProduct();
-  }, [productId]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (product) {
+      setExistingProduct({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        productImageUrl: product.productImageUrl,
+        category: product.category,
+        description: product.description,
+        quantity: product.quantity,
+        time: product.time,
+        date: product.date,
+        storageFileId: product.storageFileId
+      });
+    }
+  }, [product]);
 
   const handleUpdateProduct = async (data: ProductFormData) => {
     try {

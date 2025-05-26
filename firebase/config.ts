@@ -4,12 +4,12 @@ import { getFirestore } from "firebase/firestore"
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC42KiznTaPLq--l67rszotoEAH2E3cNbE",
-  authDomain: "mega-ulgurji.firebaseapp.com",
-  projectId: "mega-ulgurji",
-  storageBucket: "mega-ulgurji.firebasestorage.app",
-  messagingSenderId: "805239200961",
-  appId: "1:805239200961:web:6d987b4cba195b6a294840"
+  apiKey: "AIzaSyAvjFfygWWmwqyezNwOE4mHQdqF2BJEi_s",
+  authDomain: "mega-ulgurji-1fccf.firebaseapp.com",
+  projectId: "mega-ulgurji-1fccf",
+  storageBucket: "mega-ulgurji-1fccf.firebasestorage.app",
+  messagingSenderId: "586829451691",
+  appId: "1:586829451691:web:4c3378ba30026ad6ea02ee"
 };
 
 

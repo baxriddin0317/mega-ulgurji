@@ -87,10 +87,10 @@ const LoginForm = () => {
           console.log('User data:', userData)
 
           // Navigation based on user role
-          if (userData?.role === "user") {
-            router.push('/')
-          } else {
+          if (userData?.role === "admin") {
             router.push('/admin')
+          } else {
+            router.push('/')
           }
         } else {
           toast.error("User not found or invalid data")

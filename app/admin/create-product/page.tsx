@@ -2,13 +2,15 @@
 import React from 'react'
 import { ProductForm, ProductFormData } from '@/components/admin/ProductForm';
 import { useRouter } from 'next/navigation';
+import { addDoc, collection } from 'firebase/firestore';
+import { fireDB } from '@/firebase/config';
+import toast from 'react-hot-toast';
 
 const AddProduct = () => {
   const router = useRouter();
 
   const handleAddProduct = async (data: ProductFormData) => {
     try {
-      // Add product logic
       const newProduct = {
         ...data,
         // time: Timestamp.now(),
@@ -16,18 +18,19 @@ const AddProduct = () => {
           month: "short",
           day: "2-digit",
           year: "numeric",
-        }),
-        storageFileId: ""
+        })
       };
       
       // API call to add product
       console.log(newProduct);
       
-      
-      // Redirect after successful add
-      // router.push('/products');
+      const productRef = collection(fireDB, "products");
+      await addDoc(productRef, newProduct);
+      toast.success("Add product successfully");
+      router.push("/admin");
     } catch (error) {
       console.error('Error adding product:', error);
+      toast.error("Add product failed");
     }
   };
 

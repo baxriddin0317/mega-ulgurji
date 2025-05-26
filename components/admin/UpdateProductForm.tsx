@@ -5,6 +5,7 @@ import { fireStorage } from "@/firebase/config";
 import { ImageT, ProductT } from "@/lib/types";
 import useCategoryStore from "@/store/useCategoryStore";
 import useProductStore from "@/store/useProductStore";
+import { FirebaseError } from "firebase/app";
 import { Timestamp } from "firebase/firestore";
 import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
@@ -110,8 +111,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         setSubmitUploading(false);
         navigate.push('/admin');
       } catch (error) {
+        if (error instanceof FirebaseError) {
         setSubmitUploading(false);
         toast.error("Update product failed");
+        }
       }
     }
   };

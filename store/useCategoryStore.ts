@@ -1,6 +1,6 @@
 import { fireDB } from '@/firebase/config';
 import { CategoryI } from '@/lib/types';
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, setDoc } from 'firebase/firestore';
 import {create} from 'zustand';
 
 interface CategoryStoreI {
@@ -9,7 +9,8 @@ interface CategoryStoreI {
   loading: boolean;
   addCategory: (newCategory: CategoryI) => Promise<void>;
   fetchCategories: () => void;
-  fetchSingleCategory: (id: string) => void
+  fetchSingleCategory: (id: string) => void;
+  updateCategory: (id: string, updatedCategory: CategoryI) => Promise<void>;
   deleteCategory: (categoryId: string) => void;
 }
 
@@ -43,7 +44,9 @@ const useCategoryStore = create<CategoryStoreI>((set) => ({
           category: {
             id, 
             name: categoryData.name,
+            description: categoryData.description,
             categoryImgUrl: categoryData.categoryImgUrl,
+            storageFileId: categoryData.storageFileId
           } as CategoryI,
           loading: false
         });
@@ -55,6 +58,18 @@ const useCategoryStore = create<CategoryStoreI>((set) => ({
       
     } catch (error) {
       
+    }
+  },
+
+  // Update a category
+  updateCategory: async (id: string, updatedCategory: CategoryI) => {
+    set({ loading: true });
+    try {
+      await setDoc(doc(fireDB, 'categories', id), updatedCategory);
+      set({ category: updatedCategory, loading: false });
+    } catch (error) {
+      console.error('Error updating category:', error);
+      set({ loading: false });
     }
   },
 

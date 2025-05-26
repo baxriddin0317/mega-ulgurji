@@ -17,8 +17,8 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           <AdminHeader />
           
           {/* Page content */}
-          <main className="flex-1 p-6">
-            <div className='bg-white w-full h-full rounded-2xl p-4 shadow-2xl'>
+          <main className="flex-1 p-4 md:p-6">
+            <div className='bg-white w-full h-full rounded-2xl sm:p-4 shadow-2xl'>
             {children}
             </div>
           </main>

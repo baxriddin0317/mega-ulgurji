@@ -1,14 +1,20 @@
+import { FormattedPrice } from '@/hooks'
+import { ProductT } from '@/lib/types'
 import Image from 'next/image'
 import React from 'react'
 
-const ProductCard = () => {
+interface ProductProps {
+  product: ProductT
+}
+
+const ProductCard = ({product}: ProductProps) => {
   return (
     <div className='cursor-pointer group'>
       <div className='relative w-full h-64 overflow-hidden rounded-xl mb-3'>
-        <Image className='absolute object-cover group-hover:scale-105 transition-all duration-500' src={'/images/banner-2.jpg'} fill alt='' />
+        <Image className='absolute object-cover group-hover:scale-105 transition-all duration-500' src={product.productImageUrl[0].url} fill alt='' />
       </div>
-      <h3 className='font-bold text-lg md:text-xl'>Stol va stullar to&apos;plami</h3>
-      <p className='font-semibold text-brand-gray-200'>1 300 000 so&apos;m</p>
+      <h3 className='font-bold text-lg md:text-xl'>{product.title}</h3>
+      <p className='font-semibold text-brand-gray-200'>{FormattedPrice(product.price)} UZS</p>
     </div>
   )
 }

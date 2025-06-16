@@ -18,10 +18,10 @@ export default function Home() {
         <section id="hero" className="max-w-7xl mx-auto pt-48 px-4 sm:pl-10 lg:pl-40 relative z-10">
           <div data-aos="fade-up" className="max-w-2xl">
               <h1 className="text-5xl text-[#d1d1d1]">
-                Sifatli mahsulotlar katalogi
+                MEGAHOME ULGURJI
               </h1>
               <p className="text-3xl md:text-4xl mt-2 text-white/70">
-                Bizning katalog orqali siz eng sifatli va zamonaviy mahsulotlarimizni topishingiz mumkin.
+                - Naqd bo&apos;lsa ulgurji <br /> bo&apos;laqolsin!
               </p>
           </div>
         </section>

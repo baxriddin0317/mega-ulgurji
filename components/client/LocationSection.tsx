@@ -35,7 +35,8 @@ const LocationSection = () => {
                 </div>
                 <div>
                   <h4 className="text-[#d1d1d1] font-medium">Telefon:</h4>
-                  <p className="text-white/80">+998 88 324 40 00</p>
+                  <p className="text-white/80">+998 99 280 6767</p>
+                  <p className="text-white/80">+998 88 003 9000</p>
                 </div>
               </div>
               
@@ -45,7 +46,7 @@ const LocationSection = () => {
                 </div>
                 <div>
                   <h4 className="text-[#d1d1d1] font-medium">Email:</h4>
-                  <p className="text-white/80">megahomeweb@gmail.com</p>
+                  <a href='mailto:Megahomeweb@gmail.com' className="text-white/80">Megahomeweb@gmail.com</a>
                 </div>
               </div>
               
@@ -55,8 +56,7 @@ const LocationSection = () => {
                 </div>
                 <div>
                   <h4 className="text-[#d1d1d1] font-medium">Ish vaqti:</h4>
-                  <p className="text-white/80">Dushanba - Shanba: 9:00 - 20:00</p>
-                  <p className="text-white/80">Yakshanba: 10:00 - 18:00</p>
+                  <p className="text-white/80">Dushanba - Shanba: 9:00 - 18:00</p>
                 </div>
               </div>
             </div>

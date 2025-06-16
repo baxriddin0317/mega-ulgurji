@@ -8,8 +8,8 @@ const Footer = () => {
   return (
     <footer className=' py-20'>
       <div data-aos="fade-up" className='container flex justify-between mx-auto px-4'>
-        <div className='relative w-[192px] h-10'>
-          <Image className='invert' src={'/images/megahome-text.png'} fill alt=''  />
+        <div className='relative w-[192px] h-12'>
+          <Image className='absolute object-cover' src={'/images/black-logo.png'} fill alt=''  />
         </div>
         <div className='flex items-center gap-8'>
           <Link href={'#'}>

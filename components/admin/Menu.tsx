@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import React from 'react'
 import { BiFolderPlus } from 'react-icons/bi'
 import { LuBookPlus } from 'react-icons/lu'
+import { BiUser } from 'react-icons/bi'
 
 const Menu = () => {
   const pathname = usePathname();
@@ -20,6 +21,10 @@ const Menu = () => {
 
   return (
     <div className="flex flex-col gap-2 py-4">
+      <Link href={'/admin/'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
+        <BiUser size={24} />
+        <p className="text-black text-sm font-medium leading-normal">Users</p>
+      </Link>
       <Link href={'/admin/categories'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/categories') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Package" data-size="24px" data-weight="regular">
           <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -30,7 +35,7 @@ const Menu = () => {
         </div>
         <p className="text-black text-sm font-medium leading-normal">Categories</p>
       </Link>
-      <Link href={'/admin'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
+      <Link href={'/admin/products'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/products') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Table" data-size="24px" data-weight="fill">
           <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
             <path

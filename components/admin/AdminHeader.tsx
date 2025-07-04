@@ -41,6 +41,9 @@ const AdminHeader = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/profile">Profile</Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className='cursor-pointer' onClick={logout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

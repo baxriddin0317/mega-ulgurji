@@ -7,7 +7,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, fireDB } from '@/firebase/config';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import { setDoc, doc, Timestamp } from 'firebase/firestore';
 import { useAuthStore } from '@/store/authStore';
 import { FirebaseError } from 'firebase/app';
 
@@ -19,6 +19,7 @@ interface SignUpFormInputs {
   email: string
   password: string
   role: Role
+  phone: string
 }
 
 // User type for Firestore
@@ -29,6 +30,7 @@ interface User {
   role: Role
   time: Timestamp // Timestamp
   date: string
+  phone: string
 }
 
 
@@ -36,6 +38,7 @@ const SignUpForm = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { setUser, setUserData } = useAuthStore();
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const {
     register,
@@ -47,28 +50,42 @@ const SignUpForm = () => {
       name: "",
       email: "",
       password: "",
-      role: "user"
+      role: "user",
+      phone: ""
     }
   })
 
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+    if (value.startsWith("998")) {
+      value = value.slice(3);
+    }
+    value = value.slice(0, 9);
+
+    // Agar input bo'sh bo'lsa, tozalash
+    if (!value) {
+      setPhoneNumber("");
+      return;
+    }
+
+    // Format the value as +998 (XX) XXX-XX-XX
+    const formattedValue = value
+      ? `+998 (${value.slice(0, 2)}${value.length > 2 ? ")" : ""}${value.length > 2 ? " " : ""}${value.slice(2, 5)}${value.length > 5 ? "-" : ""}${value.slice(5, 7)}${value.length > 7 ? "-" : ""}${value.slice(7)}`
+      : "";
+
+    setPhoneNumber(formattedValue);
+  };
+
   const userSignupFunction: SubmitHandler<SignUpFormInputs> = async (data) => {
     setLoading(true)
-    
-    // Debug: Signup ma'lumotlarini tekshirish
-    console.log('Signup attempt with:', {
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      passwordLength: data.password.length
-    })
 
     try {
       // Firebase authentication - user yaratish
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
       const firebaseUser = userCredential.user
       
-      console.log('Firebase user created:', firebaseUser.uid)
-
+      console.log('Firebase user created:', phoneNumber)
+      
       // Firestore uchun user obyektini yaratish
       const user: User = {
         name: data.name,
@@ -83,16 +100,14 @@ const SignUpForm = () => {
             day: "2-digit",
             year: "numeric",
           }
-        )
+        ),
+        phone: phoneNumber
       }
 
-      console.log('User object to save:', user)
-
       // Firestore ga user ma'lumotlarini saqlash
-      const userReference = collection(fireDB, "user")
-      const docRef = await addDoc(userReference, user)
+      await setDoc(doc(fireDB, "user", firebaseUser.uid), user);
       
-      console.log('User saved to Firestore with ID:', docRef.id)
+      console.log('User saved to Firestore with ID:', firebaseUser.uid)
 
       // Zustand store'ni yangilash
       setUser(firebaseUser)
@@ -166,6 +181,34 @@ const SignUpForm = () => {
             />
             {errors.name && (
               <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>
+            )}
+          </label>
+        </div>
+        {/* phone number */}
+        <div className="flex flex-wrap items-end gap-4 md:px-4 py-3">
+          <label className="flex flex-col min-w-40 flex-1">
+            <p className="text-black text-base font-medium leading-normal pb-2">Phone Number</p>
+            <input
+              type='text'
+              placeholder="+998 (__) ___-__-__"
+              className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
+                errors.phone ? 'border-red-500 border-2' : ''
+              }`}
+              value={phoneNumber}
+              {...register('phone', {
+                required: 'Phone number is required',
+                validate: (value) => {
+                  const digits = value.replace(/\D/g, "");
+                  return digits.length === 12 || 'Phone number must be 12 digits with code';
+                }
+              })}
+              onChange={(e) => {
+                handlePhoneNumberChange(e);
+              }}
+              maxLength={20}
+            />
+            {errors.phone && (
+              <span className="text-red-500 text-sm mt-1">{errors.phone.message}</span>
             )}
           </label>
         </div>

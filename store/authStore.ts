@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { User as FirebaseUser } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { fireDB } from '@/firebase/config'
+import { collection, onSnapshot } from 'firebase/firestore'
 
 type Role = "admin" | "user"
 
@@ -13,17 +14,21 @@ interface UserData {
   role: Role
   time: any
   date: string
+  phone: string
 }
 
 interface AuthState {
   user: FirebaseUser | null
   userData: UserData | null
+  users: UserData[]
   isAuthenticated: boolean
   isLoading: boolean
+  isfetchLoading: boolean
   setUser: (user: FirebaseUser | null) => void
   setUserData: (userData: UserData | null) => void
   setLoading: (loading: boolean) => void
   fetchUserData: (uid: string) => Promise<void>
+  fetchAllUsers: () => void
   logout: () => void
   isAdmin: () => boolean
 }
@@ -33,8 +38,10 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       userData: null,
+      users: [],
       isAuthenticated: false,
       isLoading: true,
+      isfetchLoading: true,
 
       setUser: (user) => {
         set({ 
@@ -70,13 +77,35 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      fetchAllUsers: () => {
+        set({ isfetchLoading: true });
+        try {
+          const q = collection(fireDB, "user");
+          const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
+            let usersArray: any = [];
+            QuerySnapshot.forEach((doc) => {
+              usersArray.push({ ...doc.data(), uid: doc.id });
+            });
+            set({ users: usersArray, isfetchLoading: false });
+          });
+          return unsubscribe;
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          set({ isfetchLoading: false });
+          return undefined;
+        }
+      },
+
       logout: () => {
         set({
           user: null,
           userData: null,
           isAuthenticated: false,
           isLoading: false
-        })
+        });
+        if (typeof window !== 'undefined') {
+          useAuthStore.persist.clearStorage();
+        }
       },
 
       isAdmin: () => {
@@ -94,3 +123,5 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
+
+export type { UserData };

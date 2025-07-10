@@ -11,8 +11,8 @@ const Categories = () => {
   }
   return (
     <div>
-      <PanelTitle title='Categories' />
-      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Search for categories' />
+      <PanelTitle title='Kategoriyalar' />
+      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Kategoriyalarni qidirish' />
       <CategoryTable search={search} />
     </div>
   )

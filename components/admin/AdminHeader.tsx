@@ -29,7 +29,7 @@ const AdminHeader = () => {
       </div>
       <div className='flex items-center gap-3'>
         <Link className='flex items-center h-9 px-4 rounded-xl bg-primary text-primary-foreground shadow-xs hover:bg-primary/90' href={'/'}>
-          Go to Home
+          Bosh sahifaga qaytish
         </Link>
         {/* avatar */}
         <DropdownMenu>
@@ -40,11 +40,11 @@ const AdminHeader = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Mening hisobim</DropdownMenuLabel>
             <DropdownMenuItem asChild>
               <Link href="/admin/profile">Profile</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className='cursor-pointer' onClick={logout}>Log out</DropdownMenuItem>
+            <DropdownMenuItem className='cursor-pointer' onClick={logout}>Chiqish</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

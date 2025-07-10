@@ -23,7 +23,7 @@ const Menu = () => {
     <div className="flex flex-col gap-2 py-4">
       <Link href={'/admin/'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
         <BiUser size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Users</p>
+        <p className="text-black text-sm font-medium leading-normal">Foydalanuvchilar</p>
       </Link>
       <Link href={'/admin/categories'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/categories') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Package" data-size="24px" data-weight="regular">
@@ -33,7 +33,7 @@ const Menu = () => {
             ></path>
           </svg>
         </div>
-        <p className="text-black text-sm font-medium leading-normal">Categories</p>
+        <p className="text-black text-sm font-medium leading-normal">Kategoriyalar</p>
       </Link>
       <Link href={'/admin/products'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/products') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Table" data-size="24px" data-weight="fill">
@@ -43,15 +43,15 @@ const Menu = () => {
             ></path>
           </svg>
         </div>
-        <p className="text-black text-sm font-medium leading-normal">Products</p>
+        <p className="text-black text-sm font-medium leading-normal">Mahsulotlar</p>
       </Link>
       <Link href={'/admin/create-category'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-category') ? 'bg-brand-gray-100' : ''}`}>
         <LuBookPlus size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Add category</p>
+        <p className="text-black text-sm font-medium leading-normal">Kategoriya qo&apos;shish</p>
       </Link>
       <Link href={'/admin/create-product'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-product') ? 'bg-brand-gray-100' : ''}`}>
         <BiFolderPlus size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Add product</p>
+        <p className="text-black text-sm font-medium leading-normal">Mahsulot qo&apos;shish</p>
       </Link>
     </div>
   )

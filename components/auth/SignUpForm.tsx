@@ -156,26 +156,26 @@ const SignUpForm = () => {
   return (
     <div className='bg-white flex items-center justify-center w-full h-full rounded-2xl p-4 shadow-2xl'>
       <form onSubmit={handleSubmit(userSignupFunction)} className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 flex-1">
-        <h1 className="text-black text-[22px] text-center font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Sign up to Mega</h1>
+        <h1 className="text-black text-[22px] text-center font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Megadan ro&apos;yxatdan o&apos;tish</h1>
         {/* full name */}
         <div className="flex flex-wrap items-end gap-4 md:px-4 py-3">
           <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-black text-base font-medium leading-normal pb-2">Full Name</p>
+            <p className="text-black text-base font-medium leading-normal pb-2">Toliq ism</p>
             <input
               type='text'
-              placeholder="Your full name"
+              placeholder="Sizning Toliq ismingiz"
               className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
                 errors.name ? 'border-red-500 border-2' : ''
               }`}
               {...register('name', {
-                required: 'Name is required',
+                required: "Ism majburiy kiritilishi kerak",
                 minLength: {
                   value: 2,
-                  message: 'Name must be at least 2 characters'
+                  message: "Ism kamida 2 ta belgidan iborat bo'lishi kerak"
                 },
                 pattern: {
                   value: /^[A-Za-z\s]+$/,
-                  message: 'Name can only contain letters and spaces'
+                  message: "Ism faqat harflar va bo'sh joylardan iborat bo'lishi mumkin"
                 }
               })}
             />
@@ -187,7 +187,7 @@ const SignUpForm = () => {
         {/* phone number */}
         <div className="flex flex-wrap items-end gap-4 md:px-4 py-3">
           <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-black text-base font-medium leading-normal pb-2">Phone Number</p>
+            <p className="text-black text-base font-medium leading-normal pb-2">Telifon raqam</p>
             <input
               type='text'
               placeholder="+998 (__) ___-__-__"
@@ -196,10 +196,10 @@ const SignUpForm = () => {
               }`}
               value={phoneNumber}
               {...register('phone', {
-                required: 'Phone number is required',
+                required: "Telefon raqami majburiy kiritilishi kerak",
                 validate: (value) => {
                   const digits = value.replace(/\D/g, "");
-                  return digits.length === 12 || 'Phone number must be 12 digits with code';
+                  return digits.length === 12 || "Telefon raqami kod bilan birga 12 ta raqamdan iborat bo'lishi kerak";
                 }
               })}
               onChange={(e) => {
@@ -223,10 +223,10 @@ const SignUpForm = () => {
                 errors.email ? 'border-red-500 border-2' : ''
               }`}
               {...register('email', {
-                required: 'Email is required',
+                required: "Email majburiy kiritilishi kerak",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address'
+                  message: "Email manzili noto'g'ri kiritilgan"
                 }
               })}
             />
@@ -238,22 +238,22 @@ const SignUpForm = () => {
          {/* Password Field */}
         <div className="flex flex-wrap items-end gap-4 md:px-4 py-3">
           <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-black text-base font-medium leading-normal pb-2">Password</p>
+            <p className="text-black text-base font-medium leading-normal pb-2">Parol</p>
             <input
-              type='password'
-              placeholder="Your password"
+              type='Parol'
+              placeholder="Sizning parolingiz"
               className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
                 errors.password ? 'border-red-500 border-2' : ''
               }`}
               {...register('password', {
-                required: 'Password is required',
+                required: "Parol majburiy kiritilishi kerak",
                 minLength: {
                   value: 6,
-                  message: 'Password must be at least 6 characters'
+                  message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak"
                 },
                 pattern: {
                   value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]/,
-                  message: 'Password must contain at least one letter and one number'
+                  message: "Parolda kamida bitta harf va bitta raqam bo'lishi kerak"
                 }
               })}
             />
@@ -271,13 +271,13 @@ const SignUpForm = () => {
             className="cursor-pointer overflow-hidden rounded-xl w-full h-12 bg-black text-[#FFFFFF] text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="truncate">
-              {loading ? 'Creating Account...' : 'Sign up'}
+              {loading ? "Hisob yaratilmoqda..." : "Ro'yxatdan o'tish"}
             </span>
           </Button>
         </div>
         <div className='flex justify-center gap-2 py-3'>
-          <span className="text-[#6B6B6B] text-sm font-normal leading-normal text-center">Already have an account?</span>
-          <Link href={'/login'} className="text-[#6B6B6B] text-sm font-normal leading-normal text-center underline">Login</Link>
+          <span className="text-[#6B6B6B] text-sm font-normal leading-normal text-center">Allaqachon ro&apos;yxatdan o&apos;tganmisz?</span>
+          <Link href={'/login'} className="text-[#6B6B6B] text-sm font-normal leading-normal text-center underline">Hisobga kirish</Link>
         </div>
       </form>
     </div>

@@ -11,8 +11,8 @@ const Users = () => {
   };
   return (
     <div>
-      <PanelTitle title='Users' />
-      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Search for users' />
+      <PanelTitle title='Foydalanuvchilar' />
+      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Foydalanuvchilarni qidirish' />
       <UsersTable search={search} />
     </div>
   );

@@ -90,10 +90,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         ...prevProduct,
         productImageUrl: prevProduct.productImageUrl.filter((url) => url.path !== imageUrl),
       }));
-      toast.success("Image deleted successfully");
+      toast.success("Rasm muvaffaqiyatli o'chirildi");
     } catch (error) {
       console.error("Error deleting image:", error);
-      toast.error("Failed to delete image");
+      toast.error("Rasmni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -107,20 +107,20 @@ const UpdateProductForm = ({ id }: { id: string }) => {
       setSubmitUploading(true);
       try {
         await updateProduct(id, updatedProduct);
-        toast.success('Product Updated Successfully');
+        toast.success('Mahsulot muvaffaqiyatli yangilandi');
         setSubmitUploading(false);
         navigate.push('/admin');
       } catch (error) {
         if (error instanceof FirebaseError) {
         setSubmitUploading(false);
-        toast.error("Update product failed");
+        toast.error("Mahsulotni yangilashda xatolik yuz berdi");
         }
       }
     }
   };
 
   if(loading){
-    return <div className="flex items-center justify-center">Loading...</div>
+    return <div className="flex items-center justify-center">Yuklanmoqda...</div>
   }
   return (
     <>
@@ -151,7 +151,7 @@ const UpdateProductForm = ({ id }: { id: string }) => {
             htmlFor='upload'
           >
             <GrGallery />
-            <span>{imageUploading ? 'Uploading...' : 'Upload img'}</span>
+            <span>{imageUploading ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
           </label>
           <input 
             className='sr-only' 
@@ -161,10 +161,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
             onChange={(e) => handleImageUpload(e.target.files)}
             accept="image/*"
           />
-          {imageUploading && <p>loading...</p>}
+          {imageUploading && <p>Yuklanmoqda...</p>}
         </div>
         {updatedProduct.productImageUrl.length === 0 && (
-          <p className="text-red-500 text-sm">At least one product image is required</p>
+          <p className="text-red-500 text-sm">Kamida bitta mahsulot rasmi talab qilinadi</p>
         )}
       </div>
 
@@ -172,10 +172,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
           <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-            Product name*
+            Mahsulot nomi*
           </p>
           <input
-            placeholder="Enter product name"
+            placeholder="Mahsulot nomini kiriting"
             className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
             value={updatedProduct.title}
             onChange={(e) => setUpdatedProduct({ ...updatedProduct, title: e.target.value })}
@@ -187,11 +187,11 @@ const UpdateProductForm = ({ id }: { id: string }) => {
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
           <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
-            Select a category*
+            Kategoriyani tanlang*
           </p>
           <Select onValueChange={(value) => setUpdatedProduct({ ...updatedProduct, category: value })}>
             <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder="Kategoriyani tanlang" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((value) => {
@@ -209,10 +209,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
           <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-            Price*
+            Narxi*
           </p>
           <input
-            placeholder="$0.00"
+            placeholder="0 so'm"
             className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
             value={updatedProduct?.price}
             onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
@@ -224,10 +224,10 @@ const UpdateProductForm = ({ id }: { id: string }) => {
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
           <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-            Description*
+            Tavsif*
           </p>
           <textarea
-            placeholder="Enter product description"
+            placeholder="Mahsulot tavsifini kiriting"
             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none min-h-36 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
             value={updatedProduct.description}
             onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
@@ -244,7 +244,7 @@ const UpdateProductForm = ({ id }: { id: string }) => {
           onClick={handleCancel}
           disabled={loading || submitUploading}
         >
-          <span className="truncate">Cancel</span>
+          <span className="truncate">Bekor qilish</span>
         </Button>
         <Button
           type='button'
@@ -253,7 +253,7 @@ const UpdateProductForm = ({ id }: { id: string }) => {
           onClick={handleUpdate}
           disabled={loading}
         >
-          {submitUploading ? 'Loading...' : 'update product'}
+          {submitUploading ? 'Yuklanmoqda...' : 'Mahsulotni yangilash'}
         </Button>
       </div> 
     </>

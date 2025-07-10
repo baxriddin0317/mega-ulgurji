@@ -51,7 +51,7 @@ const CreateCategory = () => {
         categoryImgUrl: [],
         storageFileId: ""
       });
-      toast.success("Draft restored successfully");
+      toast.success("Draft muvaffaqiyatli tiklandi");
     }
     setShowDraftModal(false);
   };
@@ -60,7 +60,7 @@ const CreateCategory = () => {
   const handleDeleteDraft = async () => {
     await deleteCategoryDraft();
     setShowDraftModal(false);
-    toast.success("Draft deleted successfully");
+    toast.success("Draft muvaffaqiyatli o'chirildi");
   };
 
   // Ma'lumotlar o'zgarganda draft'ni saqlash
@@ -104,10 +104,10 @@ const CreateCategory = () => {
         categoryImgUrl: [...prevCategory.categoryImgUrl, ...imageUrls]
       }));
       
-      toast.success("Images uploaded successfully");
+      toast.success("Rasmlar muvaffaqiyatli yuklandi");
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast.error("Failed to upload images");
+      toast.error("Rasmlarni yuklashda xatolik yuz berdi");
     } finally {
       setImageUploading(false);
     }
@@ -124,10 +124,10 @@ const CreateCategory = () => {
         ...prevProduct,
         categoryImgUrl: prevProduct.categoryImgUrl.filter((url) => url.path !== imageUrl),
       }));
-      toast.success("Image deleted successfully");
+      toast.success("Rasm muvaffaqiyatli o'chirildi");
     } catch (error) {
       console.error("Error deleting image:", error);
-      toast.error("Failed to delete image");
+      toast.error("Rasmni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -153,17 +153,17 @@ const CreateCategory = () => {
       newCategory.name == "" ||
       newCategory.categoryImgUrl.length == 0
     ) {
-      return toast.error("all fields are required");
+      return toast.error("Barcha maydonlarni to'ldiring");
     }
     
     try {
       await addCategory(newCategory);
       removeCategoryDraft();
-      toast.success("Add category successfully");
+      toast.success("Kategoriya muvaffaqiyatli qo'shildi");
       navigate.push("/admin/categories");
     } catch (error) {
       console.log(error);
-      toast.error("Add category failed");
+      toast.error("Kategoriya qo'shilmadi");
     }
   };
   
@@ -173,9 +173,9 @@ const CreateCategory = () => {
       {showDraftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">Draft topildi</h3>
+            <h3 className="text-lg font-semibold mb-4">Qoralama topildi</h3>
             <p className="text-gray-600 mb-6">
-              Avval yaratilgan category draft&apos;i mavjud. Uni tiklashni xohlaysizmi?
+              Avval yaratilgan kategoriya qoralamasi mavjud. Uni tiklashni xohlaysizmi?
             </p>
             <div className="flex gap-3">
               <Button
@@ -199,7 +199,7 @@ const CreateCategory = () => {
       <div className="relative flex size-full justify-center">
         <div className="flex flex-col gap-4 md:w-[512px] py-5 max-w-[960px] flex-1 px-4">
           <div className="flex flex-wrap justify-between gap-3 mb-5">
-            <h2 className="text-brand-black-text tracking-light text-4xl font-bold leading-tight min-w-72">Add Category</h2>
+            <h2 className="text-brand-black-text tracking-light text-4xl font-bold leading-tight min-w-72">Kategoriya qo&apos;shish</h2>
           </div>
           {/* Upload Images */}
           <div className='flex flex-col gap-4'>
@@ -228,7 +228,7 @@ const CreateCategory = () => {
                 htmlFor='upload'
               >
                 <GrGallery />
-                <span>{false ? 'Uploading...' : 'Upload img'}</span>
+                <span>{false ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
               </label>
               <input 
                 className='sr-only' 
@@ -238,18 +238,18 @@ const CreateCategory = () => {
                 onChange={(e) => handleImageUpload(e.target.files)}
                 accept="image/*"
               />
-              {imageUploading && <p>loading...</p>}
+              {imageUploading && <p>Yuklanmoqda...</p>}
             </div>
             {newCategory.categoryImgUrl.length === 0 && (
-              <p className="text-red-500 text-sm">At least one product image is required</p>
+              <p className="text-red-500 text-sm">Kamida bitta mahsulot rasmi talab qilinadi</p>
             )}
           </div>
           {/* category name */}
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
-              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Category name*</p>
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Kategoriya nomi*</p>
               <input
-                placeholder="Enter category name"
+                placeholder="Kategoriya nomini kiriting"
                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={newCategory.name}
                 onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
@@ -259,9 +259,9 @@ const CreateCategory = () => {
           {/* category description */}
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
-              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Description</p>
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Tavsif</p>
               <textarea
-                placeholder="Enter category description"
+                placeholder="Kategoriya tavsifini kiriting"
                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none min-h-36 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={newCategory.description}
                 onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
@@ -276,7 +276,7 @@ const CreateCategory = () => {
               onClick={handleCancel}
               className="bg-[#e7edf3] rounded-xl h-10 px-4 cursor-pointer text-sm font-bold leading-normal tracking-[0.015em]"
             >
-              <span className="truncate">Cancel</span>
+              <span className="truncate">Bekor qilish</span>
             </Button>
             <Button
               type='button'
@@ -284,7 +284,7 @@ const CreateCategory = () => {
               onClick={handleAddCategory}
               className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
             >
-              {loading ? 'Loading..' : 'Add category'}
+              {loading ? 'Yuklanmoqda..' : "Kategoriya qo'shish"}
             </Button>
           </div>
         </div>

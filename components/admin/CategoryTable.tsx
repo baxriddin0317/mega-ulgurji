@@ -61,17 +61,17 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
         <table className="min-w-full w-full">
           <thead>
             <tr className="bg-white">
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Title</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Image</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">Edit</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">Delete</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Nomi</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
+              <th className="px-4 py-3 text-black text-sm font-medium text-center">Taxrirlash</th>
+              <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
             </tr>
           </thead>
           <tbody>
             {filteredCategories.length === 0 ? (
               <tr>
                 <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-500">
-                  {search.length >= 2 ? 'No category found' : 'No category available'}
+                  {search.length >= 2 ? "Kategoriya topilmadi" : "Kategoriyalar mavjud emas"}
                 </td>
               </tr>
             ) : (filteredCategories.map((category) => (
@@ -104,7 +104,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
       <div className="md:hidden space-y-4">
         {filteredCategories.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
-            {search.length >= 2 ? 'No category found' : 'No category available'}
+            {search.length >= 2 ? "Kategoriya topilmadi" : "Kategoriyalar mavjud emas"}
           </div>
         ) : (filteredCategories.map((category, index) => (
           <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
@@ -114,7 +114,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
             
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Image</span>
+                <span className="text-sm text-gray-500">Rasm</span>
                 <div className='size-16 relative overflow-hidden rounded-2xl'>
                   <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
                 </div>
@@ -126,14 +126,14 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                   variant={'secondary'}
                   className="bg-[#e7edf3] rounded-xl h-10 px-4 cursor-pointer text-sm font-bold leading-normal tracking-[0.015em]"
                 >
-                  <span className="truncate">Update</span>
+                  <span className="truncate">Taxrirlash</span>
                 </Button>
                 <Button
                   onClick={() => handleDelete(category)}
                   variant={'default'}
                   className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
                 >
-                  Delete
+                  O&apos;schirish
                 </Button>
               </div>
             </div>

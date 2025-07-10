@@ -103,12 +103,12 @@ const UsersTable = ({ search }: UsersTableProps) => {
         <table className="min-w-full w-full">
           <thead>
             <tr className="bg-white">
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Name</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Ism</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Email</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Phone</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Role</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">Change Role</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">Delete</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Telifon</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Maqomi</th>
+              <th className="px-4 py-3 text-black text-sm font-medium text-center">Maqomni o&apos;zgartirish</th>
+              <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
             </tr>
           </thead>
           <tbody>
@@ -124,7 +124,7 @@ const UsersTable = ({ search }: UsersTableProps) => {
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.email}</td>
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.phone}</td>
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.role}</td>
-                <td className="w-32 h-20 px-4 py-2 text-gray-700 text-sm font-normal text-center">
+                <td className="w-44 h-20 px-4 py-2 text-gray-700 text-sm font-normal text-center">
                   <select
                     className="border rounded px-2 py-1"
                     value={user.role}
@@ -167,11 +167,11 @@ const UsersTable = ({ search }: UsersTableProps) => {
                 <span className="text-sm text-black">{user.email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Phone</span>
+                <span className="text-sm text-gray-500">Telifon</span>
                 <span className="text-sm text-black">{user.phone}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Role</span>
+                <span className="text-sm text-gray-500">Maqomi</span>
                 <span className="text-sm text-black">{user.role}</span>
               </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">

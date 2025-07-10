@@ -11,8 +11,8 @@ const Dashboard = () => {
   }
   return (
     <div>
-      <PanelTitle title='products' />
-      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Search for products' />
+      <PanelTitle title='Mahsulotlar' />
+      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Mahsulotlarni qidirish' />
       <ProductTable search={search} />
     </div>
   )

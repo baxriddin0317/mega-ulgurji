@@ -42,7 +42,7 @@ const Header = () => {
       <nav className="hidden md:flex items-center gap-10">
         <Links />
         {!isAuthenticated ? (
-          <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Login</Link>
+          <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Hisobga kirish</Link>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger className='cursor-pointer'>
@@ -52,13 +52,13 @@ const Header = () => {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Mening Accountim</DropdownMenuLabel>
               {isAdmin() && (
                 <DropdownMenuItem className='cursor-pointer'>
-                  <Link href="/admin">Go to Admin</Link>
+                  <Link href="/admin">Adminga o&apos;tish</Link>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem className='cursor-pointer' onClick={logout}>Log out</DropdownMenuItem>
+              <DropdownMenuItem className='cursor-pointer' onClick={logout}>Chiqish</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -77,9 +77,9 @@ const Header = () => {
               ) : (
                 <div className="flex flex-col items-center gap-4">
                   {isAdmin() && (
-                    <Link href="/admin" className="text-lg text-[#d1d1d1] hover:text-white">Go to Admin</Link>
+                    <Link href="/admin" className="text-lg text-[#d1d1d1] hover:text-white">Adminga o&apos;tish</Link>
                   )}
-                  <button onClick={logout} className="text-lg text-[#d1d1d1] hover:text-white cursor-pointer">Log out</button>
+                  <button onClick={logout} className="text-lg text-[#d1d1d1] hover:text-white cursor-pointer">Chiqish</button>
                 </div>
               )}
             </nav>

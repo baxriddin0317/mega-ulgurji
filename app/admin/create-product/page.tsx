@@ -68,7 +68,7 @@ const AddProduct = () => {
         categoryImgUrl: [],
         storageFileId: ""
       });
-      toast.success("Draft restored successfully");
+      toast.success("Qoralama muvaffaqiyatli tiklandi");
     }
     setShowDraftModal(false);
   };
@@ -77,7 +77,7 @@ const AddProduct = () => {
   const handleDeleteDraft = async () => {
     await deleteProductDraft();
     setShowDraftModal(false);
-    toast.success("Draft deleted successfully");
+    toast.success("Qoralama muvaffaqiyatli o'chirildi");
   };
 
   // Ma'lumotlar o'zgarganda draft'ni saqlash
@@ -132,10 +132,10 @@ const AddProduct = () => {
         ...prevProduct,
         productImageUrl: prevProduct.productImageUrl.filter((url) => url.path !== imageUrl),
       }));
-      toast.success("Image deleted successfully");
+      toast.success("Rasm muvaffaqiyatli o'chirildi");
     } catch (error) {
       console.error("Error deleting image:", error);
-      toast.error("Failed to delete image");
+      toast.error("Rasmni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -172,21 +172,21 @@ const AddProduct = () => {
       product.category == "" ||
       product.description == ""
     ) {
-      return toast.error("all fields are required");
+      return toast.error("Barcha maydonlarni to'ldiring");
     }
 
     setLoading(true);
     try {
       const productRef = collection(fireDB, "products");
       await addDoc(productRef, product);
-      toast.success("Add product successfully");
+      toast.success("Mahsulot muvaffaqiyatli qo'shildi");
       removeProductDraft();
       navigate.push("/admin");
       setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
-      toast.error("Add product failed");
+      toast.error("Mahsulot qo'shilmadi");
     }
   };
 
@@ -196,9 +196,9 @@ const AddProduct = () => {
       {showDraftModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">Draft topildi</h3>
+            <h3 className="text-lg font-semibold mb-4">Qoralama topildi</h3>
             <p className="text-gray-600 mb-6">
-              Avval yaratilgan product draft&apos;i mavjud. Uni tiklashni xohlaysizmi?
+              Avval yaratilgan mahsulot qoralamasi mavjud. Uni tiklashni xohlaysizmi?
             </p>
             <div className="flex gap-3">
               <Button
@@ -222,7 +222,7 @@ const AddProduct = () => {
         <div className="flex gap-4 px-4 flex-col md:w-[512px] py-5 max-w-[960px] flex-1">
           <div className="flex flex-wrap justify-between gap-3 mb-5">
             <h2 className="text-brand-black-text tracking-light text-4xl font-bold leading-tight min-w-72">
-              Add product
+              Mahsulot qo&apos;shish
             </h2>
           </div>
 
@@ -253,7 +253,7 @@ const AddProduct = () => {
                 htmlFor='upload'
               >
                 <GrGallery />
-                <span>{imageUploading ? 'Uploading...' : 'Upload img'}</span>
+                <span>{imageUploading ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
               </label>
               <input 
                 className='sr-only' 
@@ -263,10 +263,10 @@ const AddProduct = () => {
                 onChange={(e) => handleImageUpload(e.target.files)}
                 accept="image/*"
               />
-              {imageUploading && <p>loading...</p>}
+              {imageUploading && <p>Yuklanmoqda...</p>}
             </div>
             {product.productImageUrl.length === 0 && (
-              <p className="text-red-500 text-sm">At least one product image is required</p>
+              <p className="text-red-500 text-sm">Kamida bitta mahsulot rasmi talab qilinadi</p>
             )}
           </div>
 
@@ -274,10 +274,10 @@ const AddProduct = () => {
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
               <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-                Product name*
+                Mahsulot nomi*
               </p>
               <input
-                placeholder="Enter product name"
+                placeholder="Mahsulot nomini kiriting"
                 className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={product.title}
                 onChange={(e) => setProduct({ ...product, title: e.target.value })}
@@ -289,11 +289,11 @@ const AddProduct = () => {
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
               <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
-                Select a category*
+                Kategoriyani tanlang*
               </p>
               <Select onValueChange={(value) => setProduct({ ...product, category: value })}>
                 <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Kategoriyani tanlang" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((value) => {
@@ -311,10 +311,10 @@ const AddProduct = () => {
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
               <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-                Price*
+                Narxi*
               </p>
               <input
-                placeholder="$0.00"
+                placeholder="0 so'm"
                 className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={product.price}
                 onChange={(e) => setProduct({ ...product, price: e.target.value })}
@@ -326,10 +326,10 @@ const AddProduct = () => {
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
               <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-                Description*
+                Tavsif*
               </p>
               <textarea
-                placeholder="Enter product description"
+                placeholder="Mahsulot tavsifini kiriting"
                 className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none min-h-36 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={product.description}
                 onChange={(e) => setProduct({ ...product, description: e.target.value })}
@@ -346,7 +346,7 @@ const AddProduct = () => {
               onClick={handleCancel}
               disabled={loading}
             >
-              <span className="truncate">Cancel</span>
+              <span className="truncate">Bekor qilish</span>
             </Button>
             <Button
               type='button'
@@ -355,7 +355,7 @@ const AddProduct = () => {
               onClick={handleCreateProduct}
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'add product'}
+              {loading ? 'Yuklanmoqda...' : "Mahsulot qo'shish"}
             </Button>
           </div>
         </div>

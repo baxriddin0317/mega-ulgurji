@@ -71,10 +71,10 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
         ...prevCategory,
         categoryImgUrl: prevCategory.categoryImgUrl.filter((url) => url.path !== imageUrl),
       }));
-      toast.success("Image deleted successfully");
+      toast.success("Rasm muvaffaqiyatli o'chirildi");
     } catch (error) {
       console.error("Error deleting image:", error);
-      toast.error("Failed to delete image");
+      toast.error("Rasmni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -88,20 +88,20 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
       setSubmitUploading(true);
       try {
         await updateCategory(id, updatedCategory);
-        toast.success('Category Updated Successfully');
+        toast.success('Kategoriya muvaffaqiyatli yangilandi');
         setSubmitUploading(false);
         navigate.push('/admin/categories');
       } catch (error) {
         setSubmitUploading(false);
         if (error instanceof FirebaseError) {
-          toast.error("Update Category failed");
+          toast.error("Kategoriyani yangilashda xatolik yuz berdi");
         }
       }
     }
   };
 
   if(loading){
-    return <div className="flex items-center justify-center">Loading...</div>
+    return <div className="flex items-center justify-center">Yuklanmoqda...</div>
   }
 
   return (
@@ -133,7 +133,7 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
             htmlFor='upload'
           >
             <GrGallery />
-            <span>{false ? 'Uploading...' : 'Upload img'}</span>
+            <span>{false ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
           </label>
           <input 
             className='sr-only' 
@@ -143,18 +143,18 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
             onChange={(e) => handleImageUpload(e.target.files)}
             accept="image/*"
           />
-          {imageUploading && <p>loading...</p>}
+          {imageUploading && <p>Yuklanmoqda...</p>}
         </div>
         {updatedCategory.categoryImgUrl.length === 0 && (
-          <p className="text-red-500 text-sm">At least one product image is required</p>
+          <p className="text-red-500 text-sm">Kamida bitta mahsulot rasmi talab qilinadi</p>
         )}
       </div>
       {/* category name */}
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
-          <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Category name*</p>
+          <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Kategoriya nomi*</p>
           <input
-            placeholder="Enter category name"
+            placeholder="Kategoriya nomini kiriting"
             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
             value={updatedCategory.name}
             onChange={(e) => setUpdatedCategory({ ...updatedCategory, name: e.target.value })}
@@ -164,9 +164,9 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
       {/* category description */}
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
-          <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Description</p>
+          <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Tavsif</p>
           <textarea
-            placeholder="Enter category description"
+            placeholder="Kategoriya tavsifini kiriting"
             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none min-h-36 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
             value={updatedCategory.description}
             onChange={(e) => setUpdatedCategory({ ...updatedCategory, description: e.target.value })}
@@ -181,7 +181,7 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
           onClick={handleCancel}
           className="bg-[#e7edf3] rounded-xl h-10 px-4 cursor-pointer text-sm font-bold leading-normal tracking-[0.015em]"
         >
-          <span className="truncate">Cancel</span>
+          <span className="truncate">Bekor qilish</span>
         </Button>
         <Button
           type='button'
@@ -189,7 +189,7 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
           onClick={handleUpdate}
           className="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
         >
-          {submitUploading ? 'Loading..' : 'Update category'}
+          {submitUploading ? 'Yuklanmoqda..' : 'Kategoriyani yangilash'}
         </Button>
       </div> 
     </>

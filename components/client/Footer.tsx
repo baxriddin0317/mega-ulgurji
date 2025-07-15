@@ -6,8 +6,8 @@ import { FiInstagram } from 'react-icons/fi'
 
 const Footer = () => {
   return (
-    <footer className=' py-20'>
-      <div data-aos="fade-up" className='container flex justify-between mx-auto px-4'>
+    <footer className='bg-black py-20'>
+      <div className='container flex justify-between mx-auto px-4'>
         <div className='relative w-[192px] h-12'>
           <Image className='absolute object-cover' src={'/images/black-logo.png'} fill alt=''  />
         </div>

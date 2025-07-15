@@ -1,5 +1,6 @@
 import Footer from '@/components/client/Footer';
 import React from 'react'
+import FixedCartButton from '@/components/client/FixedCartButton';
 
 export default function LandingLayout({
   children,
@@ -9,6 +10,7 @@ export default function LandingLayout({
   return (
     <>
       {children}
+      <FixedCartButton />
       <Footer />
     </>
   )

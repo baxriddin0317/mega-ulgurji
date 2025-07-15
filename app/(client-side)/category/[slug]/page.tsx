@@ -1,4 +1,4 @@
-import CategoryContent from '@/components/client/CategoryContent'
+import CategoryContent from "@/components/contents/CategoryContent"
 
 const Category = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const {slug} = await params

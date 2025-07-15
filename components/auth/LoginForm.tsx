@@ -83,7 +83,7 @@ const LoginForm = () => {
           reset()
           
           // Success message
-          toast.success("Login Successfully")
+          toast.success("Tizimga muvaffaqiyatli kirdingiz")
           console.log('User data:', userData)
 
           // Navigation based on user role
@@ -93,7 +93,7 @@ const LoginForm = () => {
             router.push('/')
           }
         } else {
-          toast.error("User not found or invalid data")
+          toast.error("Foydalanuvchi topilmadi yoki ma'lumotlar noto'g'ri")
         }
         
         setLoading(false)
@@ -101,7 +101,7 @@ const LoginForm = () => {
         unsubscribe()
       }, (error) => {
         console.error('Firestore error:', error)
-        toast.error("Failed to fetch user data")
+        toast.error("Foydalanuvchi ma'lumotlarini olishda xatolik yuz berdi")
         setLoading(false)
       })
 
@@ -111,16 +111,16 @@ const LoginForm = () => {
         // Handle specific Firebase auth errors
         switch (error.code) {
           case 'auth/invalid-credential':
-            toast.error("Email yoki parol noto‘g‘ri")
+            toast.error("Email noto‘g‘ri yoki parol xato")
             break
           case 'auth/invalid-email':
-            toast.error("Invalid email address")
+            toast.error("Email manzili noto‘g‘ri")
             break
           case 'auth/too-many-requests':
-            toast.error("Too many failed attempts. Please try again later")
+            toast.error("Juda ko'p urinish. Iltimos, keyinroq qayta urinib ko'ring")
             break
           default:
-            toast.error("Login failed. Please try again")
+            toast.error("Kirish amalga oshmadi. Iltimos, qayta urinib ko'ring")
         }
       } else {
         toast.error("Noma'lum xatolik yuz berdi")

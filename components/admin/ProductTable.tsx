@@ -13,9 +13,10 @@ import toast from 'react-hot-toast';
 
 interface ProductTableProps {
   search: string;
+  category?: string;
 }
 
-const ProductTable = ({ search }: ProductTableProps) => {
+const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProductStore();
   
@@ -23,16 +24,19 @@ const ProductTable = ({ search }: ProductTableProps) => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Search filter logic
+  // Search + Category filter logic
   const filteredProducts = useMemo(() => {
-    if (search.length < 2) {
-      return products;
+    let filtered = products;
+    if (category !== 'all') {
+      filtered = filtered.filter(product => product.category === category);
     }
-    
-    return products.filter(product =>
-      product.title.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [products, search]);
+    if (search.length >= 2) {
+      filtered = filtered.filter(product =>
+        product.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [products, search, category]);
 
   const handleEdit = (id: string) => {
     router.push(`/admin/update-product/${id}`);
@@ -49,7 +53,7 @@ const ProductTable = ({ search }: ProductTableProps) => {
       await Promise.all(deleteImagePromises);
 
       await deleteProduct(item.id);
-      toast.success('Product Deleted Successfully');
+      toast.success('Mahsulot muvaffaqiyatli o‘chirildi');
     }
   };
   

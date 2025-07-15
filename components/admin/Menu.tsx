@@ -5,6 +5,7 @@ import React from 'react'
 import { BiFolderPlus } from 'react-icons/bi'
 import { LuBookPlus } from 'react-icons/lu'
 import { BiUser } from 'react-icons/bi'
+import { ShoppingCart } from 'lucide-react';
 
 const Menu = () => {
   const pathname = usePathname();
@@ -44,6 +45,10 @@ const Menu = () => {
           </svg>
         </div>
         <p className="text-black text-sm font-medium leading-normal">Mahsulotlar</p>
+      </Link>
+      <Link href={'/admin/orders'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/orders') ? 'bg-brand-gray-100' : ''}`}>
+        <ShoppingCart size={24} />
+        <p className="text-black text-sm font-medium leading-normal">Buyurtmalar</p>
       </Link>
       <Link href={'/admin/create-category'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-category') ? 'bg-brand-gray-100' : ''}`}>
         <LuBookPlus size={24} />

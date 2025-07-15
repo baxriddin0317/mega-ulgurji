@@ -117,7 +117,7 @@ const SignUpForm = () => {
       reset()
 
       // Success message
-      toast.success("Signup Successfully")
+      toast.success("Ro'yxatdan muvaffaqiyatli o'tdingiz")
       
       setLoading(false)
       
@@ -130,22 +130,22 @@ const SignUpForm = () => {
         // Handle specific Firebase auth errors
         switch (error.code) {
           case 'auth/email-already-in-use':
-            toast.error("This email is already registered. Please use a different email or login.")
+            toast.error("Bu email allaqachon ro'yxatdan o'tgan. Iltimos, boshqa email kiriting yoki tizimga kiring.")
             break
           case 'auth/weak-password':
-            toast.error("Password is too weak. Please use at least 6 characters.")
+            toast.error("Parol juda oddiy. Iltimos, kamida 6 ta belgidan foydalaning.")
             break
           case 'auth/invalid-email':
-            toast.error("Invalid email address format")
+            toast.error("Email manzili formati noto'g'ri")
             break
           case 'auth/operation-not-allowed':
-            toast.error("Email/password accounts are not enabled")
+            toast.error("Email/parol orqali ro'yxatdan o'tish yoqilmagan")
             break
           case 'auth/network-request-failed':
-            toast.error("Network error. Please check your connection")
+            toast.error("Tarmoqda xatolik. Iltimos, internet aloqangizni tekshiring")
             break
           default:
-            toast.error("Signup failed. Please try again")
+            toast.error("Ro'yxatdan o'tish amalga oshmadi. Iltimos, qayta urinib ko'ring")
         }
       } else {
         toast.error("Noma'lum xatolik yuz berdi")

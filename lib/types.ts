@@ -27,3 +27,14 @@ export interface CategoryI {
   categoryImgUrl: ImageT[];
   storageFileId: string;
 }
+
+export interface Order {
+  id: string;
+  clientName: string;
+  clientPhone: string;
+  date: Timestamp;
+  basketItems: ProductT[];
+  totalPrice: number;
+  totalQuantity: number;
+  userUid: string; // Add this field to associate order with user
+}

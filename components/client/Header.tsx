@@ -14,11 +14,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/store/authStore';
 
-const Header = () => {
+const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
   const [fixed, setFixed] = useState(false);
   const { isAuthenticated, isAdmin, logout } = useAuthStore();
 
- useEffect(() => {
+  useEffect(() => {
+    if (forceFixed) {
+      setFixed(true);
+      return;
+    }
     const handleScroll = () => {
       if (document.documentElement.scrollTop > 100) {
         setFixed(true);
@@ -32,7 +36,7 @@ const Header = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [forceFixed]);
 
   return (
     <header className={`${fixed ? 'py-4 bg-black/80 rounded-full' : 'py-8'} sticky max-w-7xl w-full flex items-center justify-between mx-auto transition-all duration-500 px-6 md:px-8 lg:px-20 top-4 z-50`}>
@@ -58,6 +62,9 @@ const Header = () => {
                   <Link href="/admin">Adminga o&apos;tish</Link>
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem className='cursor-pointer'>
+                <Link href="/history-order">Buyurtmalar tarixi</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem className='cursor-pointer' onClick={logout}>Chiqish</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -79,6 +86,7 @@ const Header = () => {
                   {isAdmin() && (
                     <Link href="/admin" className="text-lg text-[#d1d1d1] hover:text-white">Adminga o&apos;tish</Link>
                   )}
+                  <Link href="/history-order" className="text-lg text-[#d1d1d1] hover:text-white">Buyurtmalar tarixi</Link>
                   <button onClick={logout} className="text-lg text-[#d1d1d1] hover:text-white cursor-pointer">Chiqish</button>
                 </div>
               )}

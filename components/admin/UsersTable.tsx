@@ -63,16 +63,16 @@ const UsersTable = ({ search }: UsersTableProps) => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success('User deleted successfully');
+        toast.success('Foydalanuvchi muvaffaqiyatli o‘chirildi');
         if (fetchAllUsers) fetchAllUsers();
       } else {
-        toast.error(data.error || 'Failed to delete user');
+        toast.error(data.error || 'Foydalanuvchini o‘chirishda xatolik yuz berdi');
       }
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message || 'Error deleting user');
+        toast.error(error.message || 'Foydalanuvchini o‘chirishda xatolik yuz berdi');
       } else {
-        toast.error('Error deleting user');
+        toast.error('Foydalanuvchini o‘chirishda xatolik yuz berdi');
       }
     } finally {
       setLoadingUserId(null);
@@ -84,13 +84,13 @@ const UsersTable = ({ search }: UsersTableProps) => {
     try {
       const userDoc = doc(fireDB, 'user', user.uid);
       await updateDoc(userDoc, { role: newRole });
-      toast.success('User role updated');
+      toast.success('Foydalanuvchi roli yangilandi');
       if (fetchAllUsers) fetchAllUsers();
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message || 'Error updating role');
+        toast.error(error.message || 'Rolni yangilashda xatolik yuz berdi');
       } else {
-        toast.error('Error updating role');
+        toast.error('Rolni yangilashda xatolik yuz berdi');
       }
     } finally {
       setLoadingUserId(null);

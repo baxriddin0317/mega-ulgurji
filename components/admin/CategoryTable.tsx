@@ -50,7 +50,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
       });
       await Promise.all(deleteImagePromises);
       deleteCategory(item.id);
-      toast.success("Product Deleted Successfully");
+      toast.success("Kategoriya muvaffaqiyatli o‘chirildi");
     }
   };
 

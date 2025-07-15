@@ -1,9 +1,9 @@
 import { Clock, Mail, MapPin, Phone } from 'lucide-react'
 import React from 'react'
 
-const LocationSection = () => {
+const LocationSection = ({ forceColor = false }: { forceColor?: boolean }) => {
   return (
-    <section id="location" className="py-16 mt-20 md:mt-32 lg:mt-44">
+    <section id="location" className={`${forceColor ? 'bg-black' : ''} py-16 mt-20 md:mt-32 lg:mt-44`}>
       <div className="container mx-auto px-4">
         <div data-aos="fade-up" className="text-center mb-12">
           <h2 className="text-[#d1d1d1] text-3xl font-bold mb-4">Bizning manzil</h2>

@@ -63,6 +63,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
             <tr className="bg-white">
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Nomi</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Subkategoriyalar</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">Taxrirlash</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
             </tr>
@@ -82,6 +83,22 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                <td className="h-20 px-4 py-2 text-sm font-normal">
                   <div className='size-16 relative overflow-hidden rounded-2xl'>
                     <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
+                  </div>
+                </td>
+                <td className="h-20 px-4 py-2 text-sm">
+                  <div className="flex flex-wrap gap-2">
+                    {category.subcategory && category.subcategory.length > 0 ? (
+                      category.subcategory.map((tag: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="rounded-md bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium"
+                        >
+                          {tag}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 text-xs">-</span>
+                    )}
                   </div>
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
@@ -111,7 +128,6 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-black">{category.name}</h3>
             </div>
-            
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Rasm</span>
@@ -119,7 +135,23 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                   <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
                 </div>
               </div>
-              
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-sm text-gray-500">Subkategoriya</span>
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {category.subcategory && category.subcategory.length > 0 ? (
+                    category.subcategory.map((tag: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="rounded-md bg-gray-100 text-gray-700 px-3 py-1 text-xs font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-400 text-xs">-</span>
+                  )}
+                </div>
+              </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
                 <Button
                   onClick={() => handleEdit(category.id)}

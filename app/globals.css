@@ -127,3 +127,7 @@
     @apply bg-black/90 text-foreground;
   }
 }
+
+@theme {
+  --breakpoint-custom: 860px;
+}

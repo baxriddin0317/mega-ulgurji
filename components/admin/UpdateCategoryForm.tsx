@@ -16,12 +16,14 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
   const navigate = useRouter();
   const [imageUploading, setImageUploading] = useState(false);
   const [submitUploading, setSubmitUploading] = useState(false);
+  const [tagInput, setTagInput] = useState("");
   const [updatedCategory, setUpdatedCategory] = useState<CategoryI>({
     id: id || "",
     name: "",
     description: "",
     categoryImgUrl: [] as ImageT[],
-    storageFileId: ""
+    storageFileId: "",
+    subcategory: []
   });
   const {loading, category, fetchSingleCategory, updateCategory } = useCategoryStore();
 
@@ -38,7 +40,8 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
         name: category.name,
         description: category.description,
         categoryImgUrl: category.categoryImgUrl,
-        storageFileId: category.storageFileId
+        storageFileId: category.storageFileId,
+        subcategory: category.subcategory || []
       });
     }
   }, [category]);
@@ -78,6 +81,30 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
     }
   };
 
+  // Tag/Subcategory handlers
+  const handleAddTag = () => {
+    if (tagInput.trim() === "") {
+      toast.error("Subkategoriya bo'sh bo'lishi mumkin emas");
+      return;
+    }
+    if (updatedCategory.subcategory && updatedCategory.subcategory.includes(tagInput.trim())) {
+      toast.error("Bu subkategoriya allaqachon mavjud");
+      return;
+    }
+    setUpdatedCategory({
+      ...updatedCategory,
+      subcategory: [...(updatedCategory.subcategory || []), tagInput.trim()]
+    });
+    setTagInput("");
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setUpdatedCategory({
+      ...updatedCategory,
+      subcategory: (updatedCategory.subcategory || []).filter(t => t !== tag)
+    });
+  };
+
   // handle cencel
   const handleCancel = () => {
     navigate.back();
@@ -85,6 +112,14 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
 
   const handleUpdate = async () => {
     if (id) {
+      if (
+        updatedCategory.name === "" ||
+        updatedCategory.categoryImgUrl.length === 0 ||
+        updatedCategory.subcategory.length < 1
+      ) {
+        toast.error("Barcha maydonlarni to'ldiring");
+        return;
+      }
       setSubmitUploading(true);
       try {
         await updateCategory(id, updatedCategory);
@@ -160,6 +195,42 @@ const UpdateCategoryForm = ({ id }: { id: string }) => {
             onChange={(e) => setUpdatedCategory({ ...updatedCategory, name: e.target.value })}
           />
         </label>
+      </div>
+      {/* subcategory/tags */}
+      <div className="flex flex-col max-w-[480px] gap-4">
+        <div className="flex items-end space-x-2">
+          <label className="flex flex-col min-w-40 flex-1">
+            <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Subkategoriya qo&apos;shish</p>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="Subkategoriya qo'shish"
+              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
+            />
+          </label>
+          <Button onClick={handleAddTag} type="button" className="h-13 border-none bg-black hover:bg-gray-800 text-white px-4 py-2 font-bold rounded-xl text-nowrap text-sm">
+            Qo&apos;shish
+          </Button>
+        </div>
+        {updatedCategory.subcategory.length > 0 && <div className="mt-2 flex flex-wrap gap-2">
+          {updatedCategory.subcategory.map((tag, index) => (
+            <div
+              key={index}
+              className="flex items-center bg-[#e7edf3] text-brand-black-text px-3 py-1 rounded-xl text-sm"
+            >
+              {tag}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => handleRemoveTag(tag)}
+                className="ml-2 text-black hover:text-red-500 px-2 py-0 h-6"
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+        </div>}
       </div>
       {/* category description */}
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">

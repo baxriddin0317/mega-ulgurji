@@ -14,9 +14,10 @@ import toast from 'react-hot-toast';
 interface ProductTableProps {
   search: string;
   category?: string;
+  subcategory?: string;
 }
 
-const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
+const ProductTable = ({ search, category = 'all', subcategory = 'all' }: ProductTableProps) => {
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProductStore();
   
@@ -24,11 +25,14 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Search + Category filter logic
+  // Search + Category + Subcategory filter logic
   const filteredProducts = useMemo(() => {
     let filtered = products;
     if (category !== 'all') {
       filtered = filtered.filter(product => product.category === category);
+    }
+    if (subcategory !== 'all') {
+      filtered = filtered.filter(product => product.subcategory === subcategory);
     }
     if (search.length >= 2) {
       filtered = filtered.filter(product =>
@@ -36,7 +40,7 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
       );
     }
     return filtered;
-  }, [products, search, category]);
+  }, [products, search, category, subcategory]);
 
   const handleEdit = (id: string) => {
     router.push(`/admin/update-product/${id}`);
@@ -60,7 +64,7 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
   return (
      <div className="w-full px-4 py-3">
       {/* Desktop and Tablet view */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="hidden custom:block overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="min-w-full w-full">
           <thead>
             <tr className="bg-white">
@@ -68,6 +72,7 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Narxi</th>
               <th className="px-4 py-3 text-left text-black text-sm max-w-[100px] font-medium">Kategoriya</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Subkategoriya</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">Tahrirlash</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
             </tr>
@@ -91,9 +96,18 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
                 </td>
                 <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{FormattedPrice(product.price)} UZS</td>
                 <td className="max-w-xs h-20 px-4 py-2 text-sm font-normal">
-                  <span className="flex min-w-[84px] cursor-pointer items-center justify-center rounded-xl h-8 px-4 bg-gray-100 text-black text-sm font-medium w-full">
+                  <span className="flex min-w-[84px] text-center cursor-pointer items-center justify-center rounded-xl min-h-8 px-1 bg-gray-100 text-black text-sm font-medium w-full">
                     {product.category}
                   </span>
+                </td>
+                <td className="h-20 px-4 py-2 text-sm">
+                  {product.subcategory ? (
+                    <span className="flex min-w-[84px] text-center cursor-pointer items-center justify-center rounded-xl min-h-8 px-1 bg-gray-100 text-black text-sm font-medium w-full">
+                      {product.subcategory}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 text-xs">----</span>
+                  )}
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
                   <Button onClick={() => handleEdit(product.id)} className='flex items-center justify-center mx-auto cursor-pointer' variant={'ghost'}>
@@ -112,7 +126,7 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
       </div>
 
       {/* Mobile view - Card layout */}
-      <div className="md:hidden space-y-4">
+      <div className="custom:hidden space-y-4">
         {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
             {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
@@ -134,11 +148,20 @@ const ProductTable = ({ search, category = 'all' }: ProductTableProps) => {
               
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Turi</span>
-                <button className="rounded-xl bg-gray-100 text-xs px-3 py-1">
+                <button className="rounded-xl bg-gray-100 text-sm px-3 py-1">
                   {product.category}
                 </button>
               </div>
-              
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-sm text-gray-500">Subkategoriya</span>
+                {product.subcategory ? (
+                  <span className="rounded-xl bg-gray-100 text-sm px-3 py-1">
+                    {product.subcategory}
+                  </span>
+                ) : (
+                  <span className="text-gray-400 text-sm">----</span>
+                )}
+              </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
                 <Button
                   onClick={() => handleEdit(product.id)}

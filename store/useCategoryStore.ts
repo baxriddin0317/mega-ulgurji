@@ -46,7 +46,8 @@ const useCategoryStore = create<CategoryStoreI>((set) => ({
             name: categoryData.name,
             description: categoryData.description,
             categoryImgUrl: categoryData.categoryImgUrl,
-            storageFileId: categoryData.storageFileId
+            storageFileId: categoryData.storageFileId,
+            subcategory: categoryData.subcategory
           } as CategoryI,
           loading: false
         });

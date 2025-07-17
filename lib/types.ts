@@ -18,6 +18,7 @@ export interface ProductT {
   time: Timestamp;
   date: Timestamp;
   storageFileId: string;
+  subcategory?: string;
 }
 
 export interface CategoryI {
@@ -26,6 +27,7 @@ export interface CategoryI {
   description: string;
   categoryImgUrl: ImageT[];
   storageFileId: string;
+  subcategory: string[]; // Added for subcategories/tags
 }
 
 export interface Order {

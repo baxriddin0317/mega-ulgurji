@@ -21,7 +21,8 @@ const CreateCategory = () => {
     name: "",
     description: "",
     categoryImgUrl: [] as ImageT[],
-    storageFileId: ""
+    storageFileId: "",
+    subcategory: []
   });
   const { addCategory, loading } = useCategoryStore();
   const navigate = useRouter();
@@ -32,6 +33,7 @@ const CreateCategory = () => {
     removeCategoryDraft,
     hasCategoryDraft 
   } = useDraftStore();
+  const [tagInput, setTagInput] = useState("");
 
   // Component yuklanganda draft'ni tekshirish
   useEffect(() => {
@@ -49,7 +51,8 @@ const CreateCategory = () => {
         name: "",
         description: "",
         categoryImgUrl: [],
-        storageFileId: ""
+        storageFileId: "",
+        subcategory: []
       });
       toast.success("Draft muvaffaqiyatli tiklandi");
     }
@@ -141,17 +144,43 @@ const CreateCategory = () => {
       name: "",
       description: "",
       categoryImgUrl: [],
-      storageFileId: ""
+      storageFileId: "",
+      subcategory: []
     });
     
     navigate.back();
   };
 
+    // Tag/Subcategory handlers
+    const handleAddTag = () => {
+      if (tagInput.trim() === "") {
+        toast.error("Subkategoriya bo'sh bo'lishi mumkin emas");
+        return;
+      }
+      if (newCategory.subcategory && newCategory.subcategory.includes(tagInput.trim())) {
+        toast.error("Bu subkategoriya allaqachon mavjud");
+        return;
+      }
+      setNewCategory({
+        ...newCategory,
+        subcategory: [...(newCategory.subcategory || []), tagInput.trim()]
+      });
+      setTagInput("");
+    };
+  
+    const handleRemoveTag = (tag: string) => {
+      setNewCategory({
+        ...newCategory,
+        subcategory: (newCategory.subcategory || []).filter(t => t !== tag)
+      });
+    };
+
   // submit
   const handleAddCategory = async () => {
     if (
       newCategory.name == "" ||
-      newCategory.categoryImgUrl.length == 0
+      newCategory.categoryImgUrl.length == 0 || 
+      newCategory.subcategory.length < 1
     ) {
       return toast.error("Barcha maydonlarni to'ldiring");
     }
@@ -166,7 +195,7 @@ const CreateCategory = () => {
       toast.error("Kategoriya qo'shilmadi");
     }
   };
-  
+
   return (
     <>
       {/* Draft modal */}
@@ -255,6 +284,43 @@ const CreateCategory = () => {
                 onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
               />
             </label>
+          </div>
+          {/* subcategory/tags */}
+          <div className="flex flex-col max-w-[480px] gap-4">
+            <div className="flex items-end space-x-2">
+              <label className="flex flex-col min-w-40 flex-1">
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Kategoriya nomi*</p>
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  placeholder="Subkategoriya qo'shish"
+                  className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
+                />
+              </label>
+              <Button onClick={handleAddTag} type="button" className="h-13 border-none bg-black hover:bg-gray-800 text-white px-4 py-2 font-bold rounded-xl text-nowrap text-sm">
+                Qo&apos;shish
+              </Button>
+            </div>
+            {/* Display subcategory */}
+            {newCategory.subcategory.length > 0 && <div className="mt-2 flex flex-wrap gap-2">
+              {newCategory.subcategory.map((tag, index) => (
+                <div
+                  key={index}
+                  className="flex items-center bg-[#e7edf3] text-brand-black-text px-3 py-1 rounded-xl text-sm"
+                >
+                  {tag}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="ml-2 text-black hover:text-red-500 px-2 py-0 h-6"
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>}
           </div>
           {/* category description */}
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">

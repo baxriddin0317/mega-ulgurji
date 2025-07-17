@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { CgClose } from "react-icons/cg";
 import { GrGallery } from "react-icons/gr";
+import { CategoryI } from "@/lib/types";
 
 const emptyTimestamp = new Timestamp(0, 0);
 
@@ -23,6 +24,7 @@ const UpdateProductForm = ({ id }: { id: string }) => {
   const [submitUploading, setSubmitUploading] = useState(false);
   const { product, loading, fetchSingleProduct, updateProduct } = useProductStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const [selectedCategory, setSelectedCategory] = useState<CategoryI | null>(null);
 
   const [updatedProduct, setUpdatedProduct] = useState<ProductT>({
     id: id || '',
@@ -34,7 +36,8 @@ const UpdateProductForm = ({ id }: { id: string }) => {
     quantity: 0,
     time: product?.time || emptyTimestamp,
     date: product?.date || emptyTimestamp,
-    storageFileId: ''
+    storageFileId: '',
+    subcategory: ''
   });
 
   useEffect(() => {
@@ -59,10 +62,14 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         quantity: product.quantity,
         time: product.time,
         date: product.date,
-        storageFileId: product.storageFileId
+        storageFileId: product.storageFileId,
+        subcategory: product.subcategory || ''
       });
+      // Kategoriya obyektini ham tanlab qo'yamiz
+      const cat = categories.find(c => c.name === product.category);
+      setSelectedCategory(cat || null);
     }
-  }, [product]);
+  }, [product, categories]);
   
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -109,7 +116,7 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         await updateProduct(id, updatedProduct);
         toast.success('Mahsulot muvaffaqiyatli yangilandi');
         setSubmitUploading(false);
-        navigate.push('/admin');
+        navigate.push('/admin/products');
       } catch (error) {
         if (error instanceof FirebaseError) {
         setSubmitUploading(false);
@@ -189,7 +196,11 @@ const UpdateProductForm = ({ id }: { id: string }) => {
           <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
             Kategoriyani tanlang*
           </p>
-          <Select onValueChange={(value) => setUpdatedProduct({ ...updatedProduct, category: value })}>
+          <Select onValueChange={(value) => {
+            setUpdatedProduct({ ...updatedProduct, category: value, subcategory: '' });
+            const cat = categories.find(c => c.name === value);
+            setSelectedCategory(cat || null);
+          }}>
             <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
               <SelectValue placeholder="Kategoriyani tanlang" />
             </SelectTrigger>
@@ -204,6 +215,28 @@ const UpdateProductForm = ({ id }: { id: string }) => {
           </Select>
         </label>
       </div>
+      {/* Subcategory */}
+      {selectedCategory && selectedCategory.subcategory && selectedCategory.subcategory.length > 0 && (
+        <div className="flex max-w-[480px] flex-wrap items-end gap-4">
+          <label className="flex flex-col min-w-40 flex-1">
+            <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
+              Subkategoriya tanlang*
+            </p>
+            <Select onValueChange={(value) => {
+              setUpdatedProduct({ ...updatedProduct, subcategory: value });
+            }}>
+              <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
+                <SelectValue placeholder="Subkategoriya tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {selectedCategory.subcategory.map((sub: string, idx: number) => (
+                  <SelectItem className='capitalize' key={idx} value={sub}>{sub}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+      )}
 
       {/* Price */}
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">

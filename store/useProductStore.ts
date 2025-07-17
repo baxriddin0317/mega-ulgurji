@@ -57,7 +57,8 @@ const useProductStore = create<ProductStore>((set) => ({
             quantity: productData.quantity,
             time: productData.time,
             date: productData.date,
-            storageFileId: productData.storageFileId
+            storageFileId: productData.storageFileId,
+            subcategory: productData.subcategory
           } as ProductT,
           loading: false
         });

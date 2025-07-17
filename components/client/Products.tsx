@@ -33,7 +33,7 @@ const Products = ({products}: Props) => {
 
   const chunkedProducts = chunkArray(products, chunkSize);
   return (
-    <section className='py-20 px-4' id="products">
+    <section className='pt-5 pb-20 px-4' id="products">
       <div className="max-w-7xl mx-auto flex flex-col gap-8 sm:gap-12 lg:gap-14">
         {chunkedProducts.map((group, index) => (
           <div data-aos="fade-up" className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-10' key={index}>

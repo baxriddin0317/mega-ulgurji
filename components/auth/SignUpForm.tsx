@@ -248,12 +248,8 @@ const SignUpForm = () => {
               {...register('password', {
                 required: "Parol majburiy kiritilishi kerak",
                 minLength: {
-                  value: 6,
-                  message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak"
-                },
-                pattern: {
-                  value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]/,
-                  message: "Parolda kamida bitta harf va bitta raqam bo'lishi kerak"
+                  value: 4,
+                  message: "Parol kamida 4 ta belgidan iborat bo'lishi kerak"
                 }
               })}
             />

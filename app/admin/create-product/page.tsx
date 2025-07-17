@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { CgClose } from 'react-icons/cg';
 import { GrGallery } from 'react-icons/gr';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ImageT } from '@/lib/types';
+import { CategoryI, ImageT } from '@/lib/types';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import useDraftStore from '@/store/useDraftStore';
@@ -20,6 +20,8 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [showDraftModal, setShowDraftModal] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryI | null>(null);
+  const { categories, fetchCategories } = useCategoryStore();
   // product state
   const [product, setProduct] = useState({
     title: "",
@@ -34,7 +36,8 @@ const AddProduct = () => {
       day: "2-digit",
       year: "numeric",
     }),
-    storageFileId: ""
+    storageFileId: "",
+    subcategory: ""
   });
 
   const { 
@@ -44,11 +47,19 @@ const AddProduct = () => {
     removeProductDraft,
     hasProductDraft 
   } = useDraftStore();
-  const { categories, fetchCategories } = useCategoryStore();
+  
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  // get sub category
+  const handleGetSubCategory = (value:string) => {
+    const findCategory = categories.find(c => c.name == value);
+    if(findCategory){
+      setSelectedCategory(findCategory)
+    }
+  }
 
   // Component yuklanganda draft'ni tekshirish
   useEffect(() => {
@@ -157,7 +168,8 @@ const AddProduct = () => {
         day: "2-digit",
         year: "numeric",
       }),
-      storageFileId: ""
+      storageFileId: "",
+      subcategory: ""
     });
     
     navigate.back();
@@ -291,7 +303,10 @@ const AddProduct = () => {
               <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
                 Kategoriyani tanlang*
               </p>
-              <Select onValueChange={(value) => setProduct({ ...product, category: value })}>
+              <Select onValueChange={(value) => {
+                  setProduct({ ...product, category: value, subcategory: "" });
+                  handleGetSubCategory(value);
+                }}>
                 <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
                   <SelectValue placeholder="Kategoriyani tanlang" />
                 </SelectTrigger>
@@ -306,6 +321,28 @@ const AddProduct = () => {
               </Select>
             </label>
           </div>
+          {/* Subcategory */}
+          {selectedCategory && selectedCategory.subcategory && selectedCategory.subcategory.length > 0 && (
+            <div className="flex max-w-[480px] flex-wrap items-end gap-4">
+              <label className="flex flex-col min-w-40 flex-1">
+                <p className="text-[#0e141b] text-base font-medium leading-normal pb-2">
+                  Subkategoriya tanlang*
+                </p>
+                <Select onValueChange={(value) => {
+                  setProduct({ ...product, subcategory: value });
+                }}>
+                  <SelectTrigger className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !max-h-[53px] placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal cursor-pointer">
+                    <SelectValue placeholder="Subkategoriya tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedCategory.subcategory.map((sub, idx) => (
+                      <SelectItem className='capitalize' key={idx} value={sub}>{sub}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+            </div>
+          )}
 
           {/* Price */}
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">

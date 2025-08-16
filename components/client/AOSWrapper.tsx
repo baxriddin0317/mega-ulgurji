@@ -19,7 +19,7 @@ function AOSWrapper({ children }: { children: React.ReactNode }) {
 
   useScrollBodyColor({
     whiteSections: ['#category', '#products'],
-    transitionDuration: '0.7s'
+    transitionDuration: '0.5s'
   });
 
   return <>{children}</>;

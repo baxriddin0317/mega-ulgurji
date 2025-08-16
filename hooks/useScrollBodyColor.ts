@@ -33,7 +33,7 @@ export const useScrollBodyColor = ({
           const elementHeight = rect.height;
           const visibilityPercentage = visibleHeight / elementHeight;
 
-          if (visibilityPercentage > 0.1) {
+          if (visibilityPercentage > 0.01) {
             shouldBeWhite = true;
           }
         }

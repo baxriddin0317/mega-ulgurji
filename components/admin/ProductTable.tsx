@@ -91,7 +91,13 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                 </td>
                 <td className="h-20 px-4 py-2 text-sm font-normal">
                   <div className='size-16 relative overflow-hidden rounded-2xl'>
-                    <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
+                    {product.productImageUrl && product.productImageUrl.length > 0 ? (
+                      <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
+                    ) : (
+                      <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
+                        Rasm yo'q
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{FormattedPrice(product.price)} UZS</td>
@@ -142,7 +148,13 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Rasm</span>
                 <div className='size-16 relative overflow-hidden rounded-2xl'>
-                  <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
+                  {product.productImageUrl && product.productImageUrl.length > 0 ? (
+                    <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
+                  ) : (
+                    <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
+                      Rasm yo'q
+                    </div>
+                  )}
                 </div>
               </div>
               

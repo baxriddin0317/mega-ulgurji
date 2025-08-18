@@ -82,7 +82,13 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                 </td>
                <td className="h-20 px-4 py-2 text-sm font-normal">
                   <div className='size-16 relative overflow-hidden rounded-2xl'>
-                    <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
+                    {category.categoryImgUrl && category.categoryImgUrl.length > 0 ? (
+                      <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
+                    ) : (
+                      <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
+                        Rasm yo'q
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="h-20 px-4 py-2 text-sm">
@@ -132,7 +138,13 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Rasm</span>
                 <div className='size-16 relative overflow-hidden rounded-2xl'>
-                  <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
+                  {category.categoryImgUrl && category.categoryImgUrl.length > 0 ? (
+                    <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
+                  ) : (
+                    <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
+                      Rasm yo'q
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between items-center pt-2">

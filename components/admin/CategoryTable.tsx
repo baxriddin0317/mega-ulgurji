@@ -86,7 +86,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                       <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
                     ) : (
                       <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
-                        Rasm yo'q
+                        Rasm yo&apos;q
                       </div>
                     )}
                   </div>
@@ -142,7 +142,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
                     <Image className='absolute size-full object-cover' src={category.categoryImgUrl[0].url} fill alt={category.name} />
                   ) : (
                     <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
-                      Rasm yo'q
+                      Rasm yo&apos;q
                     </div>
                   )}
                 </div>

@@ -95,7 +95,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                       <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
                     ) : (
                       <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
-                        Rasm yo'q
+                        Rasm yo&apos;q
                       </div>
                     )}
                   </div>
@@ -152,7 +152,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                     <Image className='absolute size-full object-cover' src={product.productImageUrl[0].url} fill alt={product.title} />
                   ) : (
                     <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>
-                      Rasm yo'q
+                      Rasm yo&apos;q
                     </div>
                   )}
                 </div>

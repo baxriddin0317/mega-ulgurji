@@ -68,6 +68,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
         <table className="min-w-full w-full">
           <thead>
             <tr className="bg-white">
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">T/r</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Nomi</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Narxi</th>
@@ -80,12 +81,15 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
           <tbody>
             {filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-500">
+                <td colSpan={8} className="h-20 px-4 py-2 text-center text-gray-500">
                   {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
                 </td>
               </tr>
             ) : (filteredProducts.map((product, index) => (
               <tr key={index} className="border-t border-gray-200">
+                <td className="h-20 px-4 py-2 text-black text-sm font-normal text-center">
+                  {index + 1}
+                </td>
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal">
                   {product.title}
                 </td>
@@ -140,7 +144,12 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
         ) : (filteredProducts.map((product, index) => (
           <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="font-medium text-black">{product.title}</h3>
+              <h3 className="font-medium text-black flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 text-xs font-medium text-black">
+                  {index + 1}
+                </span>
+                {product.title}
+              </h3>
               <span className="text-gray-700">{FormattedPrice(product.price)} UZS</span>
             </div>
             

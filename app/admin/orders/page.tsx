@@ -28,17 +28,20 @@ const Orders = () => {
           <div className="flex items-center justify-center">
             Yuklanmoqda...
           </div>
-        ) : orders.length > 0 ? orders.map((order) => (
+        ) : orders.length > 0 ? orders.map((order, idx) => (
           <Disclosure key={order.id}>
             {({ open }) => (
               <div>
                 <DisclosureButton className="flex items-center justify-between w-full px-4 py-2 text-left bg-white shadow-lg rounded-lg border border-gray-200">
-                  <div className="flex items-end gap-4">
-                    <div>
-                      <h3 className="font-medium capitalize">{order.clientName}</h3>
-                      <p className="text-sm text-gray-500">{order.clientPhone}</p>
+                  <div className='flex items-start gap-2'>
+                    <span className='text-sm text-gray-500 mt-1'>{idx + 1}.</span>
+                    <div className="flex items-end gap-4">
+                      <div>
+                        <h3 className="font-medium capitalize">{order.clientName}</h3>
+                        <p className="text-sm text-gray-500">{order.clientPhone}</p>
+                      </div>
+                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p> 
                     </div>
-                    <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p> 
                   </div>
                   <IoIosArrowDown
                     className={`text-xl transition-all duration-300 ${

@@ -1,4 +1,4 @@
-import { Clock, Mail, MapPin, Phone } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import { PiTelegramLogo } from "react-icons/pi";
 import React from 'react'
 import { FaInstagram } from 'react-icons/fa';

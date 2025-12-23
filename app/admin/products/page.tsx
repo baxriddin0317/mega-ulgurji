@@ -72,7 +72,7 @@ const Products = () => {
     // Compute memoized values before any early returns to satisfy hooks rules
     const productsInCategory = useMemo(() => (
       products.filter((p) => p.category === activeCategory)
-    ), [products, activeCategory]);
+    ), [activeCategory]);
 
     const allInCategoryCount = productsInCategory.length;
 

@@ -1,5 +1,7 @@
 import { Clock, Mail, MapPin, Phone } from 'lucide-react'
+import { PiTelegramLogo } from "react-icons/pi";
 import React from 'react'
+import { FaInstagram } from 'react-icons/fa';
 
 const LocationSection = ({ forceColor = false }: { forceColor?: boolean }) => {
   return (
@@ -35,11 +37,21 @@ const LocationSection = ({ forceColor = false }: { forceColor?: boolean }) => {
                 </div>
                 <div>
                   <h4 className="text-[#d1d1d1] font-medium">Telefon:</h4>
-                  <p className="text-white/80">+998 99 280 6767</p>
                   <p className="text-white/80">+998 88 003 9000</p>
+                  <p className="text-white/80">+998 99 003 9000</p>
                 </div>
               </div>
               
+              <div className="flex items-start">
+                <div className="text-primary mt-1 mr-4">
+                  <PiTelegramLogo className="text-[#d1d1d1] h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-[#d1d1d1] font-medium">Telegram:</h4>
+                  <a href='https://t.me/megahomeuz' target='_blank' className="text-white/80">Mega Home uz</a>
+                </div>
+              </div>
+
               <div className="flex items-start">
                 <div className="text-primary mt-1 mr-4">
                   <Mail className="text-[#d1d1d1] h-5 w-5" />
@@ -52,11 +64,11 @@ const LocationSection = ({ forceColor = false }: { forceColor?: boolean }) => {
               
               <div className="flex items-start">
                 <div className="text-primary mt-1 mr-4">
-                  <Clock className="text-[#d1d1d1] h-5 w-5" />
+                  <FaInstagram className="text-[#d1d1d1] h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-[#d1d1d1] font-medium">Ish vaqti:</h4>
-                  <p className="text-white/80">Dushanba - Shanba: 9:00 - 18:00</p>
+                  <h4 className="text-[#d1d1d1] font-medium">Instagram:</h4>
+                  <a href='https://www.instagram.com/megahome.ulgurji?igsh=a3c1N2ttbTl0NGJz' target='_blank' className="text-white/80 capitalize">bizning sahifamizga kiring</a>
                 </div>
               </div>
             </div>

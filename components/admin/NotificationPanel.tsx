@@ -5,6 +5,7 @@ import { useNotificationStore, Notification } from "@/store/useNotificationStore
 import { Alert, AlertContent, AlertIcon, AlertTitle, AlertDescription } from "@/components/ui/alert-1";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { playOrderSound, playUserSound } from "@/lib/notificationSound";
 
 const NotificationPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +32,9 @@ const NotificationPanel = () => {
       const newest = notifications[0];
       if (newest && !newest.read) {
         const isOrder = newest.type === 'new_order';
+        // Play sound instantly
+        if (isOrder) playOrderSound();
+        else playUserSound();
         toast(
           (t) => (
             <div

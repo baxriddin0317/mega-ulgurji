@@ -2,8 +2,23 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
-import { Order } from '@/lib/types';
+import { Order, ProductT } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
+
+export interface OrderPayload {
+  clientName: string;
+  clientPhone: string;
+  totalPrice: number;
+  totalQuantity: number;
+  basketItems: Array<{ title: string; price: string; quantity: number; category: string; productImageUrl?: Array<{ url: string }> }>;
+}
+
+export interface UserPayload {
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
 
 export interface Notification {
   id: string;
@@ -14,6 +29,8 @@ export interface Notification {
   detail: string;
   timestamp: number;
   read: boolean;
+  orderData?: OrderPayload;
+  userData?: UserPayload;
 }
 
 interface NotificationState {
@@ -79,6 +96,19 @@ export const useNotificationStore = create<NotificationState>()(
                   detail: data.clientPhone,
                   timestamp: Date.now(),
                   read: false,
+                  orderData: {
+                    clientName: data.clientName,
+                    clientPhone: data.clientPhone,
+                    totalPrice: data.totalPrice,
+                    totalQuantity: data.totalQuantity,
+                    basketItems: (data.basketItems || []).map((item: ProductT) => ({
+                      title: item.title,
+                      price: item.price,
+                      quantity: item.quantity,
+                      category: item.category,
+                      productImageUrl: item.productImageUrl?.slice(0, 1),
+                    })),
+                  },
                 });
               }
             }
@@ -124,6 +154,12 @@ export const useNotificationStore = create<NotificationState>()(
                   detail: data.email || '',
                   timestamp: Date.now(),
                   read: false,
+                  userData: {
+                    name: data.name || '',
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    role: data.role || 'user',
+                  },
                 });
               }
             }

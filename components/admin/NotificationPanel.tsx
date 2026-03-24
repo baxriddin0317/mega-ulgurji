@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Bell, ShoppingCart, UserPlus, X, CheckCheck } from "lucide-react";
+import { Bell, ShoppingCart, UserPlus, X, CheckCheck, ChevronDown, Phone, Mail, User, Package } from "lucide-react";
 import { useNotificationStore, Notification } from "@/store/useNotificationStore";
-import { Alert, AlertContent, AlertIcon, AlertTitle, AlertDescription } from "@/components/ui/alert-1";
 import { Button } from "@/components/ui/button";
+import { formatUZS } from "@/lib/formatPrice";
 import toast from "react-hot-toast";
 import { playOrderSound, playUserSound } from "@/lib/notificationSound";
 
@@ -26,13 +26,12 @@ const NotificationPanel = () => {
     return () => stopListening();
   }, [startListening, stopListening]);
 
-  // Instant toast when new notifications arrive
+  // Instant toast + sound when new notifications arrive
   useEffect(() => {
     if (unreadCount > prevCountRef.current && prevCountRef.current >= 0) {
       const newest = notifications[0];
       if (newest && !newest.read) {
-        const isOrder = newest.type === 'new_order';
-        // Play sound instantly
+        const isOrder = newest.type === "new_order";
         if (isOrder) playOrderSound();
         else playUserSound();
         toast(
@@ -45,29 +44,14 @@ const NotificationPanel = () => {
               }}
             >
               <div className="shrink-0 mt-0.5">
-                <div className={`flex items-center justify-center size-9 rounded-full ${
-                  isOrder ? 'bg-green-100' : 'bg-blue-100'
-                }`}>
-                  {isOrder
-                    ? <ShoppingCart className="size-4 text-green-600" />
-                    : <UserPlus className="size-4 text-blue-600" />
-                  }
+                <div className={`flex items-center justify-center size-9 rounded-full ${isOrder ? "bg-green-100" : "bg-blue-100"}`}>
+                  {isOrder ? <ShoppingCart className="size-4 text-green-600" /> : <UserPlus className="size-4 text-blue-600" />}
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-sm text-gray-900 truncate">
-                  {newest.title}
-                </p>
-                <p className={`text-xs font-semibold mt-0.5 ${
-                  isOrder ? 'text-green-600' : 'text-blue-600'
-                }`}>
-                  {newest.message}
-                </p>
-                {newest.detail && (
-                  <p className="text-[11px] text-gray-400 mt-0.5">
-                    {newest.detail}
-                  </p>
-                )}
+                <p className="font-bold text-sm text-gray-900 truncate">{newest.title}</p>
+                <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-600" : "text-blue-600"}`}>{newest.message}</p>
+                {newest.detail && <p className="text-[11px] text-gray-400 mt-0.5">{newest.detail}</p>}
               </div>
             </div>
           ),
@@ -76,7 +60,7 @@ const NotificationPanel = () => {
             position: "top-right",
             style: {
               background: "#fff",
-              border: `1px solid ${isOrder ? '#bbf7d0' : '#bfdbfe'}`,
+              border: `1px solid ${isOrder ? "#bbf7d0" : "#bfdbfe"}`,
               boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
               padding: "12px 16px",
               borderRadius: "12px",
@@ -126,7 +110,7 @@ const NotificationPanel = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-[380px] max-h-[500px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-12 w-[400px] max-h-[550px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <h3 className="font-bold text-base text-gray-900">
               Bildirishnomalar
@@ -147,7 +131,7 @@ const NotificationPanel = () => {
             )}
           </div>
 
-          <div className="overflow-y-auto max-h-[400px]">
+          <div className="overflow-y-auto max-h-[460px]">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-gray-400">
                 <Bell className="size-10 mb-3 opacity-30" />
@@ -171,6 +155,7 @@ const NotificationPanel = () => {
   );
 };
 
+// --- Expandable Notification Item ---
 const NotificationItem = ({
   notification,
   onRead,
@@ -182,48 +167,62 @@ const NotificationItem = ({
   onRemove: (id: string) => void;
   formatTime: (ts: number) => string;
 }) => {
-  const isOrder = notification.type === 'new_order';
+  const [expanded, setExpanded] = useState(false);
+  const isOrder = notification.type === "new_order";
+
+  const handleClick = () => {
+    if (!notification.read) onRead(notification.id);
+    setExpanded((prev) => !prev);
+  };
 
   return (
     <div
-      className={`group relative px-3 py-2.5 border-b border-gray-50 transition-colors hover:bg-gray-50 cursor-pointer ${
-        !notification.read ? (isOrder ? "bg-green-50/40" : "bg-blue-50/40") : ""
+      className={`group relative border-b border-gray-100 transition-colors ${
+        !notification.read ? (isOrder ? "bg-green-50/40" : "bg-blue-50/40") : "hover:bg-gray-50"
       }`}
-      onClick={() => !notification.read && onRead(notification.id)}
     >
-      <Alert
-        variant={isOrder ? "success" : "info"}
-        appearance="light"
-        size="sm"
-        className="pointer-events-none"
-      >
-        <AlertIcon>
-          {isOrder
-            ? <ShoppingCart className="size-4" />
-            : <UserPlus className="size-4" />
-          }
-        </AlertIcon>
-        <AlertContent className="flex-1 min-w-0">
-          <AlertTitle className="text-sm leading-tight">
+      {/* Header row */}
+      <div className="flex items-start gap-2.5 px-3 py-2.5 cursor-pointer" onClick={handleClick}>
+        <div className={`shrink-0 mt-0.5 flex items-center justify-center size-8 rounded-full ${
+          isOrder ? "bg-green-100" : "bg-blue-100"
+        }`}>
+          {isOrder ? <ShoppingCart className="size-4 text-green-600" /> : <UserPlus className="size-4 text-blue-600" />}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
             {!notification.read && (
-              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 align-middle animate-pulse ${
-                isOrder ? 'bg-green-500' : 'bg-blue-500'
-              }`} />
+              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${isOrder ? "bg-green-500" : "bg-blue-500"}`} />
             )}
-            <span className="font-bold">{notification.title}</span>
-          </AlertTitle>
-          <AlertDescription className="text-xs text-gray-600 leading-snug">
-            <p className={`font-semibold ${isOrder ? 'text-green-700' : 'text-blue-700'}`}>
-              {notification.message}
-            </p>
-            {notification.detail && (
-              <p className="text-[11px] text-gray-400 mt-1">
-                {notification.detail} &middot; {formatTime(notification.timestamp)}
-              </p>
-            )}
-          </AlertDescription>
-        </AlertContent>
-      </Alert>
+            <span className="font-bold text-sm text-gray-900 truncate">{notification.title}</span>
+          </div>
+          <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-700" : "text-blue-700"}`}>
+            {notification.message}
+          </p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {notification.detail} &middot; {formatTime(notification.timestamp)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <ChevronDown className={`size-4 text-gray-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} />
+        </div>
+      </div>
+
+      {/* Expanded details */}
+      {expanded && (
+        <div className="px-3 pb-3 animate-in fade-in slide-in-from-top-1 duration-150">
+          {isOrder && notification.orderData ? (
+            <OrderDetails data={notification.orderData} />
+          ) : notification.userData ? (
+            <UserDetails data={notification.userData} />
+          ) : (
+            <p className="text-xs text-gray-400 px-2 py-2">Ma&apos;lumotlar mavjud emas</p>
+          )}
+        </div>
+      )}
+
+      {/* Remove button */}
       <Button
         size="sm"
         variant="ghost"
@@ -236,6 +235,85 @@ const NotificationItem = ({
       >
         <X className="size-3.5 text-gray-400" />
       </Button>
+    </div>
+  );
+};
+
+// --- Order Details Expanded View ---
+const OrderDetails = ({ data }: { data: NonNullable<Notification["orderData"]> }) => {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Customer info */}
+      <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <User className="size-3.5 text-gray-500" />
+          <span className="text-xs font-bold text-gray-800">{data.clientName}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Phone className="size-3 text-gray-400" />
+          <span className="text-xs text-gray-600">{data.clientPhone}</span>
+        </div>
+      </div>
+
+      {/* Items list */}
+      <div className="divide-y divide-gray-50">
+        {data.basketItems.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-2.5 px-3 py-2">
+            {item.productImageUrl && item.productImageUrl[0] ? (
+              <img
+                src={item.productImageUrl[0].url}
+                alt={item.title}
+                className="size-9 rounded-md object-cover shrink-0"
+              />
+            ) : (
+              <div className="size-9 rounded-md bg-gray-100 flex items-center justify-center shrink-0">
+                <Package className="size-4 text-gray-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-gray-800 truncate">{item.title}</p>
+              <p className="text-[11px] text-gray-500">{item.category}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-xs font-bold text-gray-900">{formatUZS(item.price)}</p>
+              <p className="text-[11px] text-gray-500">{item.quantity} ta</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Total */}
+      <div className="px-3 py-2 bg-green-50 border-t border-green-100 flex items-center justify-between">
+        <span className="text-xs font-bold text-gray-700">Jami: {data.totalQuantity} ta</span>
+        <span className="text-sm font-bold text-green-700">{formatUZS(data.totalPrice)}</span>
+      </div>
+    </div>
+  );
+};
+
+// --- User Details Expanded View ---
+const UserDetails = ({ data }: { data: NonNullable<Notification["userData"]> }) => {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="divide-y divide-gray-50">
+        <div className="flex items-center gap-2.5 px-3 py-2.5">
+          <div className="flex items-center justify-center size-9 rounded-full bg-blue-100 shrink-0">
+            <User className="size-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">{data.name}</p>
+            <p className="text-[11px] text-gray-500 capitalize">{data.role === "admin" ? "Administrator" : "Foydalanuvchi"}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 px-3 py-2">
+          <Mail className="size-3.5 text-gray-400 shrink-0" />
+          <span className="text-xs text-gray-700">{data.email || "Email ko'rsatilmagan"}</span>
+        </div>
+        <div className="flex items-center gap-2.5 px-3 py-2">
+          <Phone className="size-3.5 text-gray-400 shrink-0" />
+          <span className="text-xs font-semibold text-gray-700">{data.phone || "Telefon ko'rsatilmagan"}</span>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Bell, ShoppingCart, X, CheckCheck } from "lucide-react";
+import { Bell, ShoppingCart, UserPlus, X, CheckCheck } from "lucide-react";
 import { useNotificationStore, Notification } from "@/store/useNotificationStore";
 import { Alert, AlertContent, AlertIcon, AlertTitle, AlertDescription } from "@/components/ui/alert-1";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ const NotificationPanel = () => {
     stopListening,
   } = useNotificationStore();
 
-  // Start Firestore listener on mount, cleanup on unmount
   useEffect(() => {
     startListening();
     return () => stopListening();
@@ -31,6 +30,7 @@ const NotificationPanel = () => {
     if (unreadCount > prevCountRef.current && prevCountRef.current >= 0) {
       const newest = notifications[0];
       if (newest && !newest.read) {
+        const isOrder = newest.type === 'new_order';
         toast(
           (t) => (
             <div
@@ -41,20 +41,29 @@ const NotificationPanel = () => {
               }}
             >
               <div className="shrink-0 mt-0.5">
-                <div className="flex items-center justify-center size-9 rounded-full bg-green-100">
-                  <ShoppingCart className="size-4 text-green-600" />
+                <div className={`flex items-center justify-center size-9 rounded-full ${
+                  isOrder ? 'bg-green-100' : 'bg-blue-100'
+                }`}>
+                  {isOrder
+                    ? <ShoppingCart className="size-4 text-green-600" />
+                    : <UserPlus className="size-4 text-blue-600" />
+                  }
                 </div>
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm text-gray-900 truncate">
                   {newest.title}
                 </p>
-                <p className="text-xs font-semibold text-green-600 mt-0.5">
+                <p className={`text-xs font-semibold mt-0.5 ${
+                  isOrder ? 'text-green-600' : 'text-blue-600'
+                }`}>
                   {newest.message}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  {newest.clientPhone}
-                </p>
+                {newest.detail && (
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {newest.detail}
+                  </p>
+                )}
               </div>
             </div>
           ),
@@ -63,7 +72,7 @@ const NotificationPanel = () => {
             position: "top-right",
             style: {
               background: "#fff",
-              border: "1px solid #e5e7eb",
+              border: `1px solid ${isOrder ? '#bbf7d0' : '#bfdbfe'}`,
               boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
               padding: "12px 16px",
               borderRadius: "12px",
@@ -76,7 +85,6 @@ const NotificationPanel = () => {
     prevCountRef.current = unreadCount;
   }, [unreadCount, notifications]);
 
-  // Close panel on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
@@ -100,7 +108,6 @@ const NotificationPanel = () => {
 
   return (
     <div ref={panelRef} className="relative">
-      {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
@@ -114,10 +121,8 @@ const NotificationPanel = () => {
         )}
       </button>
 
-      {/* Notification Dropdown */}
       {isOpen && (
         <div className="absolute right-0 top-12 w-[380px] max-h-[500px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <h3 className="font-bold text-base text-gray-900">
               Bildirishnomalar
@@ -138,7 +143,6 @@ const NotificationPanel = () => {
             )}
           </div>
 
-          {/* Notification List */}
           <div className="overflow-y-auto max-h-[400px]">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-gray-400">
@@ -174,34 +178,45 @@ const NotificationItem = ({
   onRemove: (id: string) => void;
   formatTime: (ts: number) => string;
 }) => {
+  const isOrder = notification.type === 'new_order';
+
   return (
     <div
       className={`group relative px-3 py-2.5 border-b border-gray-50 transition-colors hover:bg-gray-50 cursor-pointer ${
-        !notification.read ? "bg-blue-50/50" : ""
+        !notification.read ? (isOrder ? "bg-green-50/40" : "bg-blue-50/40") : ""
       }`}
       onClick={() => !notification.read && onRead(notification.id)}
     >
       <Alert
-        variant="success"
+        variant={isOrder ? "success" : "info"}
         appearance="light"
         size="sm"
         className="pointer-events-none"
       >
         <AlertIcon>
-          <ShoppingCart className="size-4" />
+          {isOrder
+            ? <ShoppingCart className="size-4" />
+            : <UserPlus className="size-4" />
+          }
         </AlertIcon>
         <AlertContent className="flex-1 min-w-0">
           <AlertTitle className="text-sm leading-tight">
             {!notification.read && (
-              <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1.5 align-middle animate-pulse" />
+              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 align-middle animate-pulse ${
+                isOrder ? 'bg-green-500' : 'bg-blue-500'
+              }`} />
             )}
             <span className="font-bold">{notification.title}</span>
           </AlertTitle>
           <AlertDescription className="text-xs text-gray-600 leading-snug">
-            <p className="font-semibold text-green-700">{notification.message}</p>
-            <p className="text-[11px] text-gray-400 mt-1">
-              {notification.clientPhone} &middot; {formatTime(notification.timestamp)}
+            <p className={`font-semibold ${isOrder ? 'text-green-700' : 'text-blue-700'}`}>
+              {notification.message}
             </p>
+            {notification.detail && (
+              <p className="text-[11px] text-gray-400 mt-1">
+                {notification.detail} &middot; {formatTime(notification.timestamp)}
+              </p>
+            )}
           </AlertDescription>
         </AlertContent>
       </Alert>

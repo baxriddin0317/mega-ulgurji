@@ -6,6 +6,7 @@ import type { UserData } from '@/store/authStore';
 import toast from 'react-hot-toast';
 import { updateDoc, doc } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
+import { useNotificationStore } from '@/store/useNotificationStore';
 
 const roleOptions = ["admin", "user"];
 
@@ -22,6 +23,7 @@ const Spinner = () => (
 const UsersTable = ({ search }: UsersTableProps) => {
   const { users, fetchAllUsers } = useAuthStore();
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const { isNewUser } = useNotificationStore();
 
   useEffect(() => {
     const unsubscribe = fetchAllUsers() as (() => void) | undefined;
@@ -118,12 +120,21 @@ const UsersTable = ({ search }: UsersTableProps) => {
                   {search.length >= 2 ? 'No user found' : 'No user available'}
                 </td>
               </tr>
-            ) : (filteredUsers.map((user: UserData) => (
-              <tr key={user.uid} className="border-t border-gray-200">
-                <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.name}</td>
-                <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.email}</td>
-                <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.phone}</td>
-                <td className="h-20 px-4 py-2 text-black text-sm font-normal">{user.role}</td>
+            ) : (filteredUsers.map((user: UserData) => {
+              const isNew = isNewUser(user.uid);
+              return (
+              <tr key={user.uid} className={`border-t border-gray-200 ${isNew ? 'bg-blue-50/60' : ''}`}>
+                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>
+                  {user.name}
+                  {isNew && (
+                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white uppercase tracking-wide animate-pulse">
+                      Yangi
+                    </span>
+                  )}
+                </td>
+                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.email}</td>
+                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.phone}</td>
+                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.role}</td>
                 <td className="w-44 h-20 px-4 py-2 text-gray-700 text-sm font-normal text-center">
                   <select
                     className="border rounded px-2 py-1"
@@ -146,7 +157,8 @@ const UsersTable = ({ search }: UsersTableProps) => {
                   </Button>
                 </td>
               </tr>
-            )))}
+              );
+            }))}
           </tbody>
         </table>
       </div>
@@ -156,23 +168,33 @@ const UsersTable = ({ search }: UsersTableProps) => {
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
             {search.length >= 2 ? 'No user found' : 'No user available'}
           </div>
-        ) : (filteredUsers.map((user: UserData, index: number) => (
-          <div key={index} className="relative bg-white rounded-xl border border-gray-200 p-4">
+        ) : (filteredUsers.map((user: UserData, index: number) => {
+          const isNew = isNewUser(user.uid);
+          return (
+          <div key={index} className={`relative bg-white rounded-xl border p-4 ${isNew ? 'border-blue-300 bg-blue-50/40' : 'border-gray-200'}`}>
             <div className="flex justify-between items-center mb-3">
-              <h3 className="font-medium text-black flex items-center gap-2"><BiUser />{user.name}</h3>
+              <h3 className={`text-black flex items-center gap-2 ${isNew ? 'font-bold' : 'font-medium'}`}>
+                <BiUser />
+                {user.name}
+                {isNew && (
+                  <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white uppercase tracking-wide animate-pulse">
+                    Yangi
+                  </span>
+                )}
+              </h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Email</span>
-                <span className="text-sm text-black">{user.email}</span>
+                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Telifon</span>
-                <span className="text-sm text-black">{user.phone}</span>
+                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.phone}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Maqomi</span>
-                <span className="text-sm text-black">{user.role}</span>
+                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.role}</span>
               </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
                 <select
@@ -196,7 +218,8 @@ const UsersTable = ({ search }: UsersTableProps) => {
             </div>
             {loadingUserId === user.uid && <Spinner />}
           </div>
-        )))}
+          );
+        }))}
       </div>
     </div>
   );

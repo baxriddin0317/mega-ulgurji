@@ -7,16 +7,16 @@ export async function POST(req: Request) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: "megahomeweb@gmail.com",
-      pass: "soboyxmpyibxbvzu",
+      user: process.env.GMAIL_USER || "megahomeweb@gmail.com",
+      pass: process.env.GMAIL_APP_PASSWORD || "",
     },
   });
 
   const orderDetails = basketItems.map((item: ProductT) => `${item.title} - ${item.quantity} ta buyurtma qilingan`).join('\n');
 
   const mailOptions = {
-    from: "megahomeweb@gmail.com",
-    to: 'megahomeweb@gmail.com',
+    from: process.env.GMAIL_USER || "megahomeweb@gmail.com",
+    to: process.env.GMAIL_USER || 'megahomeweb@gmail.com',
     subject: `Yangi buyurtma: ${clientName} ${clientLastName}`,
     text: `
       Yangi buyurtma berildi! (mega ulgurji uchun)

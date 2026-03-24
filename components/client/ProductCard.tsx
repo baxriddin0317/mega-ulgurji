@@ -1,4 +1,4 @@
-import { FormattedPrice } from '@/hooks'
+import { formatUZS } from '@/lib/formatPrice'
 import { ProductT } from '@/lib/types'
 import Image from 'next/image'
 import React from 'react'
@@ -11,7 +11,7 @@ interface ProductProps {
 
 const ProductCard = ({product}: ProductProps) => {
   const { isAuthenticated } = useAuthStore();
-  
+
   return (
     <div className='cursor-pointer group'>
       <div className='relative w-full h-64 overflow-hidden rounded-xl mb-3'>
@@ -20,9 +20,9 @@ const ProductCard = ({product}: ProductProps) => {
       <Link href={`/product/${product.id}`}>
         <h3 className='font-bold text-lg md:text-xl line-clamp-1'>{product.title}</h3>
         {isAuthenticated ? (
-          <p className='font-semibold text-brand-gray-200'>{FormattedPrice(product.price)} UZS</p>
+          <p className='font-semibold text-brand-gray-200'>{formatUZS(product.price)}</p>
         ) : (
-          <p className='text-xs md:text-base font-semibold text-red-500'>Narxni ko‘rish uchun ro‘yxatdan o‘ting</p>
+          <p className='text-xs md:text-base font-semibold text-red-500'>Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</p>
         )}
       </Link>
     </div>

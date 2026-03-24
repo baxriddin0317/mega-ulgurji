@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 import useProductStore from '@/store/useProductStore';
-import { FormattedPrice } from '@/hooks';
+import { formatUZS } from '@/lib/formatPrice';
 import { ProductT } from '@/lib/types';
 import { fireStorage } from '@/firebase/config';
 import { deleteObject, listAll, ref } from 'firebase/storage';
@@ -104,7 +104,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                     )}
                   </div>
                 </td>
-                <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{FormattedPrice(product.price)} UZS</td>
+                <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{formatUZS(product.price)}</td>
                 <td className="max-w-xs h-20 px-4 py-2 text-sm font-normal">
                   <span className="flex min-w-[84px] text-center cursor-pointer items-center justify-center rounded-xl min-h-8 px-1 bg-gray-100 text-black text-sm font-medium w-full">
                     {product.category}
@@ -150,7 +150,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                 </span>
                 {product.title}
               </h3>
-              <span className="text-gray-700">{FormattedPrice(product.price)} UZS</span>
+              <span className="text-gray-700">{formatUZS(product.price)}</span>
             </div>
             
             <div className="space-y-2">

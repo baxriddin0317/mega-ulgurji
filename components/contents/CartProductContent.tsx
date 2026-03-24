@@ -6,6 +6,7 @@ import { BsCartDash } from "react-icons/bs";
 import SubmitModal from "../client/Modal";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import { formatUZS } from "@/lib/formatPrice";
 
 const CartProductContent = () => {
   const [open, setOpen] = useState(false);
@@ -25,8 +26,8 @@ const CartProductContent = () => {
               />
             </div>
             <div className="flex flex-col ml-4">
-              <h3>{cart.title}</h3>
-              <p>{cart.price}UZS</p>
+              <h3 className="font-medium">{cart.title}</h3>
+              <p className="text-brand-gray-200 font-semibold">{formatUZS(cart.price)}</p>
             </div>
             <Quantity id={cart.id} />
           </div>
@@ -39,7 +40,7 @@ const CartProductContent = () => {
         </div>
         <div className="flex items-center justify-between">
           <p className="text-slate-400">Umumiy summa</p>
-          <p className="text-gray-800 ">{totalPrice} UZS</p>
+          <p className="text-gray-800 font-bold">{formatUZS(totalPrice)}</p>
         </div>
         <Button
           variant={"default"}

@@ -1,0 +1,12 @@
+{
+  "name": "mega-dev",
+  "version": "1.0.0",
+  "description": "Development toolkit for MegaHome Ulgurji e-commerce platform - Next.js 16, Firebase, Zustand, Tailwind CSS",
+  "author": {
+    "name": "mega-ulgurji-team"
+  },
+  "keywords": ["ecommerce", "nextjs", "firebase", "tailwind", "zustand", "uzbek"],
+  "commands": "./commands/",
+  "agents": "./agents/",
+  "skills": "./skills/"
+}

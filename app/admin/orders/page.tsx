@@ -11,6 +11,7 @@ import {
 } from "@headlessui/react";
 import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
+import { formatUZS } from '@/lib/formatPrice';
 
 const Orders = () => {
   const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
@@ -118,8 +119,8 @@ const Orders = () => {
                                 <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                   {title}
                                 </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
-                                  ${price}
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase font-semibold">
+                                  {formatUZS(price)}
                                 </td>
                                 <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                   {quantity}

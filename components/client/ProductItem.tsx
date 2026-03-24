@@ -7,7 +7,7 @@ import { BsCartDash } from "react-icons/bs";
 import { LuPlus } from "react-icons/lu";
 import { HiMinus } from "react-icons/hi";
 import Image from "next/image";
-import { FormattedPrice } from "@/utils";
+import { formatUZS } from "@/lib/formatPrice";
 import useCartProductStore from "@/store/useCartStore";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -129,7 +129,11 @@ const ProductItem = ({ id }: { id: string }) => {
           </div>
           <div>
             <div className="text-sm text-gray-500">Umumiy</div>
-            <div className="font-bold">{FormattedPrice(Number(product.price))} UZS</div>
+            {isAuthenticated ? (
+              <div className="font-bold text-lg">{formatUZS(Number(product.price) * quantity)}</div>
+            ) : (
+              <div className="font-semibold text-red-500 text-sm">Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</div>
+            )}
           </div>
           <Button
             onClick={handleSubmit}

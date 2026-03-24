@@ -15,6 +15,7 @@ import {
 } from "@headlessui/react";
 import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
+import { formatUZS } from '@/lib/formatPrice';
 
 const HistoryOrder = () => {
   useWhiteBody();
@@ -94,7 +95,7 @@ const HistoryOrder = () => {
                                     </div>
                                   </td>
                                   <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">{item.title}</td>
-                                  <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">${item.price}</td>
+                                  <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase font-semibold">{formatUZS(item.price)}</td>
                                   <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">{item.quantity}</td>
                                   <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">{item.category}</td>
                                 </tr>
@@ -104,7 +105,7 @@ const HistoryOrder = () => {
                         </div>
                         <div className="mt-4 flex justify-end gap-8 text-base font-semibold">
                           <span>Jami: {order.totalQuantity} ta</span>
-                          <span>Umumiy narx: ${order.totalPrice}</span>
+                          <span>Umumiy narx: {formatUZS(order.totalPrice)}</span>
                         </div>
                       </DisclosurePanel>
                     </Transition>

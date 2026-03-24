@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { useAuthStore } from '@/store/authStore';
+import NotificationPanel from './NotificationPanel';
 
 const AdminHeader = () => {
   const { toggle } = useSidebarStore();
@@ -28,6 +29,7 @@ const AdminHeader = () => {
         </Sheet>
       </div>
       <div className='flex items-center gap-3'>
+        <NotificationPanel />
         <Link className='flex items-center h-9 px-4 rounded-xl bg-primary text-primary-foreground shadow-xs hover:bg-primary/90' href={'/'}>
           Bosh sahifaga qaytish
         </Link>

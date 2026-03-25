@@ -12,14 +12,40 @@ import {
 import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
 import { formatUZS } from '@/lib/formatPrice';
+import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
+import { OrderStatus } from '@/lib/types';
+import toast from 'react-hot-toast';
+
+const StatusBadge = ({ status }: { status?: string }) => {
+  const info = getStatusInfo(status);
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${info.color} ${info.bg}`}>
+      {info.label}
+    </span>
+  );
+};
 
 const Orders = () => {
-  const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
+  const { orders, fetchAllOrders, loadingOrders, updateOrderStatus } = useOrderStore();
   const [search, setSearch] = useState('');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
+
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    setUpdatingId(orderId);
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      const info = getStatusInfo(newStatus);
+      toast.success(`Buyurtma holati: ${info.label}`);
+    } catch {
+      toast.error("Holatni yangilashda xatolik");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   return (
     <div>
@@ -32,16 +58,17 @@ const Orders = () => {
         ) : orders.length > 0 ? orders.map((order, idx) => (
           <Disclosure key={order.id}>
             {({ open }) => (
-              <div>
+              <div className="mb-2">
                 <DisclosureButton className="flex items-center justify-between w-full px-4 py-2 text-left bg-white shadow-lg rounded-lg border border-gray-200">
                   <div className='flex items-start gap-2'>
                     <span className='text-sm text-gray-500 mt-1'>{idx + 1}.</span>
-                    <div className="flex items-end gap-4">
+                    <div className="flex items-center gap-4 flex-wrap">
                       <div>
                         <h3 className="font-medium capitalize">{order.clientName}</h3>
                         <p className="text-sm text-gray-500">{order.clientPhone}</p>
                       </div>
-                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p> 
+                      <StatusBadge status={order.status} />
+                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p>
                     </div>
                   </div>
                   <IoIosArrowDown
@@ -54,80 +81,62 @@ const Orders = () => {
                   show={open}
                   enter="transition-all duration-300 ease-in-out"
                   enterFrom="transform opacity-0 max-h-0"
-                  enterTo="transform opacity-100 max-h-96"
+                  enterTo="transform opacity-100 max-h-[600px]"
                   leave="transition-all duration-300 ease-in-out"
-                  leaveFrom="transform opacity-100 max-h-96"
+                  leaveFrom="transform opacity-100 max-h-[600px]"
                   leaveTo="transform opacity-0 max-h-0"
                 >
                   <DisclosurePanel className="px-4 py-2 bg-gray-100">
+                    {/* Status changer */}
+                    <div className="flex items-center gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-sm font-semibold text-gray-700">Holati:</span>
+                      <select
+                        className="flex-1 max-w-xs border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        value={order.status || 'yangi'}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
+                        disabled={updatingId === order.id}
+                      >
+                        {ORDER_STATUSES.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
+                      {updatingId === order.id && (
+                        <span className="inline-block w-4 h-4 border-2 border-t-transparent border-primary rounded-full animate-spin" />
+                      )}
+                      <div className="ml-auto text-right">
+                        <p className="text-xs text-gray-500">Jami: {order.totalQuantity} ta</p>
+                        <p className="text-sm font-bold text-green-700">{formatUZS(order.totalPrice)}</p>
+                      </div>
+                    </div>
+
+                    {/* Items table */}
                     <div className="overflow-x-auto">
                       <table className="min-w-full text-left table-auto">
                         <thead>
                           <tr>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100 font-bold fontPara"
-                            >
-                              S.No.
-                            </th>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100 font-bold fontPara"
-                            >
-                              Rasm
-                            </th>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100"
-                            >
-                              Nomi
-                            </th>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100"
-                            >
-                              Narxi
-                            </th>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100"
-                            >
-                              Soni
-                            </th>
-                            <th
-                              scope="col"
-                              className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100"
-                            >
-                              Kategoriya
-                            </th>
+                            <th scope="col" className="h-12 px-6 text-md border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100 font-bold fontPara">S.No.</th>
+                            <th scope="col" className="h-12 px-6 text-md border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100 font-bold fontPara">Rasm</th>
+                            <th scope="col" className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100">Nomi</th>
+                            <th scope="col" className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100">Narxi</th>
+                            <th scope="col" className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100">Soni</th>
+                            <th scope="col" className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100">Kategoriya</th>
                           </tr>
                         </thead>
                         <tbody>
                           {order.basketItems.map((item, index) => {
-                            const { title, price, category, quantity, productImageUrl } =
-                              item;
+                            const { title, price, category, quantity, productImageUrl } = item;
                             return (
                               <tr key={index} className="text-pink-300">
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 ">
-                                  {index + 1}.
-                                </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500">{index + 1}.</td>
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">
                                   <div className="flex justify-center">
                                     <Image width={80} height={80} className="w-20" src={productImageUrl[0].url} alt="" />
                                   </div>
                                 </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
-                                  {title}
-                                </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase font-semibold">
-                                  {formatUZS(price)}
-                                </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
-                                  {quantity}
-                                </td>
-                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
-                                  {category}
-                                </td>
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">{title}</td>
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase font-semibold">{formatUZS(price)}</td>
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">{quantity}</td>
+                                <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">{category}</td>
                               </tr>
                             );
                           })}

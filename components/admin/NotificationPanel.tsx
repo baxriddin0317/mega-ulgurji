@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatUZS } from "@/lib/formatPrice";
 import toast from "react-hot-toast";
 import { playOrderSound, playUserSound } from "@/lib/notificationSound";
+import { getStatusInfo } from "@/lib/orderStatus";
 
 const NotificationPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -243,13 +244,21 @@ const NotificationItem = ({
 const OrderDetails = ({ data }: { data: NonNullable<Notification["orderData"]> }) => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      {/* Customer info */}
-      <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+      {/* Customer info + status */}
+      <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <User className="size-3.5 text-gray-500" />
           <span className="text-xs font-bold text-gray-800">{data.clientName}</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
+          {(() => {
+            const info = getStatusInfo(data.status);
+            return (
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${info.color} ${info.bg}`}>
+                {info.label}
+              </span>
+            );
+          })()}
           <Phone className="size-3 text-gray-400" />
           <span className="text-xs text-gray-600">{data.clientPhone}</span>
         </div>

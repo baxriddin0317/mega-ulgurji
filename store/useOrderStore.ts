@@ -1,16 +1,16 @@
 import {create} from "zustand";
-import { collection, addDoc, query, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { fireDB } from '@/firebase/config';
-import { Order } from "@/lib/types";
+import { Order, OrderStatus } from "@/lib/types";
 
 interface StoreState {
   orders: Order[];
   currentOrder: Order | null;
   loadingOrders: boolean;
   addOrder: (order: Order) => Promise<void>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   fetchAllOrders: () => void;
   fetchUserOrders: (userUid: string) => void;
-  // fetchSingleOrder: (orderId: string) => Promise<void>;
 }
 
 export const useOrderStore = create<StoreState>((set) => ({
@@ -28,7 +28,8 @@ export const useOrderStore = create<StoreState>((set) => ({
       const docRef = await addDoc(ordersCollectionRef, {
         ...order,
         date: new Date(),
-        userUid: order.userUid, // Ensure userUid is saved
+        status: 'yangi' as OrderStatus,
+        userUid: order.userUid,
       });
       set((state) => {
         const newOrder = { ...order, id: docRef.id };
@@ -39,7 +40,17 @@ export const useOrderStore = create<StoreState>((set) => ({
     }
   },
 
-  // Fetch all orders from Firestore and update the state
+  updateOrderStatus: async (orderId: string, status: OrderStatus) => {
+    try {
+      const orderRef = doc(fireDB, "orders", orderId);
+      await updateDoc(orderRef, { status });
+      // onSnapshot will auto-update the store
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      throw error;
+    }
+  },
+
   fetchAllOrders: async () => {
     set({ loadingOrders: true });
     try {

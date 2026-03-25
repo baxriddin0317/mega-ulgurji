@@ -10,6 +10,7 @@ export interface OrderPayload {
   clientPhone: string;
   totalPrice: number;
   totalQuantity: number;
+  status: string;
   basketItems: Array<{ title: string; price: string; quantity: number; category: string; productImageUrl?: Array<{ url: string }> }>;
 }
 
@@ -101,6 +102,7 @@ export const useNotificationStore = create<NotificationState>()(
                     clientPhone: data.clientPhone,
                     totalPrice: data.totalPrice,
                     totalQuantity: data.totalQuantity,
+                    status: data.status || 'yangi',
                     basketItems: (data.basketItems || []).map((item: ProductT) => ({
                       title: item.title,
                       price: item.price,

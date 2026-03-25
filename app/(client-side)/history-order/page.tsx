@@ -16,6 +16,7 @@ import {
 import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
 import { formatUZS } from '@/lib/formatPrice';
+import { getStatusInfo } from '@/lib/orderStatus';
 
 const HistoryOrder = () => {
   useWhiteBody();
@@ -52,11 +53,19 @@ const HistoryOrder = () => {
                 {({ open }) => (
                   <div className="mb-4">
                     <DisclosureButton className="flex items-center justify-between w-full px-4 py-2 text-left bg-white shadow-lg rounded-lg border border-gray-200">
-                      <div className="flex items-end gap-4">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <div>
                           <h3 className="font-medium capitalize">{order.clientName}</h3>
                           <p className="text-sm text-gray-500">{order.clientPhone}</p>
                         </div>
+                        {(() => {
+                          const info = getStatusInfo(order.status);
+                          return (
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${info.color} ${info.bg}`}>
+                              {info.label}
+                            </span>
+                          );
+                        })()}
                         <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p>
                       </div>
                       <IoIosArrowDown

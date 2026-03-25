@@ -30,6 +30,8 @@ export interface CategoryI {
   subcategory: string[]; // Added for subcategories/tags
 }
 
+export type OrderStatus = 'yangi' | 'tasdiqlangan' | 'yigʻilmoqda' | 'yetkazilmoqda' | 'yetkazildi' | 'bekor_qilindi';
+
 export interface Order {
   id: string;
   clientName: string;
@@ -38,5 +40,6 @@ export interface Order {
   basketItems: ProductT[];
   totalPrice: number;
   totalQuantity: number;
-  userUid: string; // Add this field to associate order with user
+  userUid: string;
+  status?: OrderStatus;
 }

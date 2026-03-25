@@ -10,9 +10,10 @@ const Quantity = ({id}: {id: string}) => {
   const quantityInBasket = getItemQuantity(id);
   const router = useRouter();
 
-  // Get stock from the cart item (ProductT carries stock field)
+  // Get stock from the cart item — undefined = no limit (pre-stock product)
   const cartItem = cartProducts.find((item) => item.id === id);
-  const stock = cartItem?.stock ?? 999;
+  const hasStock = cartItem?.stock !== undefined && cartItem?.stock !== null;
+  const stock = hasStock ? (cartItem.stock as number) : 999;
 
   const handleAddQuantity = () => {
     if (quantityInBasket >= stock) return;

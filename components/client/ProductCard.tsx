@@ -12,7 +12,9 @@ interface ProductProps {
 const ProductCard = ({product}: ProductProps) => {
   const { isAuthenticated } = useAuthStore();
 
-  const outOfStock = (product.stock ?? 0) <= 0;
+  // undefined stock = product existed before stock system = treat as available
+  const hasStock = product.stock !== undefined && product.stock !== null;
+  const outOfStock = hasStock && (product.stock as number) <= 0;
 
   return (
     <div className={`cursor-pointer group ${outOfStock ? 'opacity-60' : ''}`}>

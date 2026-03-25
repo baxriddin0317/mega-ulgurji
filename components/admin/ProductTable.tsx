@@ -107,15 +107,21 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                 </td>
                 <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{formatUZS(product.price)}</td>
                 <td className="h-20 px-4 py-2 text-sm font-normal">
-                  {(product.stock ?? 0) > 0 ? (
-                    <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
-                      (product.stock ?? 0) <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                    }`}>
-                      {product.stock} ta
-                    </span>
+                  {product.stock !== undefined && product.stock !== null ? (
+                    product.stock > 0 ? (
+                      <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
+                        product.stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {product.stock} ta
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700">
+                        0 ta
+                      </span>
+                    )
                   ) : (
-                    <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-gray-200 text-gray-500">
-                      Mavjud emas
+                    <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-700">
+                      Belgilanmagan
                     </span>
                   )}
                 </td>
@@ -166,15 +172,21 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
               </h3>
               <div className="flex items-center gap-2">
                 <span className="text-gray-700">{formatUZS(product.price)}</span>
-                {(product.stock ?? 0) > 0 ? (
-                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                    (product.stock ?? 0) <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                  }`}>
-                    {product.stock} ta
-                  </span>
+                {product.stock !== undefined && product.stock !== null ? (
+                  product.stock > 0 ? (
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                      product.stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {product.stock} ta
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">
+                      0 ta
+                    </span>
+                  )
                 ) : (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-200 text-gray-500">
-                    Mavjud emas
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">
+                    Belgilanmagan
                   </span>
                 )}
               </div>

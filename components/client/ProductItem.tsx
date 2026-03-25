@@ -38,8 +38,12 @@ const ProductItem = ({ id }: { id: string }) => {
   // images
   const images = product.productImageUrl || [];
 
+  const stock = product?.stock ?? 0;
+
   const handleAddQuantity = () => {
-    setQuantity(quantity + 1);
+    if (quantity < stock) {
+      setQuantity(quantity + 1);
+    }
   };
 
   const handledeleteQuantity = () => {
@@ -122,26 +126,39 @@ const ProductItem = ({ id }: { id: string }) => {
             </div>
             <Button
               onClick={handleAddQuantity}
-              className="cursor-pointer size-9 bg-black text-white flex items-center justify-center rounded-full"
+              disabled={quantity >= stock}
+              className="cursor-pointer size-9 bg-black text-white flex items-center justify-center rounded-full disabled:opacity-40"
             >
               <LuPlus className="text-white" />
             </Button>
           </div>
-          <div>
-            <div className="text-sm text-gray-500">Umumiy</div>
-            {isAuthenticated ? (
-              <div className="font-bold text-lg">{formatUZS(Number(product.price) * quantity)}</div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-gray-500">Umumiy</div>
+              {isAuthenticated ? (
+                <div className="font-bold text-lg">{formatUZS(Number(product.price) * quantity)}</div>
+              ) : (
+                <div className="font-semibold text-red-500 text-sm">Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</div>
+              )}
+            </div>
+            {stock > 0 ? (
+              <div className={`text-right ${stock <= 5 ? 'text-red-600' : 'text-green-600'}`}>
+                <div className="text-sm text-gray-500">Omborda</div>
+                <div className="font-bold">{stock} ta</div>
+              </div>
             ) : (
-              <div className="font-semibold text-red-500 text-sm">Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</div>
+              <div className="text-right">
+                <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700">Mavjud emas</span>
+              </div>
             )}
           </div>
           <Button
             onClick={handleSubmit}
             variant={'default'}
-            disabled={loading || load || !isAuthenticated}
+            disabled={loading || load || !isAuthenticated || stock <= 0}
             className="cursor-pointer overflow-hidden rounded-xl w-full h-12 bg-black text-white text-sm font-bold leading-normal tracking-[0.015em]"
           >
-            {load ? <span>Yuklanmoqda...</span> : !isAuthenticated ? <span>Iltimos, ro&apos;yxatdan o&apos;ting</span> :  (
+            {load ? <span>Yuklanmoqda...</span> : !isAuthenticated ? <span>Iltimos, ro&apos;yxatdan o&apos;ting</span> : stock <= 0 ? <span>Mavjud emas</span> : (
               <>
                 <BsCartDash className="text-white text-xl" />
                 <span>Savatga qo&apos;shish</span>

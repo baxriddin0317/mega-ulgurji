@@ -15,6 +15,7 @@ export interface ProductT {
   category: string;
   description: string;
   quantity: number;
+  stock?: number;
   time: Timestamp;
   date: Timestamp;
   storageFileId: string;

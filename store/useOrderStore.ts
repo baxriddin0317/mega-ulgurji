@@ -1,7 +1,7 @@
 import {create} from "zustand";
-import { collection, addDoc, query, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment } from "firebase/firestore";
 import { fireDB } from '@/firebase/config';
-import { Order, OrderStatus } from "@/lib/types";
+import { Order, OrderStatus, ProductT } from "@/lib/types";
 
 interface StoreState {
   orders: Order[];
@@ -31,6 +31,15 @@ export const useOrderStore = create<StoreState>((set) => ({
         status: 'yangi' as OrderStatus,
         userUid: order.userUid,
       });
+
+      // Decrement stock for each ordered product
+      for (const item of order.basketItems) {
+        if (item.id) {
+          const productRef = doc(fireDB, "products", item.id);
+          await updateDoc(productRef, { stock: increment(-item.quantity) });
+        }
+      }
+
       set((state) => {
         const newOrder = { ...order, id: docRef.id };
         return { orders: [...state.orders, newOrder] };
@@ -43,8 +52,26 @@ export const useOrderStore = create<StoreState>((set) => ({
   updateOrderStatus: async (orderId: string, status: OrderStatus) => {
     try {
       const orderRef = doc(fireDB, "orders", orderId);
+
+      // If cancelling, restore stock for each product
+      if (status === 'bekor_qilindi') {
+        const orderSnap = await getDoc(orderRef);
+        if (orderSnap.exists()) {
+          const orderData = orderSnap.data();
+          const prevStatus = orderData.status || 'yangi';
+          // Only restore if not already cancelled
+          if (prevStatus !== 'bekor_qilindi') {
+            for (const item of (orderData.basketItems || []) as ProductT[]) {
+              if (item.id) {
+                const productRef = doc(fireDB, "products", item.id);
+                await updateDoc(productRef, { stock: increment(item.quantity) });
+              }
+            }
+          }
+        }
+      }
+
       await updateDoc(orderRef, { status });
-      // onSnapshot will auto-update the store
     } catch (error) {
       console.error("Error updating order status:", error);
       throw error;

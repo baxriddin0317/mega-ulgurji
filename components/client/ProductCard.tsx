@@ -12,10 +12,17 @@ interface ProductProps {
 const ProductCard = ({product}: ProductProps) => {
   const { isAuthenticated } = useAuthStore();
 
+  const outOfStock = (product.stock ?? 0) <= 0;
+
   return (
-    <div className='cursor-pointer group'>
+    <div className={`cursor-pointer group ${outOfStock ? 'opacity-60' : ''}`}>
       <div className='relative w-full h-64 overflow-hidden rounded-xl mb-3'>
         {product.productImageUrl && product.productImageUrl.length > 0 ? <Image className='absolute object-cover group-hover:scale-105 transition-all duration-500' src={product.productImageUrl[0].url} fill alt='' /> : <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>Rasm yo&apos;q</div>}
+        {outOfStock && (
+          <div className='absolute top-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-1 rounded-lg z-10'>
+            Mavjud emas
+          </div>
+        )}
       </div>
       <Link href={`/product/${product.id}`}>
         <h3 className='font-bold text-lg md:text-xl line-clamp-1'>{product.title}</h3>

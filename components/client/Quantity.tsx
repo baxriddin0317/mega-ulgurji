@@ -1,16 +1,21 @@
 import useCartProductStore from "@/store/useCartStore";
-import React  from "react";
+import React from "react";
 import { HiMinus } from "react-icons/hi";
 import { LuPlus } from "react-icons/lu";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 
-const Quantity = ({id}: {id:string}) => {
-  const { incrementQuantity, decrementQuantity, getItemQuantity, calculateTotals } = useCartProductStore();
+const Quantity = ({id}: {id: string}) => {
+  const { cartProducts, incrementQuantity, decrementQuantity, getItemQuantity, calculateTotals } = useCartProductStore();
   const quantityInBasket = getItemQuantity(id);
   const router = useRouter();
 
+  // Get stock from the cart item (ProductT carries stock field)
+  const cartItem = cartProducts.find((item) => item.id === id);
+  const stock = cartItem?.stock ?? 999;
+
   const handleAddQuantity = () => {
+    if (quantityInBasket >= stock) return;
     incrementQuantity(id);
     calculateTotals();
   };
@@ -38,7 +43,8 @@ const Quantity = ({id}: {id:string}) => {
       </div>
       <Button
         onClick={handleAddQuantity}
-        className="cursor-pointer size-9 bg-black text-white flex items-center justify-center rounded-full"
+        disabled={quantityInBasket >= stock}
+        className="cursor-pointer size-9 bg-black text-white flex items-center justify-center rounded-full disabled:opacity-40"
       >
         <LuPlus className="text-white" />
       </Button>

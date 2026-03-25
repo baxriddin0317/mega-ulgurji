@@ -72,6 +72,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Nomi</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Narxi</th>
+              <th className="px-4 py-3 text-left text-black text-sm font-medium">Ombor</th>
               <th className="px-4 py-3 text-left text-black text-sm max-w-[100px] font-medium">Kategoriya</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Subkategoriya</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">Tahrirlash</th>
@@ -81,7 +82,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
           <tbody>
             {filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan={8} className="h-20 px-4 py-2 text-center text-gray-500">
+                <td colSpan={9} className="h-20 px-4 py-2 text-center text-gray-500">
                   {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
                 </td>
               </tr>
@@ -105,6 +106,19 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                   </div>
                 </td>
                 <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{formatUZS(product.price)}</td>
+                <td className="h-20 px-4 py-2 text-sm font-normal">
+                  {(product.stock ?? 0) > 0 ? (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
+                      (product.stock ?? 0) <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {product.stock} ta
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-gray-200 text-gray-500">
+                      Mavjud emas
+                    </span>
+                  )}
+                </td>
                 <td className="max-w-xs h-20 px-4 py-2 text-sm font-normal">
                   <span className="flex min-w-[84px] text-center cursor-pointer items-center justify-center rounded-xl min-h-8 px-1 bg-gray-100 text-black text-sm font-medium w-full">
                     {product.category}
@@ -150,9 +164,22 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                 </span>
                 {product.title}
               </h3>
-              <span className="text-gray-700">{formatUZS(product.price)}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-700">{formatUZS(product.price)}</span>
+                {(product.stock ?? 0) > 0 ? (
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                    (product.stock ?? 0) <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                  }`}>
+                    {product.stock} ta
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-200 text-gray-500">
+                    Mavjud emas
+                  </span>
+                )}
+              </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Rasm</span>

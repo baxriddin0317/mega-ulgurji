@@ -30,6 +30,7 @@ const AddProduct = () => {
     category: "",
     description: "",
     quantity: 0,
+    stock: 0,
     time: Timestamp.now(),
     date: new Date().toLocaleString("en-US", {
       month: "short",
@@ -162,6 +163,7 @@ const AddProduct = () => {
       category: "",
       description: "",
       quantity: 0,
+      stock: 0,
       time: Timestamp.now(),
       date: new Date().toLocaleString("en-US", {
         month: "short",
@@ -355,6 +357,23 @@ const AddProduct = () => {
                 className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
                 value={product.price}
                 onChange={(e) => setProduct({ ...product, price: e.target.value })}
+              />
+            </label>
+          </div>
+
+          {/* Stock */}
+          <div className="flex max-w-[480px] flex-wrap items-end gap-4">
+            <label className="flex flex-col min-w-40 flex-1">
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
+                Ombordagi soni*
+              </p>
+              <input
+                type="number"
+                min="0"
+                placeholder="0"
+                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
+                value={product.stock || ''}
+                onChange={(e) => setProduct({ ...product, stock: parseInt(e.target.value) || 0 })}
               />
             </label>
           </div>

@@ -229,7 +229,13 @@ export const useNotificationStore = create<NotificationState>()(
       },
 
       isNewUser: (uid: string) => {
-        return get().newUserIds.includes(uid);
+        const state = get();
+        if (!state.newUserIds.includes(uid)) return false;
+        // Auto-expire after 30 minutes — badge disappears but notification stays in bell
+        const notif = state.notifications.find((n) => n.refId === uid && n.type === 'new_user');
+        if (!notif) return false;
+        const thirtyMinutes = 30 * 60 * 1000;
+        return Date.now() - notif.timestamp < thirtyMinutes;
       },
     }),
     {

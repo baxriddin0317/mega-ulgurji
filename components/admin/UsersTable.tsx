@@ -24,6 +24,12 @@ const UsersTable = ({ search }: UsersTableProps) => {
   const { users, fetchAllUsers } = useAuthStore();
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const { isNewUser } = useNotificationStore();
+  // Re-render every 60s so YANGI badges auto-fade after 30 min
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = fetchAllUsers() as (() => void) | undefined;

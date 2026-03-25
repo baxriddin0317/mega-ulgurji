@@ -6,25 +6,27 @@ import { BiFolderPlus } from 'react-icons/bi'
 import { LuBookPlus } from 'react-icons/lu'
 import { BiUser } from 'react-icons/bi'
 import { ShoppingCart } from 'lucide-react';
+import { useNotificationStore } from '@/store/useNotificationStore'
 
 const Menu = () => {
   const pathname = usePathname();
-  
-  // Function to check if link is active
-  const isActive = (path:string) => {
-      // Exact path matching
-    if (pathname === path) {
-      return true;
-    }
-    
-    return false;
-  };
+  const { notifications } = useNotificationStore();
+
+  const newOrderCount = notifications.filter((n) => !n.read && n.type === 'new_order').length;
+  const newUserCount = notifications.filter((n) => !n.read && n.type === 'new_user').length;
+
+  const isActive = (path: string) => pathname === path;
 
   return (
     <div className="flex flex-col gap-2 py-4">
       <Link href={'/admin/'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin') ? 'bg-brand-gray-100' : ''}`}>
         <BiUser size={24} />
         <p className="text-black text-sm font-medium leading-normal">Foydalanuvchilar</p>
+        {newUserCount > 0 && (
+          <span className="ml-auto flex items-center justify-center min-w-5 h-5 px-1.5 text-[11px] font-bold text-white bg-blue-500 rounded-full">
+            {newUserCount}
+          </span>
+        )}
       </Link>
       <Link href={'/admin/categories'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/categories') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Package" data-size="24px" data-weight="regular">
@@ -49,6 +51,11 @@ const Menu = () => {
       <Link href={'/admin/orders'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/orders') ? 'bg-brand-gray-100' : ''}`}>
         <ShoppingCart size={24} />
         <p className="text-black text-sm font-medium leading-normal">Buyurtmalar</p>
+        {newOrderCount > 0 && (
+          <span className="ml-auto flex items-center justify-center min-w-5 h-5 px-1.5 text-[11px] font-bold text-white bg-green-500 rounded-full animate-pulse">
+            {newOrderCount}
+          </span>
+        )}
       </Link>
       <Link href={'/admin/create-category'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-category') ? 'bg-brand-gray-100' : ''}`}>
         <LuBookPlus size={24} />

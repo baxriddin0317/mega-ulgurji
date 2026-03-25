@@ -21,25 +21,28 @@ function ShineBorder({
   className,
   children,
 }: ShineBorderProps) {
+  const backgroundRadialGradient = `radial-gradient(transparent, transparent, ${
+    color instanceof Array ? color.join(",") : color
+  }, transparent, transparent)`;
+
   return (
     <div
-      style={{ "--border-radius": `${borderRadius}px` } as React.CSSProperties}
+      style={{ borderRadius: `${borderRadius}px` }}
       className={cn(
-        "relative grid h-full w-full place-items-center rounded-xl bg-white p-0 text-black",
+        "shine-border-wrapper relative grid h-full w-full place-items-center bg-white text-black",
         className,
       )}
     >
       <div
+        className="shine-border-effect"
         style={
           {
-            "--border-width": `${borderWidth}px`,
-            "--border-radius": `${borderRadius}px`,
-            "--shine-pulse-duration": `${duration}s`,
-            "--mask-linear-gradient": `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
-            "--background-radial-gradient": `radial-gradient(transparent,transparent, ${color instanceof Array ? color.join(",") : color},transparent,transparent)`,
+            "--shine-border-width": `${borderWidth}px`,
+            "--shine-border-radius": `${borderRadius}px`,
+            "--shine-duration": `${duration}s`,
+            "--shine-bg": backgroundRadialGradient,
           } as React.CSSProperties
         }
-        className="before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-xl before:p-[--border-width] before:will-change-[background-position] before:content-[''] before:![-webkit-mask-composite:xor] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:![mask-composite:exclude] before:[mask:--mask-linear-gradient] motion-safe:before:animate-[shine-pulse_var(--shine-pulse-duration)_infinite_linear]"
       />
       {children}
     </div>

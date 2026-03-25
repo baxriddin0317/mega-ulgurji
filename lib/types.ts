@@ -11,6 +11,7 @@ export interface ProductT {
   id: string;
   title: string;
   price: string;
+  costPrice?: number;
   productImageUrl: ImageT[];
   category: string;
   description: string;

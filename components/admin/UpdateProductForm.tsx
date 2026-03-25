@@ -65,7 +65,8 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         date: product.date,
         storageFileId: product.storageFileId,
         subcategory: product.subcategory || '',
-        stock: product.stock ?? 0
+        stock: product.stock ?? 0,
+        costPrice: product.costPrice ?? 0
       });
       // Kategoriya obyektini ham tanlab qo'yamiz
       const cat = categories.find(c => c.name === product.category);
@@ -240,11 +241,28 @@ const UpdateProductForm = ({ id }: { id: string }) => {
         </div>
       )}
 
-      {/* Price */}
+      {/* Tan narxi (Cost Price) */}
       <div className="flex max-w-[480px] flex-wrap items-end gap-4">
         <label className="flex flex-col min-w-40 flex-1">
           <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-            Narxi*
+            Tan narxi (kelish narxi)*
+          </p>
+          <input
+            type="number"
+            min="0"
+            placeholder="0 so'm"
+            className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
+            value={updatedProduct.costPrice ?? ''}
+            onChange={(e) => setUpdatedProduct({ ...updatedProduct, costPrice: parseInt(e.target.value) || 0 })}
+          />
+        </label>
+      </div>
+
+      {/* Sotish narxi (Selling Price) */}
+      <div className="flex max-w-[480px] flex-wrap items-end gap-4">
+        <label className="flex flex-col min-w-40 flex-1">
+          <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
+            Sotish narxi*
           </p>
           <input
             placeholder="0 so'm"

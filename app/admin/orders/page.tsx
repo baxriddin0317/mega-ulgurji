@@ -87,8 +87,8 @@ const Orders = () => {
                   leaveTo="transform opacity-0 max-h-0"
                 >
                   <DisclosurePanel className="px-4 py-2 bg-gray-100">
-                    {/* Status changer */}
-                    <div className="flex items-center gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-200">
+                    {/* Status changer + financials */}
+                    <div className="flex items-center gap-3 mb-3 p-3 bg-white rounded-lg border border-gray-200 flex-wrap">
                       <span className="text-sm font-semibold text-gray-700">Holati:</span>
                       <select
                         className="flex-1 max-w-xs border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -103,9 +103,32 @@ const Orders = () => {
                       {updatingId === order.id && (
                         <span className="inline-block w-4 h-4 border-2 border-t-transparent border-primary rounded-full animate-spin" />
                       )}
-                      <div className="ml-auto text-right">
-                        <p className="text-xs text-gray-500">Jami: {order.totalQuantity} ta</p>
-                        <p className="text-sm font-bold text-green-700">{formatUZS(order.totalPrice)}</p>
+                      <div className="ml-auto flex items-center gap-4 text-right">
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase">Jami</p>
+                          <p className="text-xs font-bold text-gray-700">{order.totalQuantity} ta</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase">Sotish</p>
+                          <p className="text-sm font-bold text-green-700">{formatUZS(order.totalPrice)}</p>
+                        </div>
+                        {(() => {
+                          const cost = (order.basketItems || []).reduce((s, i) => s + (i.costPrice || 0) * i.quantity, 0);
+                          const profit = (order.totalPrice || 0) - cost;
+                          if (cost <= 0) return null;
+                          return (
+                            <>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Tan narxi</p>
+                                <p className="text-sm font-bold text-gray-500">{formatUZS(cost)}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-gray-400 uppercase">Foyda</p>
+                                <p className={`text-sm font-bold ${profit > 0 ? 'text-amber-600' : 'text-red-600'}`}>{formatUZS(profit)}</p>
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
 

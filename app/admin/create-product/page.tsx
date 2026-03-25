@@ -26,6 +26,7 @@ const AddProduct = () => {
   const [product, setProduct] = useState({
     title: "",
     price: "",
+    costPrice: 0,
     productImageUrl: [] as ImageT[],
     category: "",
     description: "",
@@ -159,6 +160,7 @@ const AddProduct = () => {
     setProduct({
       title: "",
       price: "",
+      costPrice: 0,
       productImageUrl: [] as ImageT[],
       category: "",
       description: "",
@@ -346,11 +348,28 @@ const AddProduct = () => {
             </div>
           )}
 
-          {/* Price */}
+          {/* Tan narxi (Cost Price) */}
           <div className="flex max-w-[480px] flex-wrap items-end gap-4">
             <label className="flex flex-col min-w-40 flex-1">
               <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
-                Narxi*
+                Tan narxi (kelish narxi)*
+              </p>
+              <input
+                type="number"
+                min="0"
+                placeholder="0 so'm"
+                className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-brand-black-text focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none !h-10 placeholder:text-[#4e7397] p-4 text-base font-normal leading-normal"
+                value={product.costPrice || ''}
+                onChange={(e) => setProduct({ ...product, costPrice: parseInt(e.target.value) || 0 })}
+              />
+            </label>
+          </div>
+
+          {/* Sotish narxi (Selling Price) */}
+          <div className="flex max-w-[480px] flex-wrap items-end gap-4">
+            <label className="flex flex-col min-w-40 flex-1">
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">
+                Sotish narxi*
               </p>
               <input
                 placeholder="0 so'm"

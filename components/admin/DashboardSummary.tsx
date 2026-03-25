@@ -1,98 +1,189 @@
 "use client";
-import React from "react";
-import { ShoppingCart, UserPlus, TrendingUp } from "lucide-react";
+import { ShoppingCart, UserPlus, TrendingUp, Package, AlertTriangle, DollarSign } from "lucide-react";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { formatUZS } from "@/lib/formatPrice";
 import Link from "next/link";
 import { ShineBorder } from "@/components/ui/shine-border";
+import useProductStore from "@/store/useProductStore";
+import { useOrderStore } from "@/store/useOrderStore";
+import { useEffect } from "react";
 
 const DashboardSummary = () => {
   const { notifications } = useNotificationStore();
+  const { products, fetchProducts } = useProductStore();
+  const { orders, fetchAllOrders } = useOrderStore();
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => { fetchAllOrders(); }, [fetchAllOrders]);
 
   const unreadOrders = notifications.filter((n) => !n.read && n.type === "new_order");
   const unreadUsers = notifications.filter((n) => !n.read && n.type === "new_user");
-  const newRevenue = unreadOrders.reduce((sum, n) => sum + (n.orderData?.totalPrice || 0), 0);
-  const totalOrders = notifications.filter((n) => n.type === "new_order").length;
-  const totalUsers = notifications.filter((n) => n.type === "new_user").length;
+
+  // Revenue from ALL delivered orders
+  const deliveredOrders = orders.filter((o) => o.status === 'yetkazildi');
+  const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+  // Profit calculation from delivered orders
+  const totalProfit = deliveredOrders.reduce((sum, order) => {
+    let orderCost = 0;
+    for (const item of (order.basketItems || [])) {
+      orderCost += (item.costPrice || 0) * item.quantity;
+    }
+    return sum + ((order.totalPrice || 0) - orderCost);
+  }, 0);
+
+  // Product stats
+  const totalProducts = products.length;
+  const lowStockProducts = products.filter((p) => {
+    const hasStock = p.stock !== undefined && p.stock !== null;
+    return hasStock && (p.stock as number) <= 5;
+  }).length;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-      {/* New Orders Card */}
-      <Link href="/admin/orders" className="group">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      {/* New Orders */}
+      <Link href="/admin/orders">
         <ShineBorder
-          color={unreadOrders.length > 0 ? ["#22c55e", "#16a34a", "#4ade80"] : ["#d1d5db"]}
+          color={unreadOrders.length > 0 ? ["#22c55e", "#16a34a", "#4ade80"] : ["#e5e7eb"]}
           borderWidth={unreadOrders.length > 0 ? 2 : 1}
-          duration={unreadOrders.length > 0 ? 8 : 20}
-          className="hover:shadow-md transition-shadow"
+          duration={unreadOrders.length > 0 ? 8 : 25}
+          className="hover:shadow-lg transition-shadow"
         >
           <div className="relative overflow-hidden w-full rounded-xl p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Yangi buyurtmalar</p>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Yangi buyurtmalar</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{unreadOrders.length}</p>
-                <p className="text-xs text-gray-500 mt-1">Jami: {totalOrders} ta</p>
+                <p className="text-xs text-gray-500 mt-1">Jami: {orders.length} ta</p>
               </div>
               <div className={`flex items-center justify-center size-11 rounded-xl ${unreadOrders.length > 0 ? "bg-green-100" : "bg-gray-100"}`}>
                 <ShoppingCart className={`size-5 ${unreadOrders.length > 0 ? "text-green-600" : "text-gray-400"}`} />
               </div>
             </div>
-            {unreadOrders.length > 0 && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500" />
-            )}
           </div>
         </ShineBorder>
       </Link>
 
-      {/* New Users Card */}
-      <Link href="/admin" className="group">
+      {/* New Users */}
+      <Link href="/admin">
         <ShineBorder
-          color={unreadUsers.length > 0 ? ["#3b82f6", "#2563eb", "#60a5fa"] : ["#d1d5db"]}
+          color={unreadUsers.length > 0 ? ["#3b82f6", "#2563eb", "#60a5fa"] : ["#e5e7eb"]}
           borderWidth={unreadUsers.length > 0 ? 2 : 1}
-          duration={unreadUsers.length > 0 ? 8 : 20}
-          className="hover:shadow-md transition-shadow"
+          duration={unreadUsers.length > 0 ? 8 : 25}
+          className="hover:shadow-lg transition-shadow"
         >
           <div className="relative overflow-hidden w-full rounded-xl p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Yangi foydalanuvchilar</p>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Yangi foydalanuvchilar</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{unreadUsers.length}</p>
-                <p className="text-xs text-gray-500 mt-1">Jami: {totalUsers} ta</p>
               </div>
               <div className={`flex items-center justify-center size-11 rounded-xl ${unreadUsers.length > 0 ? "bg-blue-100" : "bg-gray-100"}`}>
                 <UserPlus className={`size-5 ${unreadUsers.length > 0 ? "text-blue-600" : "text-gray-400"}`} />
               </div>
             </div>
-            {unreadUsers.length > 0 && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
-            )}
           </div>
         </ShineBorder>
       </Link>
 
-      {/* Revenue Card */}
+      {/* Total Products */}
+      <Link href="/admin/products">
+        <ShineBorder
+          color={["#8b5cf6", "#a78bfa", "#7c3aed"]}
+          borderWidth={1}
+          duration={25}
+          className="hover:shadow-lg transition-shadow"
+        >
+          <div className="relative overflow-hidden w-full rounded-xl p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Jami mahsulotlar</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{totalProducts}</p>
+                {lowStockProducts > 0 && (
+                  <p className="text-xs text-red-500 font-semibold mt-1">{lowStockProducts} ta kam qolgan</p>
+                )}
+              </div>
+              <div className="flex items-center justify-center size-11 rounded-xl bg-purple-100">
+                <Package className="size-5 text-purple-600" />
+              </div>
+            </div>
+          </div>
+        </ShineBorder>
+      </Link>
+
+      {/* Total Revenue */}
       <ShineBorder
-        color={newRevenue > 0 ? ["#10b981", "#059669", "#34d399"] : ["#d1d5db"]}
-        borderWidth={newRevenue > 0 ? 2 : 1}
-        duration={newRevenue > 0 ? 8 : 20}
-        className="hover:shadow-md transition-shadow"
+        color={totalRevenue > 0 ? ["#10b981", "#059669", "#34d399"] : ["#e5e7eb"]}
+        borderWidth={totalRevenue > 0 ? 2 : 1}
+        duration={totalRevenue > 0 ? 10 : 25}
+        className="hover:shadow-lg transition-shadow"
       >
         <div className="relative overflow-hidden w-full rounded-xl p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Yangi daromad</p>
-              <p className={`text-2xl font-bold mt-1 ${newRevenue > 0 ? "text-green-600" : "text-gray-900"}`}>
-                {newRevenue > 0 ? formatUZS(newRevenue) : "0 so'm"}
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Umumiy daromad</p>
+              <p className={`text-2xl font-bold mt-1 ${totalRevenue > 0 ? "text-green-600" : "text-gray-400"}`}>
+                {totalRevenue > 0 ? formatUZS(totalRevenue) : "0 so'm"}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Ko&apos;rib chiqilmagan buyurtmalardan</p>
+              <p className="text-xs text-gray-500 mt-1">Yetkazilgan buyurtmalardan</p>
             </div>
-            <div className={`flex items-center justify-center size-11 rounded-xl ${newRevenue > 0 ? "bg-emerald-100" : "bg-gray-100"}`}>
-              <TrendingUp className={`size-5 ${newRevenue > 0 ? "text-emerald-600" : "text-gray-400"}`} />
+            <div className={`flex items-center justify-center size-11 rounded-xl ${totalRevenue > 0 ? "bg-emerald-100" : "bg-gray-100"}`}>
+              <TrendingUp className={`size-5 ${totalRevenue > 0 ? "text-emerald-600" : "text-gray-400"}`} />
             </div>
           </div>
-          {newRevenue > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
-          )}
         </div>
+      </ShineBorder>
+
+      {/* Profit */}
+      <ShineBorder
+        color={totalProfit > 0 ? ["#f59e0b", "#d97706", "#fbbf24"] : ["#e5e7eb"]}
+        borderWidth={totalProfit > 0 ? 2 : 1}
+        duration={totalProfit > 0 ? 10 : 25}
+        className="hover:shadow-lg transition-shadow"
+      >
+        <div className="relative overflow-hidden w-full rounded-xl p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Sof foyda</p>
+              <p className={`text-2xl font-bold mt-1 ${totalProfit > 0 ? "text-amber-600" : "text-gray-400"}`}>
+                {totalProfit > 0 ? formatUZS(totalProfit) : "0 so'm"}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {totalRevenue > 0 ? `Marja: ${((totalProfit / totalRevenue) * 100).toFixed(1)}%` : "Tan narxini kiriting"}
+              </p>
+            </div>
+            <div className={`flex items-center justify-center size-11 rounded-xl ${totalProfit > 0 ? "bg-amber-100" : "bg-gray-100"}`}>
+              <DollarSign className={`size-5 ${totalProfit > 0 ? "text-amber-600" : "text-gray-400"}`} />
+            </div>
+          </div>
+        </div>
+      </ShineBorder>
+
+      {/* Low Stock Alert */}
+      <ShineBorder
+        color={lowStockProducts > 0 ? ["#ef4444", "#dc2626", "#f87171"] : ["#e5e7eb"]}
+        borderWidth={lowStockProducts > 0 ? 2 : 1}
+        duration={lowStockProducts > 0 ? 6 : 25}
+        className="hover:shadow-lg transition-shadow"
+      >
+        <Link href="/admin/products" className="block">
+          <div className="relative overflow-hidden w-full rounded-xl p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Kam qolgan mahsulotlar</p>
+                <p className={`text-3xl font-bold mt-1 ${lowStockProducts > 0 ? "text-red-600" : "text-green-600"}`}>
+                  {lowStockProducts}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {lowStockProducts > 0 ? "Omborda 5 tadan kam" : "Hammasi yetarli"}
+                </p>
+              </div>
+              <div className={`flex items-center justify-center size-11 rounded-xl ${lowStockProducts > 0 ? "bg-red-100" : "bg-green-100"}`}>
+                <AlertTriangle className={`size-5 ${lowStockProducts > 0 ? "text-red-600" : "text-green-600"}`} />
+              </div>
+            </div>
+          </div>
+        </Link>
       </ShineBorder>
     </div>
   );

@@ -18,7 +18,6 @@ export const useOrderStore = create<StoreState>((set) => ({
   currentOrder: null,
   loadingOrders: true,
 
-  // Add a new order to Firestore and update the state
   addOrder: async (order: Order) => {
     try {
       if (!order.userUid) {
@@ -31,15 +30,7 @@ export const useOrderStore = create<StoreState>((set) => ({
         status: 'yangi' as OrderStatus,
         userUid: order.userUid,
       });
-
-      // Decrement stock for each ordered product
-      for (const item of order.basketItems) {
-        if (item.id) {
-          const productRef = doc(fireDB, "products", item.id);
-          await updateDoc(productRef, { stock: increment(-item.quantity) });
-        }
-      }
-
+      // Stock is NOT decremented here — only when admin marks "yetkazildi"
       set((state) => {
         const newOrder = { ...order, id: docRef.id };
         return { orders: [...state.orders, newOrder] };
@@ -52,21 +43,30 @@ export const useOrderStore = create<StoreState>((set) => ({
   updateOrderStatus: async (orderId: string, status: OrderStatus) => {
     try {
       const orderRef = doc(fireDB, "orders", orderId);
+      const orderSnap = await getDoc(orderRef);
+      if (!orderSnap.exists()) return;
 
-      // If cancelling, restore stock for each product
-      if (status === 'bekor_qilindi') {
-        const orderSnap = await getDoc(orderRef);
-        if (orderSnap.exists()) {
-          const orderData = orderSnap.data();
-          const prevStatus = orderData.status || 'yangi';
-          // Only restore if not already cancelled
-          if (prevStatus !== 'bekor_qilindi') {
-            for (const item of (orderData.basketItems || []) as ProductT[]) {
-              if (item.id) {
-                const productRef = doc(fireDB, "products", item.id);
-                await updateDoc(productRef, { stock: increment(item.quantity) });
-              }
-            }
+      const orderData = orderSnap.data();
+      const prevStatus = (orderData.status || 'yangi') as OrderStatus;
+      const basketItems = (orderData.basketItems || []) as ProductT[];
+
+      // Decrement stock when admin marks as DELIVERED (yetkazildi)
+      if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
+        for (const item of basketItems) {
+          if (item.id) {
+            const productRef = doc(fireDB, "products", item.id);
+            await updateDoc(productRef, { stock: increment(-item.quantity) });
+          }
+        }
+      }
+
+      // Restore stock if cancelling a DELIVERED order (rare but safe)
+      // Or if cancelling any order that was already delivered
+      if (status === 'bekor_qilindi' && prevStatus === 'yetkazildi') {
+        for (const item of basketItems) {
+          if (item.id) {
+            const productRef = doc(fireDB, "products", item.id);
+            await updateDoc(productRef, { stock: increment(item.quantity) });
           }
         }
       }
@@ -83,13 +83,13 @@ export const useOrderStore = create<StoreState>((set) => ({
     try {
       const q = query(collection(fireDB, "orders"));
       const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
-        let OrderArray: any = [];
+        const OrderArray: Order[] = [];
         QuerySnapshot.forEach((doc) => {
-          OrderArray.push({ ...doc.data(), id: doc.id });
+          OrderArray.push({ ...doc.data(), id: doc.id } as Order);
         });
         set({ orders: OrderArray, loadingOrders: false });
       });
-      return () => unsubscribe(); 
+      return () => unsubscribe();
     } catch (error) {
       console.error("Error fetching orders: ", error);
       set({ loadingOrders: false });
@@ -101,34 +101,19 @@ export const useOrderStore = create<StoreState>((set) => ({
     try {
       const q = query(collection(fireDB, "orders"));
       const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
-        let OrderArray: any = [];
+        const OrderArray: Order[] = [];
         QuerySnapshot.forEach((doc) => {
           const data = doc.data();
           if (data.userUid === userUid) {
-            OrderArray.push({ ...data, id: doc.id });
+            OrderArray.push({ ...data, id: doc.id } as Order);
           }
         });
         set({ orders: OrderArray, loadingOrders: false });
       });
-      return () => unsubscribe(); 
+      return () => unsubscribe();
     } catch (error) {
       console.error("Error fetching user orders: ", error);
       set({ loadingOrders: false });
     }
   },
-
-  // Fetch a single order by its ID and update the state
-  // fetchSingleOrder: async (orderId: string) => {
-  //   try {
-  //     const orderDoc = await getDoc(doc(fireDB, "orders", orderId));
-  //     if (orderDoc.exists()) {
-  //       set({ currentOrder: { id: orderDoc.id, ...orderDoc.data() } });
-  //     } else {
-  //       console.error("Order not found");
-  //       set({ currentOrder: null });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching order by ID: ", error);
-  //   }
-  // },
 }));

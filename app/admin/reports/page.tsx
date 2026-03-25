@@ -1,0 +1,214 @@
+"use client";
+import React, { useEffect, useState, useMemo } from 'react';
+import PanelTitle from '@/components/admin/PanelTitle';
+import { useOrderStore } from '@/store/useOrderStore';
+import { formatUZS } from '@/lib/formatPrice';
+import { getStatusInfo } from '@/lib/orderStatus';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, BarChart3 } from 'lucide-react';
+
+type Period = 'today' | 'week' | 'month' | 'all';
+
+const ReportsPage = () => {
+  const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
+  const [period, setPeriod] = useState<Period>('today');
+
+  useEffect(() => { fetchAllOrders(); }, [fetchAllOrders]);
+
+  const getStartDate = (p: Period): Date => {
+    const now = new Date();
+    switch (p) {
+      case 'today': return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      case 'week': {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 7);
+        return d;
+      }
+      case 'month': return new Date(now.getFullYear(), now.getMonth(), 1);
+      case 'all': return new Date(2000, 0, 1);
+    }
+  };
+
+  const stats = useMemo(() => {
+    const startDate = getStartDate(period);
+    const startMs = startDate.getTime();
+
+    const filtered = orders.filter((o) => {
+      const orderDate = o.date?.seconds ? o.date.seconds * 1000 : 0;
+      return orderDate >= startMs;
+    });
+
+    const delivered = filtered.filter((o) => o.status === 'yetkazildi');
+    const cancelled = filtered.filter((o) => o.status === 'bekor_qilindi');
+    const pending = filtered.filter((o) => o.status !== 'yetkazildi' && o.status !== 'bekor_qilindi');
+
+    let totalRevenue = 0;
+    let totalCost = 0;
+    let totalItems = 0;
+
+    for (const order of delivered) {
+      totalRevenue += order.totalPrice || 0;
+      totalItems += order.totalQuantity || 0;
+      for (const item of (order.basketItems || [])) {
+        totalCost += (item.costPrice || 0) * item.quantity;
+      }
+    }
+
+    const totalProfit = totalRevenue - totalCost;
+    const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
+
+    // Top products by profit
+    const productProfitMap: Record<string, { title: string; revenue: number; cost: number; qty: number }> = {};
+    for (const order of delivered) {
+      for (const item of (order.basketItems || [])) {
+        const key = item.id || item.title;
+        if (!productProfitMap[key]) {
+          productProfitMap[key] = { title: item.title, revenue: 0, cost: 0, qty: 0 };
+        }
+        productProfitMap[key].revenue += Number(item.price) * item.quantity;
+        productProfitMap[key].cost += (item.costPrice || 0) * item.quantity;
+        productProfitMap[key].qty += item.quantity;
+      }
+    }
+
+    const topProducts = Object.values(productProfitMap)
+      .map((p) => ({ ...p, profit: p.revenue - p.cost }))
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 10);
+
+    return {
+      totalOrders: filtered.length,
+      deliveredCount: delivered.length,
+      cancelledCount: cancelled.length,
+      pendingCount: pending.length,
+      totalRevenue,
+      totalCost,
+      totalProfit,
+      profitMargin,
+      totalItems,
+      topProducts,
+    };
+  }, [orders, period]);
+
+  const periods: { value: Period; label: string }[] = [
+    { value: 'today', label: 'Bugun' },
+    { value: 'week', label: 'Shu hafta' },
+    { value: 'month', label: 'Shu oy' },
+    { value: 'all', label: 'Hammasi' },
+  ];
+
+  if (loadingOrders) return <div className="flex items-center justify-center p-10">Yuklanmoqda...</div>;
+
+  return (
+    <div>
+      <PanelTitle title="Hisobotlar" />
+      <div className="px-4 py-3">
+        {/* Period selector */}
+        <div className="flex gap-2 mb-6">
+          {periods.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors ${
+                period === p.value ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <ShoppingCart className="size-4 text-blue-600" />
+              <p className="text-xs text-gray-500 uppercase font-semibold">Buyurtmalar</p>
+            </div>
+            <p className="text-2xl font-bold">{stats.totalOrders}</p>
+            <div className="flex gap-2 mt-1 text-[11px]">
+              <span className="text-green-600">{stats.deliveredCount} yetkazildi</span>
+              <span className="text-gray-400">{stats.pendingCount} kutilmoqda</span>
+              {stats.cancelledCount > 0 && <span className="text-red-500">{stats.cancelledCount} bekor</span>}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="size-4 text-green-600" />
+              <p className="text-xs text-gray-500 uppercase font-semibold">Daromad</p>
+            </div>
+            <p className="text-2xl font-bold text-green-600">{formatUZS(stats.totalRevenue)}</p>
+            <p className="text-[11px] text-gray-400 mt-1">{stats.totalItems} ta mahsulot sotildi</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingDown className="size-4 text-gray-500" />
+              <p className="text-xs text-gray-500 uppercase font-semibold">Tan narxi</p>
+            </div>
+            <p className="text-2xl font-bold text-gray-500">{formatUZS(stats.totalCost)}</p>
+            <p className="text-[11px] text-gray-400 mt-1">Yetkazilgan buyurtmalardan</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="size-4 text-amber-600" />
+              <p className="text-xs text-gray-500 uppercase font-semibold">Sof foyda</p>
+            </div>
+            <p className={`text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-amber-600' : 'text-red-600'}`}>
+              {formatUZS(stats.totalProfit)}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">Marja: {stats.profitMargin.toFixed(1)}%</p>
+          </div>
+        </div>
+
+        {/* Top products by profit */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+            <BarChart3 className="size-4 text-gray-600" />
+            <h3 className="font-bold text-sm">Eng foydali mahsulotlar</h3>
+          </div>
+          {stats.topProducts.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-gray-400 text-center">Ma&apos;lumotlar mavjud emas</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">#</th>
+                  <th className="text-left px-4 py-2 font-medium">Mahsulot</th>
+                  <th className="text-right px-4 py-2 font-medium">Sotildi</th>
+                  <th className="text-right px-4 py-2 font-medium">Daromad</th>
+                  <th className="text-right px-4 py-2 font-medium">Tan narxi</th>
+                  <th className="text-right px-4 py-2 font-medium">Foyda</th>
+                  <th className="text-right px-4 py-2 font-medium">Marja</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.topProducts.map((p, idx) => {
+                  const margin = p.revenue > 0 ? ((p.profit / p.revenue) * 100) : 0;
+                  return (
+                    <tr key={idx} className="border-t border-gray-50">
+                      <td className="px-4 py-2 text-gray-500">{idx + 1}</td>
+                      <td className="px-4 py-2 font-medium">{p.title}</td>
+                      <td className="px-4 py-2 text-right">{p.qty} ta</td>
+                      <td className="px-4 py-2 text-right text-green-700 font-semibold">{formatUZS(p.revenue)}</td>
+                      <td className="px-4 py-2 text-right text-gray-500">{formatUZS(p.cost)}</td>
+                      <td className={`px-4 py-2 text-right font-bold ${p.profit >= 0 ? 'text-amber-600' : 'text-red-600'}`}>
+                        {formatUZS(p.profit)}
+                      </td>
+                      <td className={`px-4 py-2 text-right font-semibold ${margin >= 20 ? 'text-green-600' : margin >= 10 ? 'text-amber-600' : 'text-red-600'}`}>
+                        {margin.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ReportsPage;

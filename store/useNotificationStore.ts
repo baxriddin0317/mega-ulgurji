@@ -4,6 +4,7 @@ import { collection, onSnapshot, query } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 import { Order, ProductT } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
+import { getStatusInfo } from '@/lib/orderStatus';
 
 export interface OrderPayload {
   clientName: string;
@@ -24,7 +25,7 @@ export interface UserPayload {
 export interface Notification {
   id: string;
   refId: string;
-  type: 'new_order' | 'new_user';
+  type: 'new_order' | 'new_user' | 'order_status_change';
   title: string;
   message: string;
   detail: string;
@@ -39,6 +40,7 @@ interface NotificationState {
   unreadCount: number;
   _seenOrderIds: string[];
   _seenUserIds: string[];
+  _orderStatusMap: Record<string, string>;
   _ordersInitialized: boolean;
   _usersInitialized: boolean;
   _unsubOrders: (() => void) | null;
@@ -60,6 +62,7 @@ export const useNotificationStore = create<NotificationState>()(
       unreadCount: 0,
       _seenOrderIds: [],
       _seenUserIds: [],
+      _orderStatusMap: {},
       _ordersInitialized: false,
       _usersInitialized: false,
       _unsubOrders: null,
@@ -75,19 +78,30 @@ export const useNotificationStore = create<NotificationState>()(
             const s = get();
 
             if (!s._ordersInitialized) {
+              // On first load, record all existing order IDs and their statuses
+              const statusMap: Record<string, string> = {};
+              snapshot.docs.forEach((d) => {
+                const data = d.data();
+                statusMap[d.id] = data.status || 'yangi';
+              });
               set({
                 _ordersInitialized: true,
                 _seenOrderIds: snapshot.docs.map((d) => d.id),
+                _orderStatusMap: statusMap,
               });
               return;
             }
 
             const newNotifs: Notification[] = [];
+            const statusUpdates: Record<string, string> = {};
+
             for (const change of snapshot.docChanges()) {
+              const id = change.doc.id;
+              const data = change.doc.data() as Order;
+
               if (change.type === 'added') {
-                const id = change.doc.id;
                 if (s._seenOrderIds.includes(id)) continue;
-                const data = change.doc.data() as Order;
+                statusUpdates[id] = data.status || 'yangi';
                 newNotifs.push({
                   id: `order_${id}`,
                   refId: id,
@@ -112,14 +126,49 @@ export const useNotificationStore = create<NotificationState>()(
                     })),
                   },
                 });
+              } else if (change.type === 'modified') {
+                // Detect status change
+                const newStatus = data.status || 'yangi';
+                const prevStatus = s._orderStatusMap[id];
+                if (prevStatus && prevStatus !== newStatus) {
+                  const statusInfo = getStatusInfo(newStatus);
+                  statusUpdates[id] = newStatus;
+                  newNotifs.push({
+                    id: `status_${id}_${Date.now()}`,
+                    refId: id,
+                    type: 'order_status_change',
+                    title: `${data.clientName}: ${statusInfo.label}`,
+                    message: `${data.totalQuantity} ta mahsulot — ${formatUZS(data.totalPrice)}`,
+                    detail: data.clientPhone,
+                    timestamp: Date.now(),
+                    read: false,
+                    orderData: {
+                      clientName: data.clientName,
+                      clientPhone: data.clientPhone,
+                      totalPrice: data.totalPrice,
+                      totalQuantity: data.totalQuantity,
+                      status: newStatus,
+                      basketItems: (data.basketItems || []).map((item: ProductT) => ({
+                        title: item.title,
+                        price: item.price,
+                        quantity: item.quantity,
+                        category: item.category,
+                        productImageUrl: item.productImageUrl?.slice(0, 1),
+                      })),
+                    },
+                  });
+                }
               }
             }
 
-            if (newNotifs.length > 0) {
+            if (newNotifs.length > 0 || Object.keys(statusUpdates).length > 0) {
               set((prev) => ({
-                notifications: [...newNotifs, ...prev.notifications].slice(0, 50),
+                notifications: newNotifs.length > 0
+                  ? [...newNotifs, ...prev.notifications].slice(0, 50)
+                  : prev.notifications,
                 unreadCount: prev.unreadCount + newNotifs.length,
-                _seenOrderIds: [...newNotifs.map((n) => n.refId), ...prev._seenOrderIds],
+                _seenOrderIds: [...Object.keys(statusUpdates).filter((k) => !prev._seenOrderIds.includes(k)), ...prev._seenOrderIds],
+                _orderStatusMap: { ...prev._orderStatusMap, ...statusUpdates },
               }));
             }
           });
@@ -247,6 +296,7 @@ export const useNotificationStore = create<NotificationState>()(
         unreadCount: state.unreadCount,
         _seenOrderIds: state._seenOrderIds,
         _seenUserIds: state._seenUserIds,
+        _orderStatusMap: state._orderStatusMap,
         newUserIds: state.newUserIds,
       }),
     }

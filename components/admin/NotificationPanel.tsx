@@ -33,8 +33,20 @@ const NotificationPanel = () => {
       const newest = notifications[0];
       if (newest && !newest.read) {
         const isOrder = newest.type === "new_order";
+        const isUser = newest.type === "new_user";
+        const isStatusChange = newest.type === "order_status_change";
+
+        // Play sound based on type
         if (isOrder) playOrderSound();
+        else if (isStatusChange) playOrderSound();
         else playUserSound();
+
+        // Color scheme
+        const bgClass = isOrder ? "bg-green-100" : isStatusChange ? "bg-amber-100" : "bg-blue-100";
+        const iconClass = isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
+        const textClass = isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
+        const borderColor = isOrder ? "#bbf7d0" : isStatusChange ? "#fde68a" : "#bfdbfe";
+
         toast(
           (t) => (
             <div
@@ -45,13 +57,16 @@ const NotificationPanel = () => {
               }}
             >
               <div className="shrink-0 mt-0.5">
-                <div className={`flex items-center justify-center size-9 rounded-full ${isOrder ? "bg-green-100" : "bg-blue-100"}`}>
-                  {isOrder ? <ShoppingCart className="size-4 text-green-600" /> : <UserPlus className="size-4 text-blue-600" />}
+                <div className={`flex items-center justify-center size-9 rounded-full ${bgClass}`}>
+                  {isUser
+                    ? <UserPlus className={`size-4 ${iconClass}`} />
+                    : <ShoppingCart className={`size-4 ${iconClass}`} />
+                  }
                 </div>
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm text-gray-900 truncate">{newest.title}</p>
-                <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-600" : "text-blue-600"}`}>{newest.message}</p>
+                <p className={`text-xs font-semibold mt-0.5 ${textClass}`}>{newest.message}</p>
                 {newest.detail && <p className="text-[11px] text-gray-400 mt-0.5">{newest.detail}</p>}
               </div>
             </div>
@@ -61,7 +76,7 @@ const NotificationPanel = () => {
             position: "top-right",
             style: {
               background: "#fff",
-              border: `1px solid ${isOrder ? "#bbf7d0" : "#bfdbfe"}`,
+              border: `1px solid ${borderColor}`,
               boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
               padding: "12px 16px",
               borderRadius: "12px",
@@ -170,6 +185,8 @@ const NotificationItem = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const isOrder = notification.type === "new_order";
+  const isStatusChange = notification.type === "order_status_change";
+  const isUser = notification.type === "new_user";
 
   const handleClick = () => {
     if (!notification.read) onRead(notification.id);
@@ -179,25 +196,30 @@ const NotificationItem = ({
   return (
     <div
       className={`group relative border-b border-gray-100 transition-colors ${
-        !notification.read ? (isOrder ? "bg-green-50/40" : "bg-blue-50/40") : "hover:bg-gray-50"
+        !notification.read
+          ? isOrder ? "bg-green-50/40" : isStatusChange ? "bg-amber-50/40" : "bg-blue-50/40"
+          : "hover:bg-gray-50"
       }`}
     >
       {/* Header row */}
       <div className="flex items-start gap-2.5 px-3 py-2.5 cursor-pointer" onClick={handleClick}>
         <div className={`shrink-0 mt-0.5 flex items-center justify-center size-8 rounded-full ${
-          isOrder ? "bg-green-100" : "bg-blue-100"
+          isOrder ? "bg-green-100" : isStatusChange ? "bg-amber-100" : "bg-blue-100"
         }`}>
-          {isOrder ? <ShoppingCart className="size-4 text-green-600" /> : <UserPlus className="size-4 text-blue-600" />}
+          {isUser
+            ? <UserPlus className="size-4 text-blue-600" />
+            : <ShoppingCart className={`size-4 ${isStatusChange ? "text-amber-600" : "text-green-600"}`} />
+          }
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             {!notification.read && (
-              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${isOrder ? "bg-green-500" : "bg-blue-500"}`} />
+              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${isOrder ? "bg-green-500" : isStatusChange ? "bg-amber-500" : "bg-blue-500"}`} />
             )}
             <span className="font-bold text-sm text-gray-900 truncate">{notification.title}</span>
           </div>
-          <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-700" : "text-blue-700"}`}>
+          <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-700" : isStatusChange ? "text-amber-700" : "text-blue-700"}`}>
             {notification.message}
           </p>
           <p className="text-[11px] text-gray-400 mt-0.5">
@@ -213,7 +235,7 @@ const NotificationItem = ({
       {/* Expanded details */}
       {expanded && (
         <div className="px-3 pb-3 animate-in fade-in slide-in-from-top-1 duration-150">
-          {isOrder && notification.orderData ? (
+          {(isOrder || isStatusChange) && notification.orderData ? (
             <OrderDetails data={notification.orderData} />
           ) : notification.userData ? (
             <UserDetails data={notification.userData} />

@@ -45,3 +45,20 @@ export interface Order {
   userUid: string;
   status?: OrderStatus;
 }
+
+export interface StockReceiptItem {
+  productId: string;
+  productTitle: string;
+  quantity: number;
+  unitCost: number;
+  totalCost: number;
+}
+
+export interface StockReceipt {
+  id: string;
+  supplierName: string;
+  date: Timestamp;
+  items: StockReceiptItem[];
+  totalAmount: number;
+  note?: string;
+}

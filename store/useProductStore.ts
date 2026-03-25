@@ -1,6 +1,6 @@
 import { fireDB } from '@/firebase/config';
 import { ProductT } from '@/lib/types';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
 import {create} from 'zustand';
 
 interface ProductStore {
@@ -10,55 +10,55 @@ interface ProductStore {
   fetchProducts: () => void;
   fetchSingleProduct: (id: string) => Promise<void>;
   updateProduct: (id: string, updatedProduct: ProductT) => Promise<void>;
-  // updateProduct: (productId: string, updatedData: Partial<any>) => Promise<void>;
+  bulkUpdatePrices: (productIds: string[], percentChange: number, updateCost: boolean) => Promise<number>;
   deleteProduct: (productId: string) => Promise<void>;
 }
 
-const useProductStore = create<ProductStore>((set) => ({
+const useProductStore = create<ProductStore>((set, get) => ({
   products: [],
   product: null,
   loading: false,
 
-  // Fetch all products
   fetchProducts: async () => {
     set({ loading: true });
     try {
       const q = query(collection(fireDB, "products"), orderBy("time"));
       const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
-        let productArray: any = [];
-        QuerySnapshot.forEach((doc) => {
-          productArray.push({ ...doc.data(), id: doc.id });
+        const productArray: ProductT[] = [];
+        QuerySnapshot.forEach((d) => {
+          productArray.push({ ...d.data(), id: d.id } as ProductT);
         });
         set({ products: productArray, loading: false });
       });
-      return () => unsubscribe(); 
+      return () => unsubscribe();
     } catch (error) {
       console.error('Error fetching products:', error);
       set({ loading: false });
     }
   },
 
-  // Fetch a single product by ID
   fetchSingleProduct: async (id: string) => {
     set({ loading: true });
     try {
       const productDoc = await getDoc(doc(fireDB, 'products', id));
-      const productData = productDoc.data();
-      
-      if (productData) {
+      const d = productDoc.data();
+
+      if (d) {
         set({
           product: {
-            id, 
-            title: productData.title,
-            price: productData.price,
-            productImageUrl: productData.productImageUrl,
-            category: productData.category,
-            description: productData.description,
-            quantity: productData.quantity,
-            time: productData.time,
-            date: productData.date,
-            storageFileId: productData.storageFileId,
-            subcategory: productData.subcategory
+            id,
+            title: d.title,
+            price: d.price,
+            costPrice: d.costPrice,
+            productImageUrl: d.productImageUrl,
+            category: d.category,
+            description: d.description,
+            quantity: d.quantity,
+            stock: d.stock,
+            time: d.time,
+            date: d.date,
+            storageFileId: d.storageFileId,
+            subcategory: d.subcategory
           } as ProductT,
           loading: false
         });
@@ -72,11 +72,13 @@ const useProductStore = create<ProductStore>((set) => ({
     }
   },
 
-  // Update a product
   updateProduct: async (id: string, updatedProduct: ProductT) => {
     set({ loading: true });
     try {
-      await setDoc(doc(fireDB, 'products', id), updatedProduct);
+      const productRef = doc(fireDB, 'products', id);
+      // Use updateDoc to preserve fields not in updatedProduct
+      const { id: _id, ...data } = updatedProduct;
+      await updateDoc(productRef, data);
       set({ product: updatedProduct, loading: false });
     } catch (error) {
       console.error('Error updating product:', error);
@@ -84,7 +86,31 @@ const useProductStore = create<ProductStore>((set) => ({
     }
   },
 
-  // Delete a product
+  // Bulk update prices by percentage for given product IDs
+  bulkUpdatePrices: async (productIds: string[], percentChange: number, updateCost: boolean) => {
+    const batch = writeBatch(fireDB);
+    const multiplier = 1 + (percentChange / 100);
+    let updated = 0;
+
+    for (const pid of productIds) {
+      const product = get().products.find((p) => p.id === pid);
+      if (!product) continue;
+
+      const newPrice = Math.round(Number(product.price) * multiplier);
+      const updates: { price: string; costPrice?: number } = { price: String(newPrice) };
+
+      if (updateCost && product.costPrice) {
+        updates.costPrice = Math.round(product.costPrice * multiplier);
+      }
+
+      batch.update(doc(fireDB, 'products', pid), updates);
+      updated++;
+    }
+
+    await batch.commit();
+    return updated;
+  },
+
   deleteProduct: async (productId) => {
     try {
       const productRef = doc(fireDB, 'products', productId);

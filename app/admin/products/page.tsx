@@ -7,6 +7,9 @@ import useCategoryStore from '@/store/useCategoryStore';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
+import { exportProductsToExcel } from '@/lib/exportExcel';
+import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
+import { Download, Percent } from 'lucide-react';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
   const { categories, fetchCategories } = useCategoryStore();
@@ -42,6 +45,7 @@ const Products = () => {
   const [search, setSearch] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('all');
+  const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const { categories } = useCategoryStore();
   const { products, fetchProducts } = useProductStore();
 
@@ -136,7 +140,40 @@ const Products = () => {
         activeSubcategory={activeSubcategory}
         setActiveSubcategory={setActiveSubcategory}
       />
+      {/* Action buttons */}
+      <div className="flex gap-2 px-4 pb-3">
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          onClick={() => setShowBulkUpdate(true)}
+        >
+          <Percent className="size-3.5" /> Narxni ommaviy yangilash
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          onClick={() => {
+            const filtered = activeCategory === 'all'
+              ? products
+              : products.filter((p) => p.category === activeCategory);
+            exportProductsToExcel(filtered, `mahsulotlar_${activeCategory}`);
+          }}
+        >
+          <Download className="size-3.5" /> Excel yuklab olish
+        </Button>
+      </div>
+
       <ProductTable search={search} category={activeCategory} subcategory={activeSubcategory} />
+
+      {showBulkUpdate && (
+        <BulkPriceUpdateModal
+          productIds={
+            (activeCategory === 'all' ? products : products.filter((p) => p.category === activeCategory))
+              .map((p) => p.id)
+          }
+          onClose={() => setShowBulkUpdate(false)}
+        />
+      )}
     </div>
   )
 }

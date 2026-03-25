@@ -15,6 +15,9 @@ import { formatUZS } from '@/lib/formatPrice';
 import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
+import { exportOrdersToExcel } from '@/lib/exportExcel';
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const StatusBadge = ({ status }: { status?: string }) => {
   const info = getStatusInfo(status);
@@ -50,7 +53,18 @@ const Orders = () => {
   return (
     <div>
       <PanelTitle title="Buyurtmalar" />
-      <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
+      <div className="flex items-center justify-between px-4">
+        <div className="flex-1">
+          <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
+        </div>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
+          onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
+        >
+          <Download className="size-3.5" /> Excel
+        </Button>
+      </div>
       {loadingOrders ? (
           <div className="flex items-center justify-center">
             Yuklanmoqda...

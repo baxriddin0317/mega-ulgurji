@@ -45,7 +45,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="MegaHome" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#c02020" />
+        <meta name="theme-color" content="#000000" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

@@ -17,12 +17,26 @@ import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
 import { formatUZS } from '@/lib/formatPrice';
 import { getStatusInfo } from '@/lib/orderStatus';
+import useCartProductStore from '@/store/useCartStore';
+import toast from 'react-hot-toast';
+import { RefreshCw } from 'lucide-react';
 
 const HistoryOrder = () => {
   useWhiteBody();
   const router = useRouter();
   const { userData } = useAuthStore();
   const { orders, fetchUserOrders, loadingOrders } = useOrderStore();
+  const { addToBasket, calculateTotals, clearBasket } = useCartProductStore();
+
+  const handleReorder = (order: typeof orders[0]) => {
+    clearBasket();
+    order.basketItems.forEach((item) => {
+      addToBasket(item);
+    });
+    calculateTotals();
+    toast.success(`${order.basketItems.length} ta mahsulot savatga qo'shildi`);
+    router.push('/cart-product');
+  };
 
   useEffect(() => {
     if (userData?.uid) {
@@ -112,9 +126,22 @@ const HistoryOrder = () => {
                             </tbody>
                           </table>
                         </div>
-                        <div className="mt-4 flex justify-end gap-8 text-base font-semibold">
-                          <span>Jami: {order.totalQuantity} ta</span>
-                          <span>Umumiy narx: {formatUZS(order.totalPrice)}</span>
+                        <div className="mt-4 flex items-center justify-between flex-wrap gap-4">
+                          <Button
+                            variant="default"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReorder(order);
+                            }}
+                            className="cursor-pointer flex items-center gap-2 bg-black text-white rounded-xl h-10 px-5 text-sm font-bold"
+                          >
+                            <RefreshCw className="size-4" />
+                            Qayta buyurtma berish
+                          </Button>
+                          <div className="flex gap-8 text-base font-semibold">
+                            <span>Jami: {order.totalQuantity} ta</span>
+                            <span>Umumiy narx: {formatUZS(order.totalPrice)}</span>
+                          </div>
                         </div>
                       </DisclosurePanel>
                     </Transition>

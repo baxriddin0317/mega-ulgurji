@@ -135,25 +135,19 @@
 /* ShineBorder animation */
 .shine-border-wrapper {
   overflow: hidden;
+  background: transparent;
 }
 
 .shine-border-effect {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1;
   border-radius: var(--shine-border-radius, 12px);
-  padding: var(--shine-border-width, 1.5px);
   will-change: background-position;
   background-image: var(--shine-bg);
   background-size: 300% 300%;
   animation: shine-pulse var(--shine-duration, 14s) infinite linear;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
   pointer-events: none;
+  z-index: 0;
 }
 
 @keyframes shine-pulse {

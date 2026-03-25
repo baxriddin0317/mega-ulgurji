@@ -15,7 +15,7 @@ interface ShineBorderProps {
 
 function ShineBorder({
   borderRadius = 12,
-  borderWidth = 1.5,
+  borderWidth = 2,
   duration = 14,
   color = "#000000",
   className,
@@ -27,11 +27,11 @@ function ShineBorder({
 
   return (
     <div
-      style={{ borderRadius: `${borderRadius}px` }}
-      className={cn(
-        "shine-border-wrapper relative grid h-full w-full place-items-center bg-white text-black",
-        className,
-      )}
+      className={cn("shine-border-wrapper relative grid h-full w-full place-items-center", className)}
+      style={{
+        borderRadius: `${borderRadius}px`,
+        padding: `${borderWidth}px`,
+      }}
     >
       <div
         className="shine-border-effect"
@@ -44,7 +44,12 @@ function ShineBorder({
           } as React.CSSProperties
         }
       />
-      {children}
+      <div
+        className="relative z-10 h-full w-full bg-white"
+        style={{ borderRadius: `${borderRadius - 1}px` }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

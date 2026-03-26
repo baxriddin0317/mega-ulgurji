@@ -292,7 +292,7 @@ const OrderDetails = ({ data }: { data: NonNullable<Notification["orderData"]> }
           <div key={idx} className="flex items-center gap-2.5 px-3 py-2">
             {item.productImageUrl && item.productImageUrl[0] ? (
               <img
-                src={item.productImageUrl[0].url}
+                src={item.productImageUrl?.[0]?.url || ''}
                 alt={item.title}
                 className="size-9 rounded-md object-cover shrink-0"
               />

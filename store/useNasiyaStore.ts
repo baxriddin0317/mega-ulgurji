@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { collection, addDoc, query, onSnapshot, doc, updateDoc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, doc, updateDoc, arrayUnion, Timestamp, getDoc } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 
 export interface PaymentRecord {
@@ -56,10 +56,10 @@ export const useNasiyaStore = create<NasiyaState>((set) => ({
   recordPayment: async (nasiyaId: string, amount: number, method: string, note?: string) => {
     try {
       const nasiyaRef = doc(fireDB, 'nasiya', nasiyaId);
-      // Find current record from state
-      const records = useNasiyaStore.getState().records;
-      const record = records.find((r) => r.id === nasiyaId);
-      if (!record) throw new Error('Nasiya topilmadi');
+      // Read fresh from Firestore to avoid race conditions
+      const nasiyaSnap = await getDoc(nasiyaRef);
+      if (!nasiyaSnap.exists()) throw new Error('Nasiya topilmadi');
+      const record = nasiyaSnap.data() as NasiyaRecord;
 
       const newPaidAmount = record.paidAmount + amount;
       const newRemaining = record.originalAmount - newPaidAmount;

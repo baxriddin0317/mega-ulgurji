@@ -69,7 +69,7 @@ const useCartProductStore = create<BasketState>()(
       
       getItemQuantity: (id) => {
         const item = get().cartProducts.find((item) => item.id === id);
-        return item ? item.quantity : 1;
+        return item ? item.quantity : 0;
       },
 
       calculateTotals: () => {

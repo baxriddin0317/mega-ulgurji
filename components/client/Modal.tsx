@@ -108,7 +108,7 @@ const SubmitModal = ({ setOpen }: props) => {
               {...register("firstName", {
                 required: "Ism majburiy kiritilishi kerak",
                 minLength: { value: 2, message: "Ism kamida 2 ta belgidan iborat bo'lishi kerak" },
-                pattern: { value: /^[A-Za-z\s]+$/, message: "Ism faqat harflar va bo'sh joylardan iborat bo'lishi mumkin" }
+                pattern: { value: /^[A-Za-z\u0400-\u04FF\u2018\u2019'\s]+$/, message: "Ism faqat harflar va bo'sh joylardan iborat bo'lishi mumkin" }
               })}
             />
             {errors.firstName && <span className="text-red-500 text-sm mt-1">{errors.firstName.message as string}</span>}

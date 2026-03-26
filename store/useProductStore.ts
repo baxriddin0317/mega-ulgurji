@@ -96,7 +96,7 @@ const useProductStore = create<ProductStore>((set, get) => ({
       const product = get().products.find((p) => p.id === pid);
       if (!product) continue;
 
-      const newPrice = Math.round(Number(product.price) * multiplier);
+      const newPrice = Math.max(0, Math.round(Number(product.price) * multiplier));
       const updates: { price: string; costPrice?: number } = { price: String(newPrice) };
 
       if (updateCost && product.costPrice) {

@@ -80,7 +80,7 @@ const HistoryOrder = () => {
                             </span>
                           );
                         })()}
-                        <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p>
+                        <p className="text-sm text-gray-500">Sana Vaqt: {new Date((order.date?.seconds || 0) * 1000).toLocaleString()}</p>
                       </div>
                       <IoIosArrowDown
                         className={`text-xl transition-all duration-300 ${open ? "" : "-rotate-180"}`}

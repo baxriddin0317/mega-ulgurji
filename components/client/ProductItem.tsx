@@ -53,6 +53,9 @@ const ProductItem = ({ id }: { id: string }) => {
   };
 
   const handleSubmit = async () => {
+    if (hasStock && quantity > stock) {
+      return toast.error(`Omborda faqat ${stock} ta mavjud`);
+    }
     addToBasket({...product, quantity: quantity});
     calculateTotals();
     toast.success("Mahsulot savatga muvaffaqiyatli qo'shildi");

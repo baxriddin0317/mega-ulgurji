@@ -24,7 +24,8 @@ const Quantity = ({id}: {id: string}) => {
   const handleDeleteQuantity = () => {
     decrementQuantity(id);
     calculateTotals();
-    if (quantityInBasket === 0) {
+    // When quantity was 1 and we decrement, item gets removed from cart
+    if (quantityInBasket <= 1) {
       router.push("/");
     }
   };

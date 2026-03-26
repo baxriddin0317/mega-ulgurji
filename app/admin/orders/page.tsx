@@ -82,7 +82,7 @@ const Orders = () => {
                         <p className="text-sm text-gray-500">{order.clientPhone}</p>
                       </div>
                       <StatusBadge status={order.status} />
-                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date(order.date.seconds * 1000).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date((order.date?.seconds || 0) * 1000).toLocaleString()}</p>
                     </div>
                   </div>
                   <IoIosArrowDown
@@ -167,7 +167,7 @@ const Orders = () => {
                                 <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500">{index + 1}.</td>
                                 <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">
                                   <div className="flex justify-center">
-                                    <Image width={80} height={80} className="w-20" src={productImageUrl[0].url} alt="" />
+                                    <Image width={80} height={80} className="w-20" src={productImageUrl?.[0]?.url || ''} alt="" />
                                   </div>
                                 </td>
                                 <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase">{title}</td>

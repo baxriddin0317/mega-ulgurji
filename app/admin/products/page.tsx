@@ -191,14 +191,14 @@ const Products = () => {
       <div className="flex gap-2 px-4 pb-3 flex-wrap">
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800"
           onClick={() => setShowBulkUpdate(true)}
         >
           <Percent className="size-3.5" /> Narxni ommaviy yangilash
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
           onClick={() => {
             const filtered = activeCategory === 'all'
               ? products
@@ -210,14 +210,14 @@ const Products = () => {
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
           onClick={() => generateProductTemplate(categories)}
         >
           <FileSpreadsheet className="size-3.5" /> Shablon yuklab olish
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 hover:text-violet-800"
           onClick={() => setShowImport(true)}
         >
           <Upload className="size-3.5" /> Import
@@ -225,7 +225,7 @@ const Products = () => {
         {products.length > 0 && (
           <Button
             variant="outline"
-            className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 ml-auto"
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-red-300 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 ml-auto"
             onClick={() => setShowDeleteAll(true)}
           >
             <Trash2 className="size-3.5" /> Hammasini o&apos;chirish

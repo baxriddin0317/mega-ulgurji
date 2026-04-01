@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { BiUser } from 'react-icons/bi'
-import { ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard } from 'lucide-react';
+import { ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore'
 
 const Menu = () => {
@@ -54,6 +54,10 @@ const Menu = () => {
             {newOrderCount}
           </span>
         )}
+      </Link>
+      <Link href={'/admin/invoices'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/invoices') ? 'bg-brand-gray-100' : ''}`}>
+        <FileText size={24} />
+        <p className="text-black text-sm font-medium leading-normal">Schyot-faktura</p>
       </Link>
       <Link href={'/admin/kirim'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/kirim') ? 'bg-brand-gray-100' : ''}`}>
         <PackagePlus size={24} />

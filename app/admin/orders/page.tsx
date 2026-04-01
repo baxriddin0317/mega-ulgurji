@@ -16,8 +16,9 @@ import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
 import { exportOrdersToExcel } from '@/lib/exportExcel';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const StatusBadge = ({ status }: { status?: string }) => {
   const info = getStatusInfo(status);
@@ -117,6 +118,14 @@ const Orders = () => {
                       {updatingId === order.id && (
                         <span className="inline-block w-4 h-4 border-2 border-t-transparent border-primary rounded-full animate-spin" />
                       )}
+                      <Link href={`/admin/invoice/${order.id}`} target="_blank">
+                        <Button
+                          variant="outline"
+                          className="rounded-lg cursor-pointer text-xs h-7 gap-1 border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100"
+                        >
+                          <FileText className="size-3" /> Faktura
+                        </Button>
+                      </Link>
                       <div className="ml-auto flex items-center gap-4 text-right">
                         <div>
                           <p className="text-[10px] text-gray-400 uppercase">Jami</p>

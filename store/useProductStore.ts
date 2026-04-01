@@ -1,6 +1,6 @@
 import { fireDB } from '@/firebase/config';
 import { ProductT } from '@/lib/types';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import {create} from 'zustand';
 
 interface ProductStore {
@@ -13,6 +13,7 @@ interface ProductStore {
   bulkUpdatePrices: (productIds: string[], percentChange: number, updateCost: boolean) => Promise<number>;
   deleteProduct: (productId: string) => Promise<void>;
   deleteAllProducts: () => Promise<void>;
+  bulkAddProducts: (products: { title: string; category: string; subcategory: string; price: string; costPrice: number; stock: number; description: string }[]) => Promise<void>;
 }
 
 const useProductStore = create<ProductStore>((set, get) => ({
@@ -136,6 +137,31 @@ const useProductStore = create<ProductStore>((set, get) => ({
       await batch.commit();
     }
     set({ products: [] });
+  },
+
+  bulkAddProducts: async (products) => {
+    for (let i = 0; i < products.length; i += 500) {
+      const batch = writeBatch(fireDB);
+      const chunk = products.slice(i, i + 500);
+      for (const product of chunk) {
+        const docRef = doc(collection(fireDB, 'products'));
+        batch.set(docRef, {
+          title: product.title,
+          category: product.category,
+          subcategory: product.subcategory || '',
+          price: product.price,
+          costPrice: product.costPrice || 0,
+          stock: product.stock || 0,
+          quantity: product.stock || 0,
+          description: product.description || '',
+          productImageUrl: [],
+          storageFileId: '',
+          time: Timestamp.now(),
+          date: Timestamp.now(),
+        });
+      }
+      await batch.commit();
+    }
   }
 }));
 

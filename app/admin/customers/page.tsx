@@ -5,7 +5,9 @@ import { useOrderStore } from '@/store/useOrderStore';
 import { useAuthStore } from '@/store/authStore';
 import type { UserData } from '@/store/authStore';
 import { formatUZS } from '@/lib/formatPrice';
-import { Crown, TrendingUp, ShoppingCart, Phone } from 'lucide-react';
+import { Crown, TrendingUp, ShoppingCart, Phone, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { exportCustomersToExcel } from '@/lib/importExcel';
 
 const CustomersPage = () => {
   const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
@@ -70,6 +72,17 @@ const CustomersPage = () => {
   return (
     <div>
       <PanelTitle title="Mijozlar reytingi" />
+      {customerStats.length > 0 && (
+        <div className="px-4 pb-3">
+          <Button
+            variant="outline"
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+            onClick={() => exportCustomersToExcel(customerStats)}
+          >
+            <Download className="size-3.5" /> Mijozlarni Excel yuklab olish
+          </Button>
+        </div>
+      )}
       <div className="px-4 py-3">
         {customerStats.length === 0 ? (
           <p className="text-gray-500 text-center py-10">Mijozlar mavjud emas</p>

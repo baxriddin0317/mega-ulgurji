@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
 import { exportProductsToExcel } from '@/lib/exportExcel';
 import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
-import { Download, Percent, Plus, FolderPlus, Trash2 } from 'lucide-react';
+import { Download, Percent, Plus, FolderPlus, Trash2, FileSpreadsheet, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { fireStorage } from '@/firebase/config';
 import { ref, listAll, deleteObject } from 'firebase/storage';
 import toast from 'react-hot-toast';
+import { generateProductTemplate } from '@/lib/importExcel';
+import ImportProductsModal from '@/components/admin/ImportProductsModal';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
   const { categories, fetchCategories } = useCategoryStore();
@@ -51,6 +53,7 @@ const Products = () => {
   const [activeSubcategory, setActiveSubcategory] = useState<string>('all');
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
   const { categories } = useCategoryStore();
   const { products, fetchProducts, deleteAllProducts } = useProductStore();
@@ -185,7 +188,7 @@ const Products = () => {
         setActiveSubcategory={setActiveSubcategory}
       />
       {/* Action buttons */}
-      <div className="flex gap-2 px-4 pb-3">
+      <div className="flex gap-2 px-4 pb-3 flex-wrap">
         <Button
           variant="outline"
           className="rounded-xl cursor-pointer text-xs h-8 gap-1"
@@ -204,6 +207,20 @@ const Products = () => {
           }}
         >
           <Download className="size-3.5" /> Excel yuklab olish
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          onClick={() => generateProductTemplate(categories)}
+        >
+          <FileSpreadsheet className="size-3.5" /> Shablon yuklab olish
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1"
+          onClick={() => setShowImport(true)}
+        >
+          <Upload className="size-3.5" /> Import
         </Button>
         {products.length > 0 && (
           <Button
@@ -226,6 +243,10 @@ const Products = () => {
           }
           onClose={() => setShowBulkUpdate(false)}
         />
+      )}
+
+      {showImport && (
+        <ImportProductsModal onClose={() => setShowImport(false)} />
       )}
 
       {showDeleteAll && (

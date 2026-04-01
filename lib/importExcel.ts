@@ -46,6 +46,44 @@ export function generateProductTemplate(categories: CategoryI[]) {
   XLSX.writeFile(wb, 'mahsulotlar_shablon.xlsx');
 }
 
+// Maps common column name variations (Uzbek, English, Russian) to canonical keys
+const COLUMN_MAP: Record<string, string> = {
+  // Title
+  'nomi': 'title', 'nomi ': 'title', 'nom': 'title',
+  'name': 'title', 'title': 'title', 'product': 'title', 'product name': 'title',
+  'mahsulot': 'title', 'mahsulot nomi': 'title',
+  'наименование': 'title', 'название': 'title', 'товар': 'title',
+  // Category
+  'kategoriya': 'category', 'category': 'category', 'kategoriya nomi': 'category',
+  'turi': 'category', 'type': 'category',
+  'категория': 'category',
+  // Subcategory
+  'subkategoriya': 'subcategory', 'subcategory': 'subcategory', 'sub category': 'subcategory',
+  'sub kategoriya': 'subcategory',
+  'подкатегория': 'subcategory',
+  // Selling price
+  'sotish narxi': 'price', 'narxi': 'price', 'narx': 'price',
+  'price': 'price', 'selling price': 'price', 'sell price': 'price',
+  'цена': 'price', 'цена продажи': 'price',
+  // Cost price
+  'tan narxi': 'costPrice', 'kelish narxi': 'costPrice', 'cost': 'costPrice',
+  'cost price': 'costPrice', 'purchase price': 'costPrice',
+  'себестоимость': 'costPrice',
+  // Stock
+  'ombor soni': 'stock', 'ombor': 'stock', 'soni': 'stock',
+  'stock': 'stock', 'quantity': 'stock', 'qty': 'stock',
+  'остаток': 'stock', 'количество': 'stock',
+  // Description
+  'tavsif': 'description', 'tavsifi': 'description',
+  'description': 'description', 'desc': 'description',
+  'описание': 'description',
+};
+
+function mapColumnKey(header: string): string | null {
+  const normalized = header.toLowerCase().trim();
+  return COLUMN_MAP[normalized] || null;
+}
+
 export function parseProductsFromFile(file: File, categories: CategoryI[]): Promise<ParsedProduct[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -56,17 +94,34 @@ export function parseProductsFromFile(file: File, categories: CategoryI[]): Prom
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
 
+        if (rows.length === 0) { resolve([]); return; }
+
+        // Build column mapping from actual headers
+        const sampleRow = rows[0];
+        const headerMap: Record<string, string> = {};
+        for (const key of Object.keys(sampleRow)) {
+          const mapped = mapColumnKey(key);
+          if (mapped) headerMap[key] = mapped;
+        }
+
+        const get = (row: Record<string, unknown>, canonical: string): string => {
+          for (const [original, mapped] of Object.entries(headerMap)) {
+            if (mapped === canonical && row[original] !== undefined) return String(row[original]).trim();
+          }
+          return '';
+        };
+
         const categoryNames = categories.map((c) => c.name);
 
         const products: ParsedProduct[] = rows.map((row) => {
           const errors: string[] = [];
-          const title = String(row['Nomi'] || '').trim();
-          const category = String(row['Kategoriya'] || '').trim();
-          const subcategory = String(row['Subkategoriya'] || '').trim();
-          const price = String(row['Sotish narxi'] || '0').trim();
-          const costPrice = Number(row['Tan narxi'] || 0);
-          const stock = Number(row['Ombor soni'] || 0);
-          const description = String(row['Tavsif'] || '').trim();
+          const title = get(row, 'title');
+          const category = get(row, 'category');
+          const subcategory = get(row, 'subcategory');
+          const price = get(row, 'price') || '0';
+          const costPrice = Number(get(row, 'costPrice') || 0);
+          const stock = Number(get(row, 'stock') || 0);
+          const description = get(row, 'description');
 
           if (!title) errors.push('Nomi kiritilmagan');
           if (!category) errors.push('Kategoriya kiritilmagan');

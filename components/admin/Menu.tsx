@@ -2,8 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
-import { BiFolderPlus } from 'react-icons/bi'
-import { LuBookPlus } from 'react-icons/lu'
 import { BiUser } from 'react-icons/bi'
 import { ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore'
@@ -56,14 +54,6 @@ const Menu = () => {
             {newOrderCount}
           </span>
         )}
-      </Link>
-      <Link href={'/admin/create-category'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-category') ? 'bg-brand-gray-100' : ''}`}>
-        <LuBookPlus size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Kategoriya qo&apos;shish</p>
-      </Link>
-      <Link href={'/admin/create-product'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/create-product') ? 'bg-brand-gray-100' : ''}`}>
-        <BiFolderPlus size={24} />
-        <p className="text-black text-sm font-medium leading-normal">Mahsulot qo&apos;shish</p>
       </Link>
       <Link href={'/admin/kirim'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/kirim') ? 'bg-brand-gray-100' : ''}`}>
         <PackagePlus size={24} />

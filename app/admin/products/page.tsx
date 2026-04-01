@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
 import { exportProductsToExcel } from '@/lib/exportExcel';
 import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
-import { Download, Percent } from 'lucide-react';
+import { Download, Percent, Plus, FolderPlus } from 'lucide-react';
+import Link from 'next/link';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
   const { categories, fetchCategories } = useCategoryStore();
@@ -122,6 +123,18 @@ const Products = () => {
   return (
     <div>
       <PanelTitle title='Mahsulotlar' />
+      <div className="flex gap-2 px-4 pb-4">
+        <Link href="/admin/create-product">
+          <Button className="rounded-xl cursor-pointer text-sm gap-1.5 bg-black text-white hover:bg-black/90">
+            <Plus className="size-4" /> Mahsulot qo&apos;shish
+          </Button>
+        </Link>
+        <Link href="/admin/create-category">
+          <Button variant="outline" className="rounded-xl cursor-pointer text-sm gap-1.5">
+            <FolderPlus className="size-4" /> Kategoriya qo&apos;shish
+          </Button>
+        </Link>
+      </div>
       <Search search={search} handleSearchChange={handleSearchChange} placeholder='Mahsulotlarni qidirish' />
       <CategoryFilter
         activeCategory={activeCategory}

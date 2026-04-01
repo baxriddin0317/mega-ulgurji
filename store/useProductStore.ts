@@ -12,6 +12,7 @@ interface ProductStore {
   updateProduct: (id: string, updatedProduct: ProductT) => Promise<void>;
   bulkUpdatePrices: (productIds: string[], percentChange: number, updateCost: boolean) => Promise<number>;
   deleteProduct: (productId: string) => Promise<void>;
+  deleteAllProducts: () => Promise<void>;
 }
 
 const useProductStore = create<ProductStore>((set, get) => ({
@@ -121,6 +122,20 @@ const useProductStore = create<ProductStore>((set, get) => ({
     } catch (error) {
       console.error('Error deleting product:', error);
     }
+  },
+
+  deleteAllProducts: async () => {
+    const { products } = get();
+    // Firestore batches limited to 500 ops, chunk accordingly
+    for (let i = 0; i < products.length; i += 500) {
+      const batch = writeBatch(fireDB);
+      const chunk = products.slice(i, i + 500);
+      for (const product of chunk) {
+        batch.delete(doc(fireDB, 'products', product.id));
+      }
+      await batch.commit();
+    }
+    set({ products: [] });
   }
 }));
 

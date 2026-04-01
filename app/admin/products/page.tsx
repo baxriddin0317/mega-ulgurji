@@ -9,8 +9,11 @@ import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
 import { exportProductsToExcel } from '@/lib/exportExcel';
 import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
-import { Download, Percent, Plus, FolderPlus } from 'lucide-react';
+import { Download, Percent, Plus, FolderPlus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { fireStorage } from '@/firebase/config';
+import { ref, listAll, deleteObject } from 'firebase/storage';
+import toast from 'react-hot-toast';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
   const { categories, fetchCategories } = useCategoryStore();
@@ -47,8 +50,10 @@ const Products = () => {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('all');
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
   const { categories } = useCategoryStore();
-  const { products, fetchProducts } = useProductStore();
+  const { products, fetchProducts, deleteAllProducts } = useProductStore();
 
   useEffect(() => {
     fetchProducts();
@@ -57,6 +62,32 @@ const Products = () => {
   const handleSearchChange = (e: string) => {
     setSearch(e)
   }
+
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      // Delete all product images from Firebase Storage
+      for (const product of products) {
+        if (product.storageFileId) {
+          try {
+            const folderRef = ref(fireStorage, `products/${product.storageFileId}`);
+            const fileList = await listAll(folderRef);
+            await Promise.all(fileList.items.map((item) => deleteObject(item)));
+          } catch {
+            // Storage folder may not exist, continue
+          }
+        }
+      }
+      // Delete all Firestore documents
+      await deleteAllProducts();
+      toast.success(`${products.length} ta mahsulot o'chirildi`);
+    } catch {
+      toast.error('Xatolik yuz berdi');
+    } finally {
+      setDeletingAll(false);
+      setShowDeleteAll(false);
+    }
+  };
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
@@ -174,6 +205,15 @@ const Products = () => {
         >
           <Download className="size-3.5" /> Excel yuklab olish
         </Button>
+        {products.length > 0 && (
+          <Button
+            variant="outline"
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 ml-auto"
+            onClick={() => setShowDeleteAll(true)}
+          >
+            <Trash2 className="size-3.5" /> Hammasini o&apos;chirish
+          </Button>
+        )}
       </div>
 
       <ProductTable search={search} category={activeCategory} subcategory={activeSubcategory} />
@@ -186,6 +226,42 @@ const Products = () => {
           }
           onClose={() => setShowBulkUpdate(false)}
         />
+      )}
+
+      {showDeleteAll && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+                <Trash2 className="size-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-black">Hammasini o&apos;chirish</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-1">
+              Barcha <span className="font-bold text-black">{products.length} ta</span> mahsulot va ularning rasmlari butunlay o&apos;chiriladi.
+            </p>
+            <p className="text-sm text-red-600 font-medium mb-6">
+              Bu amalni qaytarib bo&apos;lmaydi!
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl cursor-pointer"
+                onClick={() => setShowDeleteAll(false)}
+                disabled={deletingAll}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                className="flex-1 rounded-xl cursor-pointer bg-red-600 hover:bg-red-700 text-white"
+                onClick={handleDeleteAll}
+                disabled={deletingAll}
+              >
+                {deletingAll ? 'O\'chirilmoqda...' : 'Ha, hammasini o\'chir'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

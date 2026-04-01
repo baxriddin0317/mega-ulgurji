@@ -1,5 +1,6 @@
 import AdminHeader from '@/components/admin/AdminHeader'
 import Sidebar from '@/components/admin/Sidebar'
+import DailySummaryGenerator from '@/components/admin/DailySummaryGenerator'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import React, { ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -24,6 +25,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           </main>
         </div>
       </div>
+      <DailySummaryGenerator />
       <Toaster />
     </ProtectedRoute>
   )

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Bell, ShoppingCart, UserPlus, X, CheckCheck, ChevronDown, Phone, Mail, User, Package } from "lucide-react";
+import { Bell, ShoppingCart, UserPlus, X, CheckCheck, ChevronDown, Phone, Mail, User, Package, BarChart3, TrendingUp, AlertTriangle, ShoppingBag } from "lucide-react";
 import { useNotificationStore, Notification } from "@/store/useNotificationStore";
 import { Button } from "@/components/ui/button";
 import { formatUZS } from "@/lib/formatPrice";
@@ -35,17 +35,19 @@ const NotificationPanel = () => {
         const isOrder = newest.type === "new_order";
         const isUser = newest.type === "new_user";
         const isStatusChange = newest.type === "order_status_change";
+        const isSummaryType = newest.type === "daily_summary";
 
         // Play sound based on type
-        if (isOrder) playOrderSound();
+        if (isSummaryType) playOrderSound();
+        else if (isOrder) playOrderSound();
         else if (isStatusChange) playOrderSound();
         else playUserSound();
 
         // Color scheme
-        const bgClass = isOrder ? "bg-green-100" : isStatusChange ? "bg-amber-100" : "bg-blue-100";
-        const iconClass = isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
-        const textClass = isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
-        const borderColor = isOrder ? "#bbf7d0" : isStatusChange ? "#fde68a" : "#bfdbfe";
+        const bgClass = isSummaryType ? "bg-teal-100" : isOrder ? "bg-green-100" : isStatusChange ? "bg-amber-100" : "bg-blue-100";
+        const iconClass = isSummaryType ? "text-teal-600" : isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
+        const textClass = isSummaryType ? "text-teal-600" : isOrder ? "text-green-600" : isStatusChange ? "text-amber-600" : "text-blue-600";
+        const borderColor = isSummaryType ? "#99f6e4" : isOrder ? "#bbf7d0" : isStatusChange ? "#fde68a" : "#bfdbfe";
 
         toast(
           (t) => (
@@ -58,7 +60,9 @@ const NotificationPanel = () => {
             >
               <div className="shrink-0 mt-0.5">
                 <div className={`flex items-center justify-center size-9 rounded-full ${bgClass}`}>
-                  {isUser
+                  {isSummaryType
+                    ? <BarChart3 className={`size-4 ${iconClass}`} />
+                    : isUser
                     ? <UserPlus className={`size-4 ${iconClass}`} />
                     : <ShoppingCart className={`size-4 ${iconClass}`} />
                   }
@@ -187,39 +191,44 @@ const NotificationItem = ({
   const isOrder = notification.type === "new_order";
   const isStatusChange = notification.type === "order_status_change";
   const isUser = notification.type === "new_user";
+  const isSummary = notification.type === "daily_summary";
 
   const handleClick = () => {
     if (!notification.read) onRead(notification.id);
     setExpanded((prev) => !prev);
   };
 
+  // Color scheme per type
+  const colorMap = isSummary
+    ? { bg: "bg-teal-50/40", circle: "bg-teal-100", icon: "text-teal-600", dot: "bg-teal-500", text: "text-teal-700" }
+    : isOrder
+    ? { bg: "bg-green-50/40", circle: "bg-green-100", icon: "text-green-600", dot: "bg-green-500", text: "text-green-700" }
+    : isStatusChange
+    ? { bg: "bg-amber-50/40", circle: "bg-amber-100", icon: "text-amber-600", dot: "bg-amber-500", text: "text-amber-700" }
+    : { bg: "bg-blue-50/40", circle: "bg-blue-100", icon: "text-blue-600", dot: "bg-blue-500", text: "text-blue-700" };
+
+  const NotifIcon = isSummary ? BarChart3 : isUser ? UserPlus : ShoppingCart;
+
   return (
     <div
       className={`group relative border-b border-gray-100 transition-colors ${
-        !notification.read
-          ? isOrder ? "bg-green-50/40" : isStatusChange ? "bg-amber-50/40" : "bg-blue-50/40"
-          : "hover:bg-gray-50"
+        !notification.read ? colorMap.bg : "hover:bg-gray-50"
       }`}
     >
       {/* Header row */}
       <div className="flex items-start gap-2.5 px-3 py-2.5 cursor-pointer" onClick={handleClick}>
-        <div className={`shrink-0 mt-0.5 flex items-center justify-center size-8 rounded-full ${
-          isOrder ? "bg-green-100" : isStatusChange ? "bg-amber-100" : "bg-blue-100"
-        }`}>
-          {isUser
-            ? <UserPlus className="size-4 text-blue-600" />
-            : <ShoppingCart className={`size-4 ${isStatusChange ? "text-amber-600" : "text-green-600"}`} />
-          }
+        <div className={`shrink-0 mt-0.5 flex items-center justify-center size-8 rounded-full ${colorMap.circle}`}>
+          <NotifIcon className={`size-4 ${colorMap.icon}`} />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             {!notification.read && (
-              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${isOrder ? "bg-green-500" : isStatusChange ? "bg-amber-500" : "bg-blue-500"}`} />
+              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${colorMap.dot}`} />
             )}
             <span className="font-bold text-sm text-gray-900 truncate">{notification.title}</span>
           </div>
-          <p className={`text-xs font-semibold mt-0.5 ${isOrder ? "text-green-700" : isStatusChange ? "text-amber-700" : "text-blue-700"}`}>
+          <p className={`text-xs font-semibold mt-0.5 ${colorMap.text}`}>
             {notification.message}
           </p>
           <p className="text-[11px] text-gray-400 mt-0.5">
@@ -235,7 +244,9 @@ const NotificationItem = ({
       {/* Expanded details */}
       {expanded && (
         <div className="px-3 pb-3 animate-in fade-in slide-in-from-top-1 duration-150">
-          {(isOrder || isStatusChange) && notification.orderData ? (
+          {isSummary && notification.summaryData ? (
+            <SummaryDetails data={notification.summaryData} />
+          ) : (isOrder || isStatusChange) && notification.orderData ? (
             <OrderDetails data={notification.orderData} />
           ) : notification.userData ? (
             <UserDetails data={notification.userData} />
@@ -344,6 +355,70 @@ const UserDetails = ({ data }: { data: NonNullable<Notification["userData"]> }) 
           <Phone className="size-3.5 text-gray-400 shrink-0" />
           <span className="text-xs font-semibold text-gray-700">{data.phone || "Telefon ko'rsatilmagan"}</span>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Daily Summary Expanded View ---
+const SummaryDetails = ({ data }: { data: NonNullable<Notification["summaryData"]> }) => {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Metrics grid */}
+      <div className="grid grid-cols-3 divide-x divide-gray-100">
+        <div className="px-3 py-3 text-center">
+          <div className="flex items-center justify-center size-7 rounded-full bg-teal-100 mx-auto mb-1">
+            <ShoppingBag className="size-3.5 text-teal-600" />
+          </div>
+          <p className="text-lg font-bold text-gray-900">{data.totalOrders}</p>
+          <p className="text-[10px] text-gray-500 uppercase">Buyurtmalar</p>
+        </div>
+        <div className="px-3 py-3 text-center">
+          <div className="flex items-center justify-center size-7 rounded-full bg-emerald-100 mx-auto mb-1">
+            <TrendingUp className="size-3.5 text-emerald-600" />
+          </div>
+          <p className="text-sm font-bold text-emerald-600">{formatUZS(data.revenue)}</p>
+          <p className="text-[10px] text-gray-500 uppercase">Daromad</p>
+        </div>
+        <div className="px-3 py-3 text-center">
+          <div className="flex items-center justify-center size-7 rounded-full bg-amber-100 mx-auto mb-1">
+            <TrendingUp className="size-3.5 text-amber-600" />
+          </div>
+          <p className="text-sm font-bold text-amber-600">{formatUZS(data.profit)}</p>
+          <p className="text-[10px] text-gray-500 uppercase">Foyda</p>
+        </div>
+      </div>
+
+      {/* Breakdown */}
+      <div className="divide-y divide-gray-50 border-t border-gray-100">
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-xs text-gray-600">Yangi buyurtmalar</span>
+          <span className="text-xs font-bold text-gray-900">{data.newOrders} ta</span>
+        </div>
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-xs text-gray-600">Yetkazildi</span>
+          <span className="text-xs font-bold text-green-600">{data.deliveredOrders} ta</span>
+        </div>
+        {data.cancelledOrders > 0 && (
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs text-gray-600">Bekor qilindi</span>
+            <span className="text-xs font-bold text-red-600">{data.cancelledOrders} ta</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-xs text-gray-600 flex items-center gap-1">
+            <AlertTriangle className="size-3" /> Kam qolgan mahsulotlar
+          </span>
+          <span className={`text-xs font-bold ${data.lowStockCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            {data.lowStockCount} ta
+          </span>
+        </div>
+        {data.newUsers > 0 && (
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs text-gray-600">Yangi foydalanuvchilar</span>
+            <span className="text-xs font-bold text-blue-600">{data.newUsers} ta</span>
+          </div>
+        )}
       </div>
     </div>
   );

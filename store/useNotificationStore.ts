@@ -22,10 +22,22 @@ export interface UserPayload {
   role: string;
 }
 
+export interface SummaryPayload {
+  totalOrders: number;
+  newOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;
+  revenue: number;
+  profit: number;
+  lowStockCount: number;
+  newUsers: number;
+  date: string;
+}
+
 export interface Notification {
   id: string;
   refId: string;
-  type: 'new_order' | 'new_user' | 'order_status_change';
+  type: 'new_order' | 'new_user' | 'order_status_change' | 'daily_summary';
   title: string;
   message: string;
   detail: string;
@@ -33,6 +45,7 @@ export interface Notification {
   read: boolean;
   orderData?: OrderPayload;
   userData?: UserPayload;
+  summaryData?: SummaryPayload;
 }
 
 interface NotificationState {
@@ -46,6 +59,7 @@ interface NotificationState {
   _unsubOrders: (() => void) | null;
   _unsubUsers: (() => void) | null;
   newUserIds: string[];
+  _lastSummaryDate: string;
   startListening: () => void;
   stopListening: () => void;
   markAsRead: (id: string) => void;
@@ -53,6 +67,7 @@ interface NotificationState {
   removeNotification: (id: string) => void;
   clearAll: () => void;
   isNewUser: (uid: string) => boolean;
+  addDailySummary: (data: SummaryPayload) => void;
 }
 
 export const useNotificationStore = create<NotificationState>()(
@@ -68,6 +83,30 @@ export const useNotificationStore = create<NotificationState>()(
       _unsubOrders: null,
       _unsubUsers: null,
       newUserIds: [],
+      _lastSummaryDate: '',
+
+      addDailySummary: (data: SummaryPayload) => {
+        const state = get();
+        if (state._lastSummaryDate === data.date) return;
+
+        const notif: Notification = {
+          id: `summary_${data.date}`,
+          refId: data.date,
+          type: 'daily_summary',
+          title: `Kunlik hisobot — ${data.date.split('-').reverse().join('.')}`,
+          message: `${data.totalOrders} ta buyurtma | Daromad: ${formatUZS(data.revenue)}`,
+          detail: `Foyda: ${formatUZS(data.profit)} | ${data.lowStockCount} ta kam qolgan`,
+          timestamp: Date.now(),
+          read: false,
+          summaryData: data,
+        };
+
+        set((prev) => ({
+          notifications: [notif, ...prev.notifications].slice(0, 50),
+          unreadCount: prev.unreadCount + 1,
+          _lastSummaryDate: data.date,
+        }));
+      },
 
       startListening: () => {
         const state = get();
@@ -298,6 +337,7 @@ export const useNotificationStore = create<NotificationState>()(
         _seenUserIds: state._seenUserIds,
         _orderStatusMap: state._orderStatusMap,
         newUserIds: state.newUserIds,
+        _lastSummaryDate: state._lastSummaryDate,
       }),
     }
   )

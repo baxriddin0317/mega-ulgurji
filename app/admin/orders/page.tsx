@@ -17,7 +17,8 @@ import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
 import { exportOrdersToExcel } from '@/lib/exportExcel';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, X } from 'lucide-react';
+import BulkOrderStatusModal from '@/components/admin/BulkOrderStatusModal';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -34,6 +35,17 @@ const Orders = () => {
   const { orders, fetchAllOrders, loadingOrders, updateOrderStatus } = useOrderStore();
   const [search, setSearch] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [showBulkStatus, setShowBulkStatus] = useState(false);
+
+  const toggleSelectOrder = (orderId: string) => {
+    setSelectedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchAllOrders();
@@ -75,7 +87,14 @@ const Orders = () => {
           <Disclosure key={order.id}>
             {({ open }) => (
               <div className="mb-2">
-                <DisclosureButton className="flex items-center justify-between w-full px-4 py-2 text-left bg-white shadow-lg rounded-lg border border-gray-200">
+                <div className="flex items-center w-full px-4 py-2 bg-white shadow-lg rounded-lg border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrderIds.has(order.id)}
+                    onChange={() => toggleSelectOrder(order.id)}
+                    className="mr-3 size-4 accent-gray-900 cursor-pointer shrink-0"
+                  />
+                <DisclosureButton className="flex items-center justify-between w-full text-left">
                   <div className='flex items-start gap-2'>
                     <span className='text-sm text-gray-500 mt-1'>{idx + 1}.</span>
                     <div className="flex items-center gap-4 flex-wrap">
@@ -93,6 +112,7 @@ const Orders = () => {
                     }`}
                   />
                 </DisclosureButton>
+                </div>
                 <Transition
                   show={open}
                   enter="transition-all duration-300 ease-in-out"
@@ -200,6 +220,28 @@ const Orders = () => {
             Buyurtmalar mavjud emas
           </div>
         )}
+
+      {selectedOrderIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-gray-700">
+          <span className="text-sm font-medium mr-2">{selectedOrderIds.size} ta tanlangan</span>
+          <Button size="sm" variant="ghost" onClick={() => setShowBulkStatus(true)} className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 gap-1.5 text-xs">
+            Statusni o&apos;zgartirish
+          </Button>
+          <button onClick={() => setSelectedOrderIds(new Set())} className="ml-2 p-1 rounded-lg hover:bg-gray-800">
+            <X className="size-4 text-gray-400" />
+          </button>
+        </div>
+      )}
+
+      {showBulkStatus && (
+        <BulkOrderStatusModal
+          selectedOrderIds={Array.from(selectedOrderIds)}
+          onClose={() => {
+            setShowBulkStatus(false);
+            setSelectedOrderIds(new Set());
+          }}
+        />
+      )}
     </div>
   );
 };

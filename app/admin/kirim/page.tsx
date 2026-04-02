@@ -8,7 +8,7 @@ import { StockReceiptItem } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
 import { formatDateTimeShort } from "@/lib/formatDate";
 import toast from 'react-hot-toast';
-import { Plus, Trash2, PackagePlus } from 'lucide-react';
+import { Trash2, PackagePlus } from 'lucide-react';
 
 const KirimPage = () => {
   const { products, fetchProducts } = useProductStore();
@@ -18,9 +18,18 @@ const KirimPage = () => {
   const [items, setItems] = useState<StockReceiptItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => { fetchReceipts(); }, [fetchReceipts]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearchQuery(inputValue);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [inputValue]);
 
   const addItem = (productId: string) => {
     const product = products.find((p) => p.id === productId);
@@ -38,6 +47,7 @@ const KirimPage = () => {
       totalCost: product.costPrice || 0,
     }]);
     setSearchQuery('');
+    setInputValue('');
   };
 
   const updateItem = (index: number, field: 'quantity' | 'unitCost', value: number) => {
@@ -117,8 +127,8 @@ const KirimPage = () => {
           <input
             placeholder="Mahsulot nomini qidiring..."
             className="w-full rounded-xl bg-[#e7edf3] px-4 h-10 text-sm focus:outline-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
           {filteredProducts.length > 0 && (
             <div className="absolute z-20 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
@@ -206,13 +216,14 @@ const KirimPage = () => {
         {/* Recent receipts */}
         <div className="mt-8">
           <h3 className="font-bold text-lg mb-3">Oxirgi kirimlar</h3>
+          <p className="text-xs text-gray-400 mb-2">Jami: {receipts.length} ta kirim</p>
           {loading ? (
             <p className="text-gray-500 text-sm">Yuklanmoqda...</p>
           ) : receipts.length === 0 ? (
             <p className="text-gray-500 text-sm">Kirimlar mavjud emas</p>
           ) : (
             <div className="space-y-2">
-              {receipts.slice(0, 10).map((r) => (
+              {receipts.slice(0, visibleCount).map((r) => (
                 <div key={r.id} className="bg-white border border-gray-200 rounded-xl p-3 flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-sm">{r.supplierName}</p>
@@ -223,6 +234,14 @@ const KirimPage = () => {
                   <p className="font-bold text-green-700">{formatUZS(r.totalAmount)}</p>
                 </div>
               ))}
+              {receipts.length > visibleCount && (
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 10)}
+                  className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
+                >
+                  Ko&apos;proq ko&apos;rish ({receipts.length - visibleCount} ta qoldi)
+                </button>
+              )}
             </div>
           )}
         </div>

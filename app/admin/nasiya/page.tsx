@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import { useNasiyaStore, NasiyaRecord } from '@/store/useNasiyaStore';
 import { useOrderStore } from '@/store/useOrderStore';
@@ -21,14 +21,28 @@ const NasiyaPage = () => {
   useEffect(() => { fetchAllOrders(); }, [fetchAllOrders]);
 
   // Stats
-  const activeRecords = records.filter((r) => r.status === 'active');
-  const totalDue = activeRecords.reduce((s, r) => s + r.remainingAmount, 0);
-  const totalPaid = records.reduce((s, r) => s + r.paidAmount, 0);
+  const activeRecords = useMemo(
+    () => records.filter((r) => r.status === 'active'),
+    [records]
+  );
+  const totalDue = useMemo(
+    () => activeRecords.reduce((s, r) => s + r.remainingAmount, 0),
+    [activeRecords]
+  );
+  const totalPaid = useMemo(
+    () => records.reduce((s, r) => s + r.paidAmount, 0),
+    [records]
+  );
 
   // Delivered orders without nasiya (for creating new nasiya)
-  const deliveredOrders = orders.filter((o) => o.status === 'yetkazildi');
-  const ordersWithoutNasiya = deliveredOrders.filter((o) =>
-    !records.some((r) => r.orderId === o.id)
+  const deliveredOrders = useMemo(
+    () => orders.filter((o) => o.status === 'yetkazildi'),
+    [orders]
+  );
+  const nasiyaOrderIds = useMemo(() => new Set(records.map(r => r.orderId)), [records]);
+  const ordersWithoutNasiya = useMemo(
+    () => deliveredOrders.filter((o) => !nasiyaOrderIds.has(o.id)),
+    [deliveredOrders, nasiyaOrderIds]
   );
 
   const handleCreateNasiya = async (orderId: string) => {

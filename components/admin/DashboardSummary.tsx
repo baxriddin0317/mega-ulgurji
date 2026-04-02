@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ShineBorder } from "@/components/ui/shine-border";
 import useProductStore from "@/store/useProductStore";
 import { useOrderStore } from "@/store/useOrderStore";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const DashboardSummary = () => {
   const { notifications } = useNotificationStore();
@@ -16,28 +16,46 @@ const DashboardSummary = () => {
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => { fetchAllOrders(); }, [fetchAllOrders]);
 
-  const unreadOrders = notifications.filter((n) => !n.read && n.type === "new_order");
-  const unreadUsers = notifications.filter((n) => !n.read && n.type === "new_user");
+  const unreadOrders = useMemo(
+    () => notifications.filter((n) => !n.read && n.type === "new_order"),
+    [notifications]
+  );
+  const unreadUsers = useMemo(
+    () => notifications.filter((n) => !n.read && n.type === "new_user"),
+    [notifications]
+  );
 
   // Revenue from ALL delivered orders
-  const deliveredOrders = orders.filter((o) => o.status === 'yetkazildi');
-  const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+  const deliveredOrders = useMemo(
+    () => orders.filter((o) => o.status === 'yetkazildi'),
+    [orders]
+  );
+  const totalRevenue = useMemo(
+    () => deliveredOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0),
+    [deliveredOrders]
+  );
 
   // Profit calculation from delivered orders
-  const totalProfit = deliveredOrders.reduce((sum, order) => {
-    let orderCost = 0;
-    for (const item of (order.basketItems || [])) {
-      orderCost += (item.costPrice || 0) * item.quantity;
-    }
-    return sum + ((order.totalPrice || 0) - orderCost);
-  }, 0);
+  const totalProfit = useMemo(
+    () => deliveredOrders.reduce((sum, order) => {
+      let orderCost = 0;
+      for (const item of (order.basketItems || [])) {
+        orderCost += (item.costPrice || 0) * item.quantity;
+      }
+      return sum + ((order.totalPrice || 0) - orderCost);
+    }, 0),
+    [deliveredOrders]
+  );
 
   // Product stats
   const totalProducts = products.length;
-  const lowStockProducts = products.filter((p) => {
-    const hasStock = p.stock !== undefined && p.stock !== null;
-    return hasStock && (p.stock as number) <= 5;
-  }).length;
+  const lowStockProducts = useMemo(
+    () => products.filter((p) => {
+      const hasStock = p.stock !== undefined && p.stock !== null;
+      return hasStock && (p.stock as number) <= 5;
+    }).length,
+    [products]
+  );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

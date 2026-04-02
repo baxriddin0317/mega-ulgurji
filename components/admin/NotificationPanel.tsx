@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { Bell, ShoppingCart, UserPlus, X, CheckCheck, ChevronDown, Phone, Mail, User, Package, BarChart3, TrendingUp, AlertTriangle, ShoppingBag } from "lucide-react";
 import { useNotificationStore, Notification } from "@/store/useNotificationStore";
 import { Button } from "@/components/ui/button";
@@ -158,15 +158,12 @@ const NotificationPanel = () => {
                 <p className="text-sm">Bildirishnomalar yo&apos;q</p>
               </div>
             ) : (
-              notifications.map((notif) => (
-                <NotificationItem
-                  key={notif.id}
-                  notification={notif}
-                  onRead={markAsRead}
-                  onRemove={removeNotification}
-                  formatTime={formatTime}
-                />
-              ))
+              <NotificationList
+                notifications={notifications}
+                onRead={markAsRead}
+                onRemove={removeNotification}
+                formatTime={formatTime}
+              />
             )}
           </div>
         </div>
@@ -175,8 +172,53 @@ const NotificationPanel = () => {
   );
 };
 
+// --- Paginated Notification List ---
+const INITIAL_COUNT = 50;
+const LOAD_MORE_COUNT = 20;
+
+const NotificationList = ({
+  notifications,
+  onRead,
+  onRemove,
+  formatTime,
+}: {
+  notifications: Notification[];
+  onRead: (id: string) => void;
+  onRemove: (id: string) => void;
+  formatTime: (ts: number) => string;
+}) => {
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const visibleNotifications = useMemo(
+    () => notifications.slice(0, visibleCount),
+    [notifications, visibleCount]
+  );
+  const hasMore = notifications.length > visibleCount;
+
+  return (
+    <>
+      {visibleNotifications.map((notif) => (
+        <NotificationItem
+          key={notif.id}
+          notification={notif}
+          onRead={onRead}
+          onRemove={onRemove}
+          formatTime={formatTime}
+        />
+      ))}
+      {hasMore && (
+        <button
+          onClick={() => setVisibleCount((c) => c + LOAD_MORE_COUNT)}
+          className="w-full py-2.5 text-xs font-medium text-primary hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          Ko&apos;proq ko&apos;rish ({notifications.length - visibleCount} ta qoldi)
+        </button>
+      )}
+    </>
+  );
+};
+
 // --- Expandable Notification Item ---
-const NotificationItem = ({
+const NotificationItem = React.memo(({
   notification,
   onRead,
   onRemove,
@@ -271,7 +313,8 @@ const NotificationItem = ({
       </Button>
     </div>
   );
-};
+});
+NotificationItem.displayName = "NotificationItem";
 
 // --- Order Details Expanded View ---
 const OrderDetails = ({ data }: { data: NonNullable<Notification["orderData"]> }) => {

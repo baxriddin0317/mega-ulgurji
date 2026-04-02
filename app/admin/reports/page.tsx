@@ -32,60 +32,48 @@ const ReportsPage = () => {
     const startDate = getStartDate(period);
     const startMs = startDate.getTime();
 
-    const filtered = orders.filter((o) => {
+    let deliveredCount = 0, cancelledCount = 0, pendingCount = 0;
+    let totalRevenue = 0, totalCost = 0, totalItems = 0;
+    const productProfitMap: Record<string, { title: string; revenue: number; cost: number; qty: number }> = {};
+
+    for (const o of orders) {
       const orderDate = o.date?.seconds ? o.date.seconds * 1000 : 0;
-      return orderDate >= startMs;
-    });
+      if (orderDate < startMs) continue;
 
-    const delivered = filtered.filter((o) => o.status === 'yetkazildi');
-    const cancelled = filtered.filter((o) => o.status === 'bekor_qilindi');
-    const pending = filtered.filter((o) => o.status !== 'yetkazildi' && o.status !== 'bekor_qilindi');
-
-    let totalRevenue = 0;
-    let totalCost = 0;
-    let totalItems = 0;
-
-    for (const order of delivered) {
-      totalRevenue += order.totalPrice || 0;
-      totalItems += order.totalQuantity || 0;
-      for (const item of (order.basketItems || [])) {
-        totalCost += (item.costPrice || 0) * item.quantity;
+      if (o.status === 'yetkazildi') {
+        deliveredCount++;
+        totalRevenue += o.totalPrice || 0;
+        totalItems += o.totalQuantity || 0;
+        for (const item of (o.basketItems || [])) {
+          const itemCost = (item.costPrice || 0) * item.quantity;
+          totalCost += itemCost;
+          const key = item.id || item.title;
+          if (!productProfitMap[key]) {
+            productProfitMap[key] = { title: item.title, revenue: 0, cost: 0, qty: 0 };
+          }
+          productProfitMap[key].revenue += Number(item.price) * item.quantity;
+          productProfitMap[key].cost += itemCost;
+          productProfitMap[key].qty += item.quantity;
+        }
+      } else if (o.status === 'bekor_qilindi') {
+        cancelledCount++;
+      } else {
+        pendingCount++;
       }
     }
 
     const totalProfit = totalRevenue - totalCost;
-    const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100) : 0;
-
-    // Top products by profit
-    const productProfitMap: Record<string, { title: string; revenue: number; cost: number; qty: number }> = {};
-    for (const order of delivered) {
-      for (const item of (order.basketItems || [])) {
-        const key = item.id || item.title;
-        if (!productProfitMap[key]) {
-          productProfitMap[key] = { title: item.title, revenue: 0, cost: 0, qty: 0 };
-        }
-        productProfitMap[key].revenue += Number(item.price) * item.quantity;
-        productProfitMap[key].cost += (item.costPrice || 0) * item.quantity;
-        productProfitMap[key].qty += item.quantity;
-      }
-    }
-
+    const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
     const topProducts = Object.values(productProfitMap)
-      .map((p) => ({ ...p, profit: p.revenue - p.cost }))
+      .map((p) => ({ ...p, profit: p.revenue - p.cost, margin: p.revenue > 0 ? ((p.revenue - p.cost) / p.revenue) * 100 : 0 }))
       .sort((a, b) => b.profit - a.profit)
       .slice(0, 10);
 
     return {
-      totalOrders: filtered.length,
-      deliveredCount: delivered.length,
-      cancelledCount: cancelled.length,
-      pendingCount: pending.length,
-      totalRevenue,
-      totalCost,
-      totalProfit,
-      profitMargin,
-      totalItems,
-      topProducts,
+      totalOrders: deliveredCount + cancelledCount + pendingCount,
+      deliveredCount, cancelledCount, pendingCount,
+      totalRevenue, totalCost, totalProfit, profitMargin,
+      totalItems, topProducts,
     };
   }, [orders, period]);
 

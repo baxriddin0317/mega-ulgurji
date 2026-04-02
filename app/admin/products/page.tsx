@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
 import { exportProductsToExcel } from '@/lib/exportExcel';
 import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
+import BulkStockUpdateModal from '@/components/admin/BulkStockUpdateModal';
+import FloatingActionBar from '@/components/admin/FloatingActionBar';
 import { Download, Percent, Plus, FolderPlus, Trash2, FileSpreadsheet, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { fireStorage } from '@/firebase/config';
@@ -16,6 +18,8 @@ import { ref, listAll, deleteObject } from 'firebase/storage';
 import toast from 'react-hot-toast';
 import { generateProductTemplate } from '@/lib/importExcel';
 import ImportProductsModal from '@/components/admin/ImportProductsModal';
+import QuickEditProductModal from '@/components/admin/QuickEditProductModal';
+import { ProductT } from '@/lib/types';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
   const { categories, fetchCategories } = useCategoryStore();
@@ -52,11 +56,14 @@ const Products = () => {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeSubcategory, setActiveSubcategory] = useState<string>('all');
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
+  const [showBulkStock, setShowBulkStock] = useState(false);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [quickEditProduct, setQuickEditProduct] = useState<ProductT | null>(null);
   const { categories } = useCategoryStore();
-  const { products, fetchProducts, deleteAllProducts } = useProductStore();
+  const { products, fetchProducts, deleteAllProducts, deleteProduct } = useProductStore();
 
   useEffect(() => {
     fetchProducts();
@@ -233,7 +240,14 @@ const Products = () => {
         )}
       </div>
 
-      <ProductTable search={search} category={activeCategory} subcategory={activeSubcategory} />
+      <ProductTable
+        search={search}
+        category={activeCategory}
+        subcategory={activeSubcategory}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+        onQuickEdit={(product) => setQuickEditProduct(product)}
+      />
 
       {showBulkUpdate && (
         <BulkPriceUpdateModal
@@ -284,6 +298,43 @@ const Products = () => {
           </div>
         </div>
       )}
+
+      {showBulkStock && (
+        <BulkStockUpdateModal
+          selectedIds={Array.from(selectedIds)}
+          onClose={() => { setShowBulkStock(false); setSelectedIds(new Set()); }}
+        />
+      )}
+
+      {quickEditProduct && (
+        <QuickEditProductModal
+          product={quickEditProduct}
+          onClose={() => setQuickEditProduct(null)}
+        />
+      )}
+
+      <FloatingActionBar
+        selectedCount={selectedIds.size}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onBulkPriceUpdate={() => setShowBulkUpdate(true)}
+        onBulkStockUpdate={() => setShowBulkStock(true)}
+        onBulkDelete={async () => {
+          if (!confirm(`${selectedIds.size} ta mahsulotni o'chirmoqchimisiz?`)) return;
+          for (const id of selectedIds) {
+            const product = products.find(p => p.id === id);
+            if (product?.storageFileId) {
+              try {
+                const folderRef = ref(fireStorage, `products/${product.storageFileId}`);
+                const fileList = await listAll(folderRef);
+                await Promise.all(fileList.items.map((item) => deleteObject(item)));
+              } catch { /* ignore */ }
+            }
+            await deleteProduct(id);
+          }
+          toast.success(`${selectedIds.size} ta mahsulot o'chirildi`);
+          setSelectedIds(new Set());
+        }}
+      />
     </div>
   )
 }

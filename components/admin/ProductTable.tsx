@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React, { useEffect, useMemo } from 'react'
 import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
+import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useProductStore from '@/store/useProductStore';
 import { formatUZS } from '@/lib/formatPrice';
@@ -15,9 +16,12 @@ interface ProductTableProps {
   search: string;
   category?: string;
   subcategory?: string;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
+  onQuickEdit: (product: ProductT) => void;
 }
 
-const ProductTable = ({ search, category = 'all', subcategory = 'all' }: ProductTableProps) => {
+const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedIds, onSelectionChange, onQuickEdit }: ProductTableProps) => {
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProductStore();
   
@@ -41,6 +45,27 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
     }
     return filtered;
   }, [products, search, category, subcategory]);
+
+  const allVisibleSelected = filteredProducts.length > 0 && filteredProducts.every((p) => selectedIds.has(p.id));
+
+  const handleToggleAll = () => {
+    if (allVisibleSelected) {
+      const next = new Set(selectedIds);
+      for (const p of filteredProducts) next.delete(p.id);
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedIds);
+      for (const p of filteredProducts) next.add(p.id);
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  };
 
   const handleEdit = (id: string) => {
     router.push(`/admin/update-product/${id}`);
@@ -68,6 +93,9 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
         <table className="min-w-full w-full">
           <thead>
             <tr className="bg-white">
+              <th className="px-4 py-3 text-center">
+                <input type="checkbox" checked={allVisibleSelected} onChange={handleToggleAll} className="size-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" />
+              </th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">T/r</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Nomi</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Rasm</th>
@@ -75,6 +103,7 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Ombor</th>
               <th className="px-4 py-3 text-left text-black text-sm max-w-[100px] font-medium">Kategoriya</th>
               <th className="px-4 py-3 text-left text-black text-sm font-medium">Subkategoriya</th>
+              <th className="px-4 py-3 text-black text-sm font-medium text-center">Tez tahrir</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">Tahrirlash</th>
               <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
             </tr>
@@ -82,12 +111,15 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
           <tbody>
             {filteredProducts.length === 0 ? (
               <tr>
-                <td colSpan={9} className="h-20 px-4 py-2 text-center text-gray-500">
+                <td colSpan={11} className="h-20 px-4 py-2 text-center text-gray-500">
                   {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
                 </td>
               </tr>
             ) : (filteredProducts.map((product, index) => (
-              <tr key={index} className="border-t border-gray-200">
+              <tr key={index} className={`border-t border-gray-200 ${selectedIds.has(product.id) ? 'bg-blue-50/50' : ''}`}>
+                <td className="h-20 px-4 py-2 text-center">
+                  <input type="checkbox" checked={selectedIds.has(product.id)} onChange={() => handleToggleOne(product.id)} className="size-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" />
+                </td>
                 <td className="h-20 px-4 py-2 text-black text-sm font-normal text-center">
                   {index + 1}
                 </td>
@@ -140,6 +172,11 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                   )}
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
+                  <Button onClick={() => onQuickEdit(product)} className='flex items-center justify-center mx-auto cursor-pointer' variant={'ghost'}>
+                    <Pencil className="size-4" />
+                  </Button>
+                </td>
+                <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
                   <Button onClick={() => handleEdit(product.id)} className='flex items-center justify-center mx-auto cursor-pointer' variant={'ghost'}>
                     <BiEdit size={24} />
                   </Button>
@@ -162,9 +199,10 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
             {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
           </div>
         ) : (filteredProducts.map((product, index) => (
-          <div key={index} className="bg-white rounded-xl border border-gray-200 p-4">
+          <div key={index} className={`bg-white rounded-xl border border-gray-200 p-4 ${selectedIds.has(product.id) ? 'ring-2 ring-blue-500/30 bg-blue-50/30' : ''}`}>
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-black flex items-center gap-2">
+                <input type="checkbox" checked={selectedIds.has(product.id)} onChange={() => handleToggleOne(product.id)} className="size-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer" />
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 text-xs font-medium text-black">
                   {index + 1}
                 </span>
@@ -223,6 +261,13 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all' }: Product
                 )}
               </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
+                <Button
+                  onClick={() => onQuickEdit(product)}
+                  variant={'secondary'}
+                  className="bg-[#e7edf3] rounded-xl h-10 px-4 cursor-pointer text-sm font-bold leading-normal tracking-[0.015em] gap-1.5"
+                >
+                  <Pencil className="size-3.5" /> <span className="truncate">Tez tahrir</span>
+                </Button>
                 <Button
                   onClick={() => handleEdit(product.id)}
                   variant={'secondary'}

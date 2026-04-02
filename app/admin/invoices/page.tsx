@@ -10,24 +10,41 @@ import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+const getStartDate = (p: string): number => {
+  const now = new Date();
+  if (p === 'today') { now.setHours(0,0,0,0); return now.getTime(); }
+  if (p === 'week') { const d = now.getDay(); now.setDate(now.getDate() - d + (d===0?-6:1)); now.setHours(0,0,0,0); return now.getTime(); }
+  if (p === 'month') { return new Date(now.getFullYear(), now.getMonth(), 1).getTime(); }
+  return 0;
+};
+
 const InvoicesPage = () => {
   const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
   const [search, setSearch] = useState('');
+  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
 
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
 
   const filteredOrders = useMemo(() => {
-    if (search.length < 2) return orders;
-    const q = search.toLowerCase();
-    return orders.filter(
-      (o) =>
-        o.clientName.toLowerCase().includes(q) ||
-        o.clientPhone.includes(q) ||
-        o.id.toLowerCase().includes(q)
-    );
-  }, [orders, search]);
+    const startMs = getStartDate(period);
+    let result = orders.filter((o) => {
+      const orderMs = o.date?.seconds ? o.date.seconds * 1000 : 0;
+      if (orderMs < startMs) return false;
+      if (search.length >= 2) {
+        const q = search.toLowerCase();
+        return o.clientName?.toLowerCase().includes(q) || o.clientPhone?.includes(q) || o.id?.toLowerCase().includes(q);
+      }
+      return true;
+    });
+    result.sort((a, b) => {
+      if (sortBy === 'amount') return (b.totalPrice || 0) - (a.totalPrice || 0);
+      return (b.date?.seconds || 0) - (a.date?.seconds || 0);
+    });
+    return result;
+  }, [orders, period, search, sortBy]);
 
   if (loadingOrders) {
     return (
@@ -42,6 +59,35 @@ const InvoicesPage = () => {
     <div>
       <PanelTitle title="Schyot-fakturalar" />
       <Search search={search} handleSearchChange={setSearch} placeholder="Mijoz nomi, telefon yoki ID bo'yicha qidirish" />
+
+      <div className="px-4 py-3">
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {[
+            { key: 'today', label: 'Bugun' },
+            { key: 'week', label: 'Shu hafta' },
+            { key: 'month', label: 'Shu oy' },
+            { key: 'all', label: 'Barchasi' },
+          ].map((p) => (
+            <button key={p.key} onClick={() => setPeriod(p.key as any)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                period === p.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setSortBy('date')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${sortBy === 'date' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+            Sana bo&apos;yicha
+          </button>
+          <button onClick={() => setSortBy('amount')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${sortBy === 'amount' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+            Summa bo&apos;yicha
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-400 mb-3">{filteredOrders.length} ta faktura</p>
+      </div>
 
       <div className="px-4 py-3">
         {filteredOrders.length === 0 ? (

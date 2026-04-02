@@ -1,18 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DollarSign, Package, Trash2, X } from "lucide-react";
+import { DollarSign, FolderInput, Package, Trash2, X } from "lucide-react";
 
 interface FloatingActionBarProps {
   selectedCount: number;
   onClearSelection: () => void;
   onBulkPriceUpdate: () => void;
   onBulkStockUpdate: () => void;
+  onBatchCategoryMove?: () => void;
   onBulkDelete: () => void;
 }
 
 export default function FloatingActionBar({
-  selectedCount, onClearSelection, onBulkPriceUpdate, onBulkStockUpdate, onBulkDelete,
+  selectedCount, onClearSelection, onBulkPriceUpdate, onBulkStockUpdate, onBatchCategoryMove, onBulkDelete,
 }: FloatingActionBarProps) {
   if (selectedCount === 0) return null;
 
@@ -25,6 +26,12 @@ export default function FloatingActionBar({
       <Button size="sm" variant="ghost" onClick={onBulkStockUpdate} className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 gap-1.5 text-xs">
         <Package className="size-3.5" /> Ombor
       </Button>
+      {onBatchCategoryMove && (
+        <Button size="sm" variant="ghost" onClick={onBatchCategoryMove}
+          className="text-purple-400 hover:text-purple-300 hover:bg-gray-800 gap-1.5 text-xs">
+          <FolderInput className="size-3.5" /> Kategoriya
+        </Button>
+      )}
       <Button size="sm" variant="ghost" onClick={onBulkDelete} className="text-red-400 hover:text-red-300 hover:bg-gray-800 gap-1.5 text-xs">
         <Trash2 className="size-3.5" /> O&apos;chirish
       </Button>

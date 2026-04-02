@@ -15,6 +15,7 @@ interface ProductStore {
   deleteProduct: (productId: string) => Promise<void>;
   deleteAllProducts: () => Promise<void>;
   bulkAddProducts: (products: { title: string; category: string; subcategory: string; price: string; costPrice: number; stock: number; description: string }[]) => Promise<void>;
+  bulkUpdateProducts: (updates: { id: string; title?: string; price?: string; costPrice?: number; stock?: number; category?: string; subcategory?: string; description?: string }[]) => Promise<number>;
   duplicateProduct: (productId: string) => Promise<void>;
 }
 
@@ -174,6 +175,26 @@ const useProductStore = create<ProductStore>((set, get) => ({
       }
       await batch.commit();
     }
+  },
+
+  bulkUpdateProducts: async (updates) => {
+    const batch = writeBatch(fireDB);
+    for (const { id, ...data } of updates) {
+      const ref = doc(fireDB, "products", id);
+      const cleanData: Record<string, string | number> = {};
+      if (data.title !== undefined) cleanData.title = data.title;
+      if (data.price !== undefined) cleanData.price = data.price;
+      if (data.costPrice !== undefined) cleanData.costPrice = data.costPrice;
+      if (data.stock !== undefined) cleanData.stock = data.stock;
+      if (data.category !== undefined) cleanData.category = data.category;
+      if (data.subcategory !== undefined) cleanData.subcategory = data.subcategory;
+      if (data.description !== undefined) cleanData.description = data.description;
+      if (Object.keys(cleanData).length > 0) {
+        batch.update(ref, cleanData);
+      }
+    }
+    await batch.commit();
+    return updates.length;
   },
 
   duplicateProduct: async (productId: string) => {

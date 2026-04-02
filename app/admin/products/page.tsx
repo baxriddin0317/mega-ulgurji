@@ -19,7 +19,9 @@ import { ref, listAll, deleteObject } from 'firebase/storage';
 import toast from 'react-hot-toast';
 import { generateProductTemplate } from '@/lib/importExcel';
 import ImportProductsModal from '@/components/admin/ImportProductsModal';
+import ReimportProductsModal from '@/components/admin/ReimportProductsModal';
 import QuickEditProductModal from '@/components/admin/QuickEditProductModal';
+import BatchCategoryMoveModal from '@/components/admin/BatchCategoryMoveModal';
 import { ProductT } from '@/lib/types';
 
 const CategoryFilter = ({ activeCategory, setActiveCategory, categoryCounts, totalCount }: { activeCategory: string, setActiveCategory: (cat: string) => void, categoryCounts: Record<string, number>, totalCount: number }) => {
@@ -60,6 +62,8 @@ const Products = () => {
   const [showBulkStock, setShowBulkStock] = useState(false);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showReimport, setShowReimport] = useState(false);
+  const [showCategoryMove, setShowCategoryMove] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [quickEditProduct, setQuickEditProduct] = useState<ProductT | null>(null);
@@ -241,6 +245,13 @@ const Products = () => {
         >
           <Upload className="size-3.5" /> Import
         </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+          onClick={() => setShowReimport(true)}
+        >
+          <Upload className="size-3.5" /> Yangilash uchun import
+        </Button>
         {products.length > 0 && (
           <Button
             variant="outline"
@@ -273,6 +284,10 @@ const Products = () => {
 
       {showImport && (
         <ImportProductsModal onClose={() => setShowImport(false)} />
+      )}
+
+      {showReimport && (
+        <ReimportProductsModal onClose={() => setShowReimport(false)} />
       )}
 
       {showDeleteAll && (
@@ -318,6 +333,13 @@ const Products = () => {
         />
       )}
 
+      {showCategoryMove && (
+        <BatchCategoryMoveModal
+          selectedIds={Array.from(selectedIds)}
+          onClose={() => { setShowCategoryMove(false); setSelectedIds(new Set()); }}
+        />
+      )}
+
       {quickEditProduct && (
         <QuickEditProductModal
           product={quickEditProduct}
@@ -330,6 +352,7 @@ const Products = () => {
         onClearSelection={() => setSelectedIds(new Set())}
         onBulkPriceUpdate={() => setShowBulkUpdate(true)}
         onBulkStockUpdate={() => setShowBulkStock(true)}
+        onBatchCategoryMove={() => setShowCategoryMove(true)}
         onBulkDelete={async () => {
           if (!confirm(`${selectedIds.size} ta mahsulotni o'chirmoqchimisiz?`)) return;
           for (const id of selectedIds) {

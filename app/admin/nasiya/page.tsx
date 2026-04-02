@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import { useNasiyaStore, NasiyaRecord } from '@/store/useNasiyaStore';
 import { useOrderStore } from '@/store/useOrderStore';
@@ -13,9 +13,8 @@ const NasiyaPage = () => {
   const { records, fetchNasiya, createNasiya, recordPayment, loading } = useNasiyaStore();
   const { orders, fetchAllOrders } = useOrderStore();
   const [showCreate, setShowCreate] = useState(false);
-  const [payingId, setPayingId] = useState<string | null>(null);
-  const [payAmount, setPayAmount] = useState(0);
-  const [payMethod, setPayMethod] = useState('naqd');
+  const [filter, setFilter] = useState<'all' | 'active' | 'paid'>('all');
+  const [sortBy, setSortBy] = useState<'amount' | 'date'>('amount');
 
   useEffect(() => { fetchNasiya(); }, [fetchNasiya]);
   useEffect(() => { fetchAllOrders(); }, [fetchAllOrders]);
@@ -33,6 +32,29 @@ const NasiyaPage = () => {
     () => records.reduce((s, r) => s + r.paidAmount, 0),
     [records]
   );
+
+  // Filtered + sorted records
+  const filteredRecords = useMemo(() => {
+    let result = records;
+    if (filter === 'active') result = result.filter(r => r.status === 'active');
+    if (filter === 'paid') result = result.filter(r => r.status === 'paid_full');
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'amount') return b.remainingAmount - a.remainingAmount;
+      return (b.createdDate?.seconds || 0) - (a.createdDate?.seconds || 0);
+    });
+    return result;
+  }, [records, filter, sortBy]);
+
+  // Stable callback for NasiyaCard payment handling
+  const handlePayment = useCallback(async (nasiyaId: string, amount: number, method: string) => {
+    if (amount <= 0) { toast.error("Summani kiriting"); return; }
+    try {
+      await recordPayment(nasiyaId, amount, method);
+      toast.success("To'lov qabul qilindi");
+    } catch {
+      toast.error("Xatolik yuz berdi");
+    }
+  }, [recordPayment]);
 
   // Delivered orders without nasiya (for creating new nasiya)
   const deliveredOrders = useMemo(
@@ -59,18 +81,6 @@ const NasiyaPage = () => {
       });
       toast.success("Nasiya yaratildi");
       setShowCreate(false);
-    } catch {
-      toast.error("Xatolik yuz berdi");
-    }
-  };
-
-  const handlePayment = async (nasiyaId: string) => {
-    if (payAmount <= 0) return toast.error("Summani kiriting");
-    try {
-      await recordPayment(nasiyaId, payAmount, payMethod);
-      toast.success("To'lov qabul qilindi");
-      setPayingId(null);
-      setPayAmount(0);
     } catch {
       toast.error("Xatolik yuz berdi");
     }
@@ -149,23 +159,45 @@ const NasiyaPage = () => {
           </div>
         )}
 
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-4">
+          {[
+            { key: 'all', label: 'Barchasi' },
+            { key: 'active', label: 'Faol' },
+            { key: 'paid', label: "To'langan" },
+          ].map((f) => (
+            <button key={f.key} onClick={() => setFilter(f.key as 'all' | 'active' | 'paid')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                filter === f.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort options */}
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setSortBy('amount')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${sortBy === 'amount' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+            Qarz summasi
+          </button>
+          <button onClick={() => setSortBy('date')} className={`px-3 py-1.5 rounded-full text-xs font-medium ${sortBy === 'date' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}`}>
+            Sana bo&apos;yicha
+          </button>
+        </div>
+
+        {/* Result count */}
+        <p className="text-xs text-gray-400 mb-3">{filteredRecords.length} ta nasiya</p>
+
         {/* Nasiya records list */}
         <div className="space-y-3">
-          {records.length === 0 ? (
+          {filteredRecords.length === 0 ? (
             <p className="text-gray-500 text-center py-10">Nasiyalar mavjud emas</p>
           ) : (
-            records.map((record) => (
+            filteredRecords.map((record) => (
               <NasiyaCard
                 key={record.id}
                 record={record}
-                isPaying={payingId === record.id}
-                payAmount={payAmount}
-                payMethod={payMethod}
-                onStartPay={() => { setPayingId(record.id); setPayAmount(0); }}
-                onCancelPay={() => setPayingId(null)}
-                onAmountChange={setPayAmount}
-                onMethodChange={setPayMethod}
-                onConfirmPay={() => handlePayment(record.id)}
+                onPayment={handlePayment}
               />
             ))
           )}
@@ -176,23 +208,26 @@ const NasiyaPage = () => {
 };
 
 const NasiyaCard = ({
-  record, isPaying, payAmount, payMethod,
-  onStartPay, onCancelPay, onAmountChange, onMethodChange, onConfirmPay,
+  record,
+  onPayment,
 }: {
   record: NasiyaRecord;
-  isPaying: boolean;
-  payAmount: number;
-  payMethod: string;
-  onStartPay: () => void;
-  onCancelPay: () => void;
-  onAmountChange: (v: number) => void;
-  onMethodChange: (v: string) => void;
-  onConfirmPay: () => void;
+  onPayment: (nasiyaId: string, amount: number, method: string) => Promise<void>;
 }) => {
+  const [isPaying, setIsPaying] = useState(false);
+  const [payAmount, setPayAmount] = useState(0);
+  const [payMethod, setPayMethod] = useState('naqd');
+
   const isPaid = record.status === 'paid_full';
   const progress = record.originalAmount > 0
     ? Math.min(100, (record.paidAmount / record.originalAmount) * 100)
     : 0;
+
+  const handleConfirmPay = async () => {
+    await onPayment(record.id, payAmount, payMethod);
+    setIsPaying(false);
+    setPayAmount(0);
+  };
 
   return (
     <div className={`bg-white rounded-xl border p-4 ${isPaid ? 'border-green-200 opacity-70' : 'border-red-200'}`}>
@@ -246,28 +281,28 @@ const NasiyaCard = ({
               placeholder="Summa"
               className="flex-1 min-w-32 rounded-lg bg-gray-100 h-9 px-3 text-sm focus:outline-none"
               value={payAmount || ''}
-              onChange={(e) => onAmountChange(parseInt(e.target.value) || 0)}
+              onChange={(e) => setPayAmount(parseInt(e.target.value) || 0)}
             />
             <select
               className="rounded-lg bg-gray-100 h-9 px-3 text-sm cursor-pointer"
               value={payMethod}
-              onChange={(e) => onMethodChange(e.target.value)}
+              onChange={(e) => setPayMethod(e.target.value)}
             >
               <option value="naqd">Naqd</option>
               <option value="karta">Karta</option>
               <option value="otkazma">O&apos;tkazma</option>
             </select>
-            <Button size="sm" onClick={onConfirmPay} className="bg-green-600 text-white rounded-lg cursor-pointer text-xs">
+            <Button size="sm" onClick={handleConfirmPay} className="bg-green-600 text-white rounded-lg cursor-pointer text-xs">
               <DollarSign className="size-3.5" /> Qabul qilish
             </Button>
-            <Button size="sm" variant="ghost" onClick={onCancelPay} className="cursor-pointer">
+            <Button size="sm" variant="ghost" onClick={() => setIsPaying(false)} className="cursor-pointer">
               <X className="size-3.5" />
             </Button>
           </div>
         ) : (
           <Button
             size="sm"
-            onClick={onStartPay}
+            onClick={() => { setIsPaying(true); setPayAmount(0); }}
             className="bg-amber-500 text-white rounded-lg cursor-pointer text-xs gap-1"
           >
             <DollarSign className="size-3.5" /> To&apos;lov qabul qilish

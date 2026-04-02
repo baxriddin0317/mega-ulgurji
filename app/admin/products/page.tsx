@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import useProductStore from '@/store/useProductStore';
 import { exportProductsToExcel } from '@/lib/exportExcel';
+import { exportProductsForUpdate } from '@/lib/exportForUpdate';
 import BulkPriceUpdateModal from '@/components/admin/BulkPriceUpdateModal';
 import BulkStockUpdateModal from '@/components/admin/BulkStockUpdateModal';
 import FloatingActionBar from '@/components/admin/FloatingActionBar';
@@ -214,6 +215,17 @@ const Products = () => {
           }}
         >
           <Download className="size-3.5" /> Excel yuklab olish
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-cyan-300 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 hover:text-cyan-800"
+          onClick={() => {
+            const toExport = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
+            exportProductsForUpdate(toExport);
+            toast.success(`${toExport.length} ta mahsulot eksport qilindi`);
+          }}
+        >
+          <Download className="size-3.5" /> Tahrirlash uchun eksport
         </Button>
         <Button
           variant="outline"

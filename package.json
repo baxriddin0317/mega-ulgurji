@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "remotion:studio": "remotion studio remotion/index.ts",
+    "remotion:render": "remotion render remotion/index.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -17,9 +19,13 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.2",
     "@radix-ui/react-switch": "^1.2.5",
+    "@remotion/cli": "^4.0.443",
+    "@remotion/player": "^4.0.443",
     "aos": "^3.0.0-beta.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^4.1.0",
     "firebase": "^11.8.1",
     "firebase-admin": "^13.4.0",
     "lucide-react": "^0.511.0",
@@ -30,6 +36,7 @@
     "react-hook-form": "^7.56.4",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
+    "remotion": "^4.0.443",
     "tailwind-merge": "^3.3.0",
     "uuid": "^11.1.0",
     "xlsx": "^0.18.5",

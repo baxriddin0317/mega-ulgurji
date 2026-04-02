@@ -1,6 +1,6 @@
 import { fireDB } from '@/firebase/config';
 import { ProductT } from '@/lib/types';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import {create} from 'zustand';
 
 interface ProductStore {
@@ -15,6 +15,7 @@ interface ProductStore {
   deleteProduct: (productId: string) => Promise<void>;
   deleteAllProducts: () => Promise<void>;
   bulkAddProducts: (products: { title: string; category: string; subcategory: string; price: string; costPrice: number; stock: number; description: string }[]) => Promise<void>;
+  duplicateProduct: (productId: string) => Promise<void>;
 }
 
 const useProductStore = create<ProductStore>((set, get) => ({
@@ -173,7 +174,27 @@ const useProductStore = create<ProductStore>((set, get) => ({
       }
       await batch.commit();
     }
-  }
+  },
+
+  duplicateProduct: async (productId: string) => {
+    const original = get().products.find(p => p.id === productId);
+    if (!original) throw new Error("Product not found");
+    const newProduct = {
+      title: `Nusxa: ${original.title}`,
+      price: original.price,
+      costPrice: original.costPrice || 0,
+      category: original.category,
+      subcategory: original.subcategory || "",
+      description: original.description || "",
+      quantity: original.quantity || 0,
+      stock: original.stock || 0,
+      productImageUrl: [],
+      storageFileId: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
+      time: Timestamp.now(),
+      date: Timestamp.now(),
+    };
+    await addDoc(collection(fireDB, "products"), newProduct);
+  },
 }));
 
 export default useProductStore;

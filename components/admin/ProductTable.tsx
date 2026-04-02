@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React, { useEffect, useMemo } from 'react'
 import { Button } from '../ui/button';
 import { BiEdit, BiTrash } from 'react-icons/bi';
-import { Pencil } from 'lucide-react';
+import { Copy, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useProductStore from '@/store/useProductStore';
 import { formatUZS } from '@/lib/formatPrice';
@@ -23,7 +23,7 @@ interface ProductTableProps {
 
 const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedIds, onSelectionChange, onQuickEdit }: ProductTableProps) => {
   const router = useRouter();
-  const { products, fetchProducts, deleteProduct } = useProductStore();
+  const { products, fetchProducts, deleteProduct, updateProduct, duplicateProduct } = useProductStore();
   
   useEffect(() => {
     fetchProducts();
@@ -82,10 +82,20 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
       await Promise.all(deleteImagePromises);
 
       await deleteProduct(item.id);
-      toast.success('Mahsulot muvaffaqiyatli o‘chirildi');
+      toast.success("Mahsulot muvaffaqiyatli o'chirildi");
     }
   };
-  
+
+  const handleStockChange = async (product: ProductT, delta: number) => {
+    const current = typeof product.stock === 'number' ? product.stock : 0;
+    const newStock = Math.max(0, current + delta);
+    try {
+      await updateProduct(product.id, { stock: newStock } as any);
+    } catch {
+      toast.error("Omborni yangilashda xatolik");
+    }
+  };
+
   return (
      <div className="w-full px-4 py-3">
       {/* Desktop and Tablet view */}
@@ -139,23 +149,26 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
                 </td>
                 <td className="h-20 px-4 py-2 text-gray-700 text-sm font-normal">{formatUZS(product.price)}</td>
                 <td className="h-20 px-4 py-2 text-sm font-normal">
-                  {product.stock !== undefined && product.stock !== null ? (
-                    product.stock > 0 ? (
-                      <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${
-                        product.stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                      }`}>
-                        {product.stock} ta
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700">
-                        0 ta
-                      </span>
-                    )
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-700">
-                      Belgilanmagan
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleStockChange(product, -1); }}
+                      disabled={(typeof product.stock === 'number' ? product.stock : 0) <= 0}
+                      className="size-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 text-xs font-bold"
+                    >
+                      -
+                    </button>
+                    <span className={`min-w-[32px] text-center text-xs font-bold ${
+                      (typeof product.stock === 'number' ? product.stock : 0) <= 5 ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {typeof product.stock === 'number' ? product.stock : 0}
                     </span>
-                  )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleStockChange(product, 1); }}
+                      className="size-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 text-xs font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
                 </td>
                 <td className="max-w-xs h-20 px-4 py-2 text-sm font-normal">
                   <span className="flex min-w-[84px] text-center cursor-pointer items-center justify-center rounded-xl min-h-8 px-1 bg-gray-100 text-black text-sm font-medium w-full">
@@ -172,9 +185,22 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
                   )}
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
-                  <Button onClick={() => onQuickEdit(product)} className='flex items-center justify-center mx-auto cursor-pointer' variant={'ghost'}>
-                    <Pencil className="size-4" />
-                  </Button>
+                  <div className="flex items-center justify-center gap-0.5">
+                    <Button onClick={() => onQuickEdit(product)} className='flex items-center justify-center cursor-pointer' variant={'ghost'} size={'icon'}>
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="size-8" title="Nusxa yaratish"
+                      onClick={async () => {
+                        try {
+                          await duplicateProduct(product.id);
+                          toast.success("Mahsulot nusxasi yaratildi");
+                        } catch {
+                          toast.error("Nusxa yaratishda xatolik");
+                        }
+                      }}>
+                      <Copy className="size-3.5 text-gray-400" />
+                    </Button>
+                  </div>
                 </td>
                 <td className="w-20 h-20 px-4 py-2 text-gray-700 text-sm font-normal">
                   <Button onClick={() => handleEdit(product.id)} className='flex items-center justify-center mx-auto cursor-pointer' variant={'ghost'}>

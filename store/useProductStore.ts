@@ -11,6 +11,7 @@ interface ProductStore {
   fetchSingleProduct: (id: string) => Promise<void>;
   updateProduct: (id: string, updatedProduct: ProductT) => Promise<void>;
   bulkUpdatePrices: (productIds: string[], percentChange: number, updateCost: boolean) => Promise<number>;
+  bulkUpdateStock: (updates: { id: string; stock: number }[]) => Promise<number>;
   deleteProduct: (productId: string) => Promise<void>;
   deleteAllProducts: () => Promise<void>;
   bulkAddProducts: (products: { title: string; category: string; subcategory: string; price: string; costPrice: number; stock: number; description: string }[]) => Promise<void>;
@@ -111,6 +112,16 @@ const useProductStore = create<ProductStore>((set, get) => ({
 
     await batch.commit();
     return updated;
+  },
+
+  bulkUpdateStock: async (updates: { id: string; stock: number }[]) => {
+    const batch = writeBatch(fireDB);
+    for (const { id, stock } of updates) {
+      const ref = doc(fireDB, "products", id);
+      batch.update(ref, { stock });
+    }
+    await batch.commit();
+    return updates.length;
   },
 
   deleteProduct: async (productId) => {

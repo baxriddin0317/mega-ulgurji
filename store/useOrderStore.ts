@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment, writeBatch } from "firebase/firestore";
 import { fireDB } from '@/firebase/config';
 import { Order, OrderStatus, ProductT } from "@/lib/types";
 
@@ -9,6 +9,7 @@ interface StoreState {
   loadingOrders: boolean;
   addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  bulkUpdateOrderStatus: (orderIds: string[], status: OrderStatus) => Promise<{ success: number; failed: number }>;
   fetchAllOrders: () => void;
   fetchUserOrders: (userUid: string) => void;
 }
@@ -52,23 +53,27 @@ export const useOrderStore = create<StoreState>((set) => ({
 
       // Decrement stock when admin marks as DELIVERED (yetkazildi)
       if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
+        const stockBatch = writeBatch(fireDB);
         for (const item of basketItems) {
           if (item.id) {
             const productRef = doc(fireDB, "products", item.id);
-            await updateDoc(productRef, { stock: increment(-item.quantity) });
+            stockBatch.update(productRef, { stock: increment(-item.quantity) });
           }
         }
+        await stockBatch.commit();
       }
 
       // Restore stock if cancelling a DELIVERED order (rare but safe)
       // Or if cancelling any order that was already delivered
       if (status === 'bekor_qilindi' && prevStatus === 'yetkazildi') {
+        const stockBatch = writeBatch(fireDB);
         for (const item of basketItems) {
           if (item.id) {
             const productRef = doc(fireDB, "products", item.id);
-            await updateDoc(productRef, { stock: increment(item.quantity) });
+            stockBatch.update(productRef, { stock: increment(item.quantity) });
           }
         }
+        await stockBatch.commit();
       }
 
       await updateDoc(orderRef, { status });
@@ -76,6 +81,53 @@ export const useOrderStore = create<StoreState>((set) => ({
       console.error("Error updating order status:", error);
       throw error;
     }
+  },
+
+  bulkUpdateOrderStatus: async (orderIds: string[], status: OrderStatus) => {
+    const batch = writeBatch(fireDB);
+    const results = { success: 0, failed: 0 };
+
+    for (const orderId of orderIds) {
+      try {
+        const orderRef = doc(fireDB, "orders", orderId);
+        const orderSnap = await getDoc(orderRef);
+        if (!orderSnap.exists()) { results.failed++; continue; }
+
+        const orderData = orderSnap.data();
+        const prevStatus = orderData.status || 'yangi';
+        const basketItems = orderData.basketItems || [];
+
+        if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
+          for (const item of basketItems) {
+            if (item.id) {
+              batch.update(doc(fireDB, "products", item.id), { stock: increment(-item.quantity) });
+            }
+          }
+        }
+        if (status === 'bekor_qilindi' && prevStatus === 'yetkazildi') {
+          for (const item of basketItems) {
+            if (item.id) {
+              batch.update(doc(fireDB, "products", item.id), { stock: increment(item.quantity) });
+            }
+          }
+        }
+
+        batch.update(orderRef, { status });
+        results.success++;
+      } catch {
+        results.failed++;
+      }
+    }
+
+    await batch.commit();
+
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        orderIds.includes(o.id) ? { ...o, status } : o
+      ),
+    }));
+
+    return results;
   },
 
   fetchAllOrders: async () => {

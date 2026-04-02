@@ -6,6 +6,7 @@ import useProductStore from '@/store/useProductStore';
 import { useStockReceiptStore } from '@/store/useStockReceiptStore';
 import { StockReceiptItem } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
+import { formatDateTimeShort } from "@/lib/formatDate";
 import toast from 'react-hot-toast';
 import { Plus, Trash2, PackagePlus } from 'lucide-react';
 
@@ -216,7 +217,7 @@ const KirimPage = () => {
                   <div>
                     <p className="font-semibold text-sm">{r.supplierName}</p>
                     <p className="text-xs text-gray-500">
-                      {r.items.length} ta mahsulot &middot; {new Date((r.date as any)?.seconds * 1000).toLocaleDateString('uz-UZ')}
+                      {r.items.length} ta mahsulot &middot; {formatDateTimeShort(r.date)}
                     </p>
                   </div>
                   <p className="font-bold text-green-700">{formatUZS(r.totalAmount)}</p>

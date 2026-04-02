@@ -4,6 +4,7 @@ import PanelTitle from '@/components/admin/PanelTitle';
 import Search from '@/components/admin/Search';
 import { useOrderStore } from '@/store/useOrderStore';
 import { formatUZS } from '@/lib/formatPrice';
+import { formatDateTimeShort } from "@/lib/formatDate";
 import { getStatusInfo } from '@/lib/orderStatus';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -49,9 +50,7 @@ const InvoicesPage = () => {
           <div className="space-y-2">
             {filteredOrders.map((order, idx) => {
               const statusInfo = getStatusInfo(order.status);
-              const date = order.date?.seconds
-                ? new Date(order.date.seconds * 1000).toLocaleDateString('uz-UZ')
-                : '—';
+              const date = formatDateTimeShort(order.date);
               const invoiceNum = order.id.slice(-8).toUpperCase();
 
               return (

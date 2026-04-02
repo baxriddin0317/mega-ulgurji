@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 import { Order } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
+import { formatDateUz, formatTimeUz } from "@/lib/formatDate";
 import { getStatusInfo } from '@/lib/orderStatus';
 import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,9 +48,6 @@ const InvoicePage = () => {
   }
 
   const statusInfo = getStatusInfo(order.status);
-  const orderDate = order.date?.seconds
-    ? new Date(order.date.seconds * 1000)
-    : new Date();
   const invoiceNumber = order.id.slice(-8).toUpperCase();
 
   return (
@@ -91,16 +89,9 @@ const InvoicePage = () => {
         >
           <p className="text-sm text-gray-600">
             <span className="font-semibold">Sana:</span>{' '}
-            {orderDate.toLocaleDateString('uz-UZ', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {formatDateUz(order.date)}
             {' '}&middot;{' '}
-            {orderDate.toLocaleTimeString('uz-UZ', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatTimeUz(order.date)}
           </p>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold ${statusInfo.color} ${statusInfo.bg}`}

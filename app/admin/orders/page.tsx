@@ -12,6 +12,7 @@ import {
 import { IoIosArrowDown } from 'react-icons/io';
 import Image from 'next/image';
 import { formatUZS } from '@/lib/formatPrice';
+import { formatDateTimeShort } from "@/lib/formatDate";
 import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
@@ -83,7 +84,7 @@ const Orders = () => {
                         <p className="text-sm text-gray-500">{order.clientPhone}</p>
                       </div>
                       <StatusBadge status={order.status} />
-                      <p className="text-sm text-gray-500">Sana Vaqt: {new Date((order.date?.seconds || 0) * 1000).toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Sana Vaqt: {formatDateTimeShort(order.date)}</p>
                     </div>
                   </div>
                   <IoIosArrowDown

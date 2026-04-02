@@ -4,6 +4,7 @@ import PanelTitle from '@/components/admin/PanelTitle';
 import { useNasiyaStore, NasiyaRecord } from '@/store/useNasiyaStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import { formatUZS } from '@/lib/formatPrice';
+import { formatDateTimeShort } from "@/lib/formatDate";
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 import { CreditCard, Plus, DollarSign, AlertTriangle, CheckCircle, X } from 'lucide-react';
@@ -213,7 +214,7 @@ const NasiyaCard = ({
           <div className="space-y-1">
             {record.paymentHistory.map((p, idx) => (
               <div key={idx} className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-1.5">
-                <span className="text-gray-600">{new Date(p.date).toLocaleDateString('uz-UZ')} &middot; {p.method}</span>
+                <span className="text-gray-600">{formatDateTimeShort(new Date(p.date))} &middot; {p.method}</span>
                 <span className="font-bold text-green-700">+{formatUZS(p.amount)}</span>
               </div>
             ))}

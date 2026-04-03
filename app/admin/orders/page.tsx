@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import Search from '@/components/admin/Search';
 import { useOrderStore } from '@/store/useOrderStore';
@@ -17,7 +17,8 @@ import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
 import { exportOrdersToExcel } from '@/lib/exportExcel';
-import { Download, FileText, X } from 'lucide-react';
+import { CheckCheck, Download, FileText, X } from 'lucide-react';
+import { generateDeliverySheet } from '@/lib/generateDeliverySheet';
 import BulkOrderStatusModal from '@/components/admin/BulkOrderStatusModal';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -32,11 +33,28 @@ const StatusBadge = ({ status }: { status?: string }) => {
 };
 
 const Orders = () => {
-  const { orders, fetchAllOrders, loadingOrders, updateOrderStatus } = useOrderStore();
+  const { orders, fetchAllOrders, loadingOrders, updateOrderStatus, bulkUpdateOrderStatus } = useOrderStore();
   const [search, setSearch] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
   const [showBulkStatus, setShowBulkStatus] = useState(false);
+  const [confirmingAll, setConfirmingAll] = useState(false);
+
+  const newOrderCount = useMemo(() => orders.filter(o => o.status === 'yangi' || !o.status).length, [orders]);
+
+  const handleConfirmAllNew = async () => {
+    const newOrders = orders.filter(o => o.status === 'yangi' || !o.status);
+    if (newOrders.length === 0) return;
+    setConfirmingAll(true);
+    try {
+      const result = await bulkUpdateOrderStatus(newOrders.map(o => o.id), 'tasdiqlangan');
+      toast.success(`${result.success} ta buyurtma tasdiqlandi`);
+    } catch {
+      toast.error("Xatolik yuz berdi");
+    } finally {
+      setConfirmingAll(false);
+    }
+  };
 
   const toggleSelectOrder = (orderId: string) => {
     setSelectedOrderIds((prev) => {
@@ -71,13 +89,32 @@ const Orders = () => {
         <div className="flex-1">
           <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
         </div>
-        <Button
-          variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
-          onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
-        >
-          <Download className="size-3.5" /> Excel
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {newOrderCount > 0 && (
+            <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
+              className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
+              <CheckCheck className="size-3.5" />
+              {confirmingAll ? "Tasdiqlanmoqda..." : `${newOrderCount} ta yangi buyurtmani tasdiqlash`}
+            </Button>
+          )}
+          <Button onClick={() => {
+            const deliveryOrders = selectedOrderIds.size > 0
+              ? orders.filter(o => selectedOrderIds.has(o.id))
+              : orders.filter(o => o.status === 'tasdiqlangan' || o.status === 'yetkazilmoqda');
+            if (deliveryOrders.length === 0) { toast.error("Yetkazish uchun buyurtma yo'q"); return; }
+            generateDeliverySheet(deliveryOrders);
+            toast.success(`${deliveryOrders.length} ta buyurtma uchun varaqasi yaratildi`);
+          }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5" variant="outline">
+            <FileText className="size-3.5" /> Yetkazish varaqasi
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
+            onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
+          >
+            <Download className="size-3.5" /> Excel
+          </Button>
+        </div>
       </div>
       {loadingOrders ? (
           <div className="flex items-center justify-center">

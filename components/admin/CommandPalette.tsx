@@ -64,6 +64,13 @@ export default function CommandPalette() {
                 <Plus className="size-4 text-gray-400" />
                 Yangi kategoriya qo&#39;shish
               </Command.Item>
+              <Command.Item
+                onSelect={() => runCommand(() => router.push("/admin/create-order"))}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-sm text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-gray-100"
+              >
+                <ShoppingCart className="size-4 text-gray-400" />
+                Yangi buyurtma yaratish
+              </Command.Item>
             </Command.Group>
 
             <Command.Group heading="Sahifalar" className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">

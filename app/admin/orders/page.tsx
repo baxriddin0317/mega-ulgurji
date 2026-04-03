@@ -124,7 +124,7 @@ const Orders = () => {
           <Disclosure key={order.id}>
             {({ open }) => (
               <div className="mb-2">
-                <div className="flex items-center w-full px-4 py-2 bg-white shadow-lg rounded-lg border border-gray-200">
+                <div className={`flex items-center w-full px-4 py-2 shadow-lg rounded-lg border ${selectedOrderIds.has(order.id) ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-200'}`}>
                   <input
                     type="checkbox"
                     checked={selectedOrderIds.has(order.id)}

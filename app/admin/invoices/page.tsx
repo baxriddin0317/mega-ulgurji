@@ -6,9 +6,10 @@ import { useOrderStore } from '@/store/useOrderStore';
 import { formatUZS } from '@/lib/formatPrice';
 import { formatDateTimeShort } from "@/lib/formatDate";
 import { getStatusInfo } from '@/lib/orderStatus';
-import { FileText } from 'lucide-react';
+import { FileText, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 const getStartDate = (p: string): number => {
   const now = new Date();
@@ -23,6 +24,7 @@ const InvoicesPage = () => {
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchAllOrders();
@@ -87,6 +89,22 @@ const InvoicesPage = () => {
         </div>
 
         <p className="text-xs text-gray-400 mb-3">{filteredOrders.length} ta faktura</p>
+
+        {selectedInvoiceIds.size > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <Button onClick={() => {
+              const ids = Array.from(selectedInvoiceIds).slice(0, 10);
+              ids.forEach(id => window.open(`/admin/invoice/${id}`, '_blank'));
+              toast.success(`${ids.length} ta faktura ochildi`);
+            }} className="rounded-xl text-xs h-8 gap-1.5 bg-gray-900 text-white">
+              <Printer className="size-3.5" /> {selectedInvoiceIds.size} ta chop etish
+            </Button>
+            <button onClick={() => setSelectedInvoiceIds(new Set())}
+              className="text-xs text-gray-400 hover:text-gray-600">
+              Bekor qilish
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="px-4 py-3">
@@ -105,6 +123,16 @@ const InvoicesPage = () => {
                   className="flex items-center justify-between gap-4 bg-white rounded-xl border border-gray-200 px-4 py-3 flex-wrap"
                 >
                   <div className="flex items-center gap-3 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedInvoiceIds.has(order.id)}
+                      onChange={() => {
+                        const next = new Set(selectedInvoiceIds);
+                        if (next.has(order.id)) next.delete(order.id); else next.add(order.id);
+                        setSelectedInvoiceIds(next);
+                      }}
+                      className="size-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer mr-2"
+                    />
                     <span className="text-sm text-gray-400 font-medium w-6 shrink-0">{idx + 1}</span>
                     <div className="min-w-0">
                       <p className="font-bold text-sm text-gray-900 capitalize truncate">

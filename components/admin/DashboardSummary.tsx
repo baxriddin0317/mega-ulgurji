@@ -7,6 +7,8 @@ import { ShineBorder } from "@/components/ui/shine-border";
 import useProductStore from "@/store/useProductStore";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useEffect, useMemo } from "react";
+import { exportLowStockProducts } from "@/lib/exportExcel";
+import toast from "react-hot-toast";
 
 const DashboardSummary = () => {
   const { notifications } = useNotificationStore();
@@ -49,7 +51,7 @@ const DashboardSummary = () => {
 
   // Product stats
   const totalProducts = products.length;
-  const lowStockProducts = useMemo(
+  const lowStockCount = useMemo(
     () => products.filter((p) => {
       const hasStock = p.stock !== undefined && p.stock !== null;
       return hasStock && (p.stock as number) <= 5;
@@ -117,8 +119,8 @@ const DashboardSummary = () => {
               <div>
                 <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Jami mahsulotlar</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{totalProducts}</p>
-                {lowStockProducts > 0 && (
-                  <p className="text-xs text-red-500 font-semibold mt-1">{lowStockProducts} ta kam qolgan</p>
+                {lowStockCount > 0 && (
+                  <p className="text-xs text-red-500 font-semibold mt-1">{lowStockCount} ta kam qolgan</p>
                 )}
               </div>
               <div className="flex items-center justify-center size-11 rounded-xl bg-purple-100">
@@ -179,9 +181,9 @@ const DashboardSummary = () => {
 
       {/* Low Stock Alert */}
       <ShineBorder
-        color={lowStockProducts > 0 ? ["#ef4444", "#dc2626", "#f87171"] : ["#e5e7eb"]}
-        borderWidth={lowStockProducts > 0 ? 2 : 1}
-        duration={lowStockProducts > 0 ? 6 : 25}
+        color={lowStockCount > 0 ? ["#ef4444", "#dc2626", "#f87171"] : ["#e5e7eb"]}
+        borderWidth={lowStockCount > 0 ? 2 : 1}
+        duration={lowStockCount > 0 ? 6 : 25}
         className="hover:shadow-lg transition-shadow"
       >
         <Link href="/admin/products" className="block">
@@ -189,15 +191,28 @@ const DashboardSummary = () => {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Kam qolgan mahsulotlar</p>
-                <p className={`text-3xl font-bold mt-1 ${lowStockProducts > 0 ? "text-red-600" : "text-green-600"}`}>
-                  {lowStockProducts}
+                <p className={`text-3xl font-bold mt-1 ${lowStockCount > 0 ? "text-red-600" : "text-green-600"}`}>
+                  {lowStockCount}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {lowStockProducts > 0 ? "Omborda 5 tadan kam" : "Hammasi yetarli"}
+                  {lowStockCount > 0 ? "Omborda 5 tadan kam" : "Hammasi yetarli"}
                 </p>
+                {lowStockCount > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      exportLowStockProducts(products);
+                      toast.success(`${lowStockCount} ta mahsulot eksport qilindi`);
+                    }}
+                    className="mt-1 text-[10px] text-gray-400 hover:text-gray-600 underline"
+                  >
+                    Excel yuklab olish
+                  </button>
+                )}
               </div>
-              <div className={`flex items-center justify-center size-11 rounded-xl ${lowStockProducts > 0 ? "bg-red-100" : "bg-green-100"}`}>
-                <AlertTriangle className={`size-5 ${lowStockProducts > 0 ? "text-red-600" : "text-green-600"}`} />
+              <div className={`flex items-center justify-center size-11 rounded-xl ${lowStockCount > 0 ? "bg-red-100" : "bg-green-100"}`}>
+                <AlertTriangle className={`size-5 ${lowStockCount > 0 ? "text-red-600" : "text-green-600"}`} />
               </div>
             </div>
           </div>

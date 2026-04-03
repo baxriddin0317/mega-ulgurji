@@ -32,7 +32,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
         </div>
       </div>
       <DailySummaryGenerator />
-      <Toaster />
+      <Toaster position="bottom-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontSize: '13px' } }} />
     </ProtectedRoute>
   )
 }

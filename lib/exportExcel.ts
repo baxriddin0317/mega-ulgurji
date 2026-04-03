@@ -70,3 +70,24 @@ export function exportProductsToExcel(products: ProductT[], filename = 'mahsulot
   XLSX.utils.book_append_sheet(wb, ws, 'Mahsulotlar');
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }
+
+export function exportLowStockProducts(products: ProductT[], filename = "kam_qolgan_mahsulotlar") {
+  const lowStock = products.filter(p => typeof p.stock === 'number' && p.stock <= 5);
+  if (lowStock.length === 0) return;
+
+  const data = lowStock.map((p, i) => ({
+    "#": i + 1,
+    "Nomi": p.title,
+    "Kategoriya": p.category,
+    "Hozirgi ombor": p.stock || 0,
+    "Tavsiya buyurtma": Math.max(20 - (p.stock || 0), 10),
+    "Tan narxi": p.costPrice || 0,
+    "Taxminiy summa": (p.costPrice || 0) * Math.max(20 - (p.stock || 0), 10),
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws["!cols"] = [{ wch: 5 }, { wch: 30 }, { wch: 18 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 16 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Kam qolgan");
+  XLSX.writeFile(wb, `${filename}.xlsx`);
+}

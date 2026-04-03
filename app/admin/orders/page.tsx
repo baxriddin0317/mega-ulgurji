@@ -92,7 +92,7 @@ const Orders = () => {
         <div className="flex items-center gap-2 shrink-0">
           {newOrderCount > 0 && (
             <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
-              className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
+              className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber">
               <CheckCheck className="size-3.5" />
               {confirmingAll ? "Tasdiqlanmoqda..." : `${newOrderCount} ta yangi buyurtmani tasdiqlash`}
             </Button>
@@ -104,7 +104,7 @@ const Orders = () => {
             if (deliveryOrders.length === 0) { toast.error("Yetkazish uchun buyurtma yo'q"); return; }
             generateDeliverySheet(deliveryOrders);
             toast.success(`${deliveryOrders.length} ta buyurtma uchun varaqasi yaratildi`);
-          }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5" variant="outline">
+          }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 btn-press glow-blue" variant="outline">
             <FileText className="size-3.5" /> Yetkazish varaqasi
           </Button>
           <Button
@@ -124,7 +124,14 @@ const Orders = () => {
           <Disclosure key={order.id}>
             {({ open }) => (
               <div className="mb-2">
-                <div className={`flex items-center w-full px-4 py-2 shadow-lg rounded-lg border ${selectedOrderIds.has(order.id) ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-200'}`}>
+                <div className={`flex items-center w-full px-4 py-2 shadow-lg rounded-lg border border-l-4 ${
+                  order.status === 'yetkazildi' ? 'border-l-green-500' :
+                  order.status === 'yangi' || !order.status ? 'border-l-blue-500' :
+                  order.status === 'tasdiqlangan' ? 'border-l-amber-500' :
+                  order.status === 'bekor_qilindi' ? 'border-l-red-500' :
+                  order.status === 'yetkazilmoqda' ? 'border-l-orange-500' :
+                  'border-l-purple-500'
+                } ${selectedOrderIds.has(order.id) ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-200'}`}>
                   <input
                     type="checkbox"
                     checked={selectedOrderIds.has(order.id)}
@@ -136,10 +143,14 @@ const Orders = () => {
                     <span className='text-sm text-gray-500 mt-1'>{idx + 1}.</span>
                     <div className="flex items-center gap-4 flex-wrap">
                       <div>
-                        <h3 className="font-medium capitalize">{order.clientName}</h3>
+                        <h3 className="text-base font-bold capitalize">{order.clientName}</h3>
                         <p className="text-sm text-gray-500">{order.clientPhone}</p>
                       </div>
                       <StatusBadge status={order.status} />
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        {order.totalQuantity} ta
+                      </span>
+                      <span className="text-sm font-bold text-green-600">{formatUZS(order.totalPrice)}</span>
                       <p className="text-sm text-gray-500">Sana Vaqt: {formatDateTimeShort(order.date)}</p>
                     </div>
                   </div>
@@ -261,7 +272,7 @@ const Orders = () => {
       {selectedOrderIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-gray-700">
           <span className="text-sm font-medium mr-2">{selectedOrderIds.size} ta tanlangan</span>
-          <Button size="sm" variant="ghost" onClick={() => setShowBulkStatus(true)} className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 gap-1.5 text-xs">
+          <Button size="sm" variant="ghost" onClick={() => setShowBulkStatus(true)} className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 gap-1.5 text-xs btn-press glow-blue">
             Statusni o&apos;zgartirish
           </Button>
           <button onClick={() => setSelectedOrderIds(new Set())} className="ml-2 p-1 rounded-lg hover:bg-gray-800">

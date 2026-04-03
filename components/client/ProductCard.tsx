@@ -17,30 +17,26 @@ const ProductCard = ({product}: ProductProps) => {
   const outOfStock = hasStock && (product.stock as number) <= 0;
 
   return (
-    <div className={`cursor-pointer group ${outOfStock ? 'opacity-60' : ''}`}>
+    <Link href={`/product/${product.id}`} className={`cursor-pointer group block ${outOfStock ? 'opacity-60' : ''}`}>
       <div className='relative w-full h-64 overflow-hidden rounded-xl mb-3'>
         {product.productImageUrl && product.productImageUrl.length > 0 ? <Image className='absolute object-cover group-hover:scale-105 transition-all duration-500' src={product.productImageUrl[0].url} fill alt='' /> : <div className='absolute size-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs'>Rasm yo&apos;q</div>}
         {outOfStock ? (
-          <div className='absolute top-2 left-2 bg-red-500 text-white text-[11px] font-bold px-2 py-1 rounded-lg z-10'>
+          <div className='absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10'>
             Mavjud emas
           </div>
         ) : hasStock && (product.stock as number) <= 10 ? (
-          <div className={`absolute top-2 left-2 text-white text-[11px] font-bold px-2 py-1 rounded-lg z-10 ${
-            (product.stock as number) <= 5 ? 'bg-red-500' : 'bg-amber-500'
-          }`}>
-            {product.stock} ta qolgan
+          <div className='absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg z-10'>
+            Faqat {product.stock} ta qoldi!
           </div>
         ) : null}
       </div>
-      <Link href={`/product/${product.id}`}>
-        <h3 className='font-bold text-lg md:text-xl line-clamp-1'>{product.title}</h3>
-        {isAuthenticated ? (
-          <p className='font-semibold text-brand-gray-200'>{formatUZS(product.price)}</p>
-        ) : (
-          <p className='text-xs md:text-base font-semibold text-red-500'>Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</p>
-        )}
-      </Link>
-    </div>
+      <h3 className='font-bold text-lg md:text-xl line-clamp-1'>{product.title}</h3>
+      {isAuthenticated ? (
+        <p className='font-semibold text-brand-gray-200'>{formatUZS(product.price)}</p>
+      ) : (
+        <p className='text-xs md:text-base font-semibold text-red-500'>Narxni ko&apos;rish uchun ro&apos;yxatdan o&apos;ting</p>
+      )}
+    </Link>
   )
 }
 

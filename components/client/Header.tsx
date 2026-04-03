@@ -14,14 +14,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/store/authStore';
 import useProductStore from '@/store/useProductStore';
-import { Search, X } from 'lucide-react';
+import { Search, ShoppingCart, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import useCartProductStore from '@/store/useCartStore';
 
 const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
   const [fixed, setFixed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { isAuthenticated, isAdmin, logout } = useAuthStore();
+  const { cartProducts } = useCartProductStore();
   const { products, fetchProducts } = useProductStore();
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -103,6 +105,15 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
         {!isAuthenticated ? (
           <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Hisobga kirish</Link>
         ) : (
+          <>
+          <Link href="/cart-product" className="relative">
+            <ShoppingCart className="size-5 text-white" />
+            {cartProducts.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full flex items-center justify-center">
+                {cartProducts.length}
+              </span>
+            )}
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger className='cursor-pointer'>
               <Avatar className='size-10'>
@@ -123,6 +134,7 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
               <DropdownMenuItem className='cursor-pointer' onClick={logout}>Chiqish</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </>
         )}
       </nav>
 

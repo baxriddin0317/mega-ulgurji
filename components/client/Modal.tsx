@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { useAuthStore } from "@/store/authStore";
+import { formatUZS } from "@/lib/formatPrice";
 
 interface props {
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -97,6 +98,24 @@ const SubmitModal = ({ setOpen }: props) => {
         className="absolute inset-0 size-full bg-black/80 z-0"
       ></div>
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-sm w-full bg-white rounded-md space-y-3 p-5 z-10">
+        {/* Order summary */}
+        <div className="bg-gray-50 rounded-xl p-3 mb-4">
+          <p className="text-sm font-bold text-gray-900 mb-2">Buyurtma ({totalQuantity} ta mahsulot)</p>
+          <div className="max-h-24 overflow-y-auto space-y-1">
+            {cartProducts.slice(0, 5).map((item, i) => (
+              <div key={i} className="flex justify-between text-xs text-gray-600">
+                <span className="truncate mr-2">{item.title} x{item.quantity}</span>
+                <span className="shrink-0">{formatUZS(Number(item.price) * item.quantity)}</span>
+              </div>
+            ))}
+            {cartProducts.length > 5 && <p className="text-xs text-gray-400">... va yana {cartProducts.length - 5} ta</p>}
+          </div>
+          <div className="flex justify-between mt-2 pt-2 border-t border-gray-200 font-bold text-sm">
+            <span>Jami:</span>
+            <span className="text-green-600">{formatUZS(totalPrice)}</span>
+          </div>
+        </div>
+
         <div>
           <label htmlFor="first-name" className="block text-sm font-medium text-gray-900">Ism</label>
           <div className="mt-1">

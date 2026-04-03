@@ -35,8 +35,8 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Play a two-tone notification chime (like a cash register / doorbell).
- * Used for new order notifications.
+ * Triple-tone cash register chime — LOUD.
+ * Used for new order notifications in warehouse environments.
  */
 export function playOrderSound() {
   try {
@@ -44,27 +44,77 @@ export function playOrderSound() {
     if (ctx.state === 'suspended') ctx.resume();
     const now = ctx.currentTime;
 
-    // Tone 1: higher pitch
+    // Tone 1: 880Hz A5
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
     osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(880, now);        // A5
-    osc1.frequency.setValueAtTime(1108.73, now + 0.1); // C#6
-    gain1.gain.setValueAtTime(0.3, now);
-    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-    osc1.connect(gain1).connect(ctx.destination);
+    osc1.frequency.setValueAtTime(880, now);
+    gain1.gain.setValueAtTime(0.5, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
     osc1.start(now);
-    osc1.stop(now + 0.3);
+    osc1.stop(now + 0.25);
 
-    // Tone 2: resolve chord (delayed)
+    // Tone 2: 1047Hz C6
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
     osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(1318.51, now + 0.15); // E6
-    gain2.gain.setValueAtTime(0, now);
-    gain2.gain.setValueAtTime(0.25, now + 0.15);
-    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-    osc2.connect(gain2).connect(ctx.destination);
+    osc2.frequency.setValueAtTime(1047, now + 0.15);
+    gain2.gain.setValueAtTime(0.5, now + 0.15);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+    osc2.start(now + 0.15);
+    osc2.stop(now + 0.4);
+
+    // Tone 3: 1319Hz E6
+    const osc3 = ctx.createOscillator();
+    const gain3 = ctx.createGain();
+    osc3.connect(gain3);
+    gain3.connect(ctx.destination);
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(1319, now + 0.3);
+    gain3.gain.setValueAtTime(0.45, now + 0.3);
+    gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
+    osc3.start(now + 0.3);
+    osc3.stop(now + 0.7);
+  } catch {
+    // Silently fail if audio not available
+  }
+}
+
+/**
+ * Two-tone rising welcome ping — LOUD.
+ * Used for new user registration notifications.
+ */
+export function playUserSound() {
+  try {
+    const ctx = getContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+
+    // Tone 1: 523Hz C5
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(523, now);
+    gain1.gain.setValueAtTime(0.45, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    osc1.start(now);
+    osc1.stop(now + 0.25);
+
+    // Tone 2: 784Hz G5
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(784, now + 0.15);
+    gain2.gain.setValueAtTime(0.45, now + 0.15);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
     osc2.start(now + 0.15);
     osc2.stop(now + 0.5);
   } catch {
@@ -73,24 +123,38 @@ export function playOrderSound() {
 }
 
 /**
- * Play a soft single-tone ping for new user registrations.
+ * Double beep warning — LOUD, piercing square wave.
+ * Used for alert / warning notifications.
  */
-export function playUserSound() {
+export function playAlertSound() {
   try {
     const ctx = getContext();
     if (ctx.state === 'suspended') ctx.resume();
     const now = ctx.currentTime;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(659.25, now);  // E5
-    osc.frequency.exponentialRampToValueAtTime(987.77, now + 0.15); // B5 slide up
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.35);
+    // Beep 1: 440Hz square wave
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.type = 'square';
+    osc1.frequency.setValueAtTime(440, now);
+    gain1.gain.setValueAtTime(0.5, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc1.start(now);
+    osc1.stop(now + 0.2);
+
+    // Beep 2: 440Hz square wave (after gap)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(440, now + 0.25);
+    gain2.gain.setValueAtTime(0.5, now + 0.25);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    osc2.start(now + 0.25);
+    osc2.stop(now + 0.45);
   } catch {
     // Silently fail if audio not available
   }

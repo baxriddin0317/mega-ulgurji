@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { BiUser } from 'react-icons/bi'
-import { ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText } from 'lucide-react';
+import { ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText, Warehouse } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore'
 
 const Menu = () => {
@@ -62,6 +62,10 @@ const Menu = () => {
       <Link href={'/admin/kirim'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/kirim') ? 'bg-brand-gray-100' : ''}`}>
         <PackagePlus size={24} />
         <p className="text-black text-sm font-medium leading-normal">Kirim (tovar qabul)</p>
+      </Link>
+      <Link href={'/admin/ombor'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/ombor') ? 'bg-brand-gray-100' : ''}`}>
+        <Warehouse size={24} />
+        <p className="text-black text-sm font-medium leading-normal">Ombor</p>
       </Link>
       <Link href={'/admin/reports'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/reports') ? 'bg-brand-gray-100' : ''}`}>
         <BarChart3 size={24} />

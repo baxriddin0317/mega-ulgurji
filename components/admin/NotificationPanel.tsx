@@ -76,15 +76,16 @@ const NotificationPanel = () => {
             </div>
           ),
           {
-            duration: 6000,
+            duration: isOrder ? 8000 : 5000,
             position: "top-right",
             style: {
               background: "#fff",
               border: `1px solid ${borderColor}`,
               boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
-              padding: "12px 16px",
-              borderRadius: "12px",
-              maxWidth: "400px",
+              padding: "16px 20px",
+              fontSize: "14px",
+              borderRadius: "14px",
+              maxWidth: "420px",
             },
           }
         );
@@ -118,19 +119,22 @@ const NotificationPanel = () => {
     <div ref={panelRef} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+        className="relative p-2.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
         aria-label="Bildirishnomalar"
       >
-        <Bell className="size-5 text-gray-700" />
+        <Bell className="size-6 text-gray-700" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 text-[11px] font-bold text-white bg-red-500 rounded-full animate-pulse">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
+          <>
+            <span className="absolute top-0 right-0 size-3 bg-red-500 rounded-full animate-ping opacity-75" />
+            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-6 h-6 px-1 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          </>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-[400px] max-h-[550px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-12 w-[460px] max-h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <h3 className="font-bold text-base text-gray-900">
               Bildirishnomalar
@@ -242,35 +246,35 @@ const NotificationItem = React.memo(({
 
   // Color scheme per type
   const colorMap = isSummary
-    ? { bg: "bg-teal-50/40", circle: "bg-teal-100", icon: "text-teal-600", dot: "bg-teal-500", text: "text-teal-700" }
+    ? { bg: "bg-teal-50/40", circle: "bg-teal-100", icon: "text-teal-600", dot: "bg-teal-500", text: "text-teal-700", border: "border-l-4 border-teal-500" }
     : isOrder
-    ? { bg: "bg-green-50/40", circle: "bg-green-100", icon: "text-green-600", dot: "bg-green-500", text: "text-green-700" }
+    ? { bg: "bg-green-50/40", circle: "bg-green-100", icon: "text-green-600", dot: "bg-green-500", text: "text-green-700", border: "border-l-4 border-green-500" }
     : isStatusChange
-    ? { bg: "bg-amber-50/40", circle: "bg-amber-100", icon: "text-amber-600", dot: "bg-amber-500", text: "text-amber-700" }
-    : { bg: "bg-blue-50/40", circle: "bg-blue-100", icon: "text-blue-600", dot: "bg-blue-500", text: "text-blue-700" };
+    ? { bg: "bg-amber-50/40", circle: "bg-amber-100", icon: "text-amber-600", dot: "bg-amber-500", text: "text-amber-700", border: "border-l-4 border-amber-500" }
+    : { bg: "bg-blue-50/40", circle: "bg-blue-100", icon: "text-blue-600", dot: "bg-blue-500", text: "text-blue-700", border: "border-l-4 border-blue-500" };
 
   const NotifIcon = isSummary ? BarChart3 : isUser ? UserPlus : ShoppingCart;
 
   return (
     <div
-      className={`group relative border-b border-gray-100 transition-colors ${
+      className={`group relative border-b border-gray-100 transition-colors ${colorMap.border} ${
         !notification.read ? colorMap.bg : "hover:bg-gray-50"
       }`}
     >
       {/* Header row */}
-      <div className="flex items-start gap-2.5 px-3 py-2.5 cursor-pointer" onClick={handleClick}>
-        <div className={`shrink-0 mt-0.5 flex items-center justify-center size-8 rounded-full ${colorMap.circle}`}>
+      <div className="flex items-start gap-2.5 px-4 py-3.5 cursor-pointer" onClick={handleClick}>
+        <div className={`shrink-0 mt-0.5 flex items-center justify-center size-10 rounded-xl ${colorMap.circle}`}>
           <NotifIcon className={`size-4 ${colorMap.icon}`} />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             {!notification.read && (
-              <span className={`inline-block w-2 h-2 rounded-full shrink-0 animate-pulse ${colorMap.dot}`} />
+              <span className={`inline-block w-3 h-3 rounded-full shrink-0 animate-pulse ${colorMap.dot}`} />
             )}
             <span className="font-bold text-sm text-gray-900 truncate">{notification.title}</span>
           </div>
-          <p className={`text-xs font-semibold mt-0.5 ${colorMap.text}`}>
+          <p className={`text-sm text-gray-600 mt-0.5`}>
             {notification.message}
           </p>
           <p className="text-[11px] text-gray-400 mt-0.5">

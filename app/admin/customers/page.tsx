@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import { useOrderStore } from '@/store/useOrderStore';
 import { useAuthStore } from '@/store/authStore';
@@ -67,6 +67,37 @@ const CustomersPage = () => {
       .sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders, users]);
 
+  const [activityFilter, setActivityFilter] = useState<string>('all');
+
+  const customerActivity = useMemo(() => {
+    const now = Date.now();
+    const DAY = 86400000;
+    const lastOrderMap = new Map<string, number>();
+    for (const o of orders) {
+      const ts = o.date?.seconds ? o.date.seconds * 1000 : 0;
+      const current = lastOrderMap.get(o.userUid) || 0;
+      if (ts > current) lastOrderMap.set(o.userUid, ts);
+    }
+    return (uid: string) => {
+      const last = lastOrderMap.get(uid);
+      if (!last) return { status: 'new', label: 'Yangi', color: 'text-gray-500', dot: 'bg-gray-400' };
+      const days = Math.floor((now - last) / DAY);
+      if (days <= 7) return { status: 'active', label: 'Faol', color: 'text-green-600', dot: 'bg-green-500' };
+      if (days <= 14) return { status: 'cooling', label: 'Sovumoqda', color: 'text-yellow-600', dot: 'bg-yellow-500' };
+      if (days <= 30) return { status: 'at-risk', label: 'Xavfli', color: 'text-red-600', dot: 'bg-red-500' };
+      return { status: 'inactive', label: 'Faolsiz', color: 'text-gray-500', dot: 'bg-gray-400' };
+    };
+  }, [orders]);
+
+  const filteredCustomers = useMemo(() => {
+    if (activityFilter === 'all') return customerStats;
+    return customerStats.filter((c) => {
+      const key = c.user?.uid || c.phone;
+      const activity = customerActivity(key);
+      return activity.status === activityFilter;
+    });
+  }, [customerStats, activityFilter, customerActivity]);
+
   if (loadingOrders) return <div className="flex items-center justify-center p-10">Yuklanmoqda...</div>;
 
   return (
@@ -83,15 +114,38 @@ const CustomersPage = () => {
           </Button>
         </div>
       )}
+
+      {/* Activity filter tabs */}
+      <div className="px-4 pb-3">
+        <div className="flex gap-2">
+          {[
+            { key: 'all', label: 'Barchasi' },
+            { key: 'active', label: 'Faol' },
+            { key: 'cooling', label: 'Sovumoqda' },
+            { key: 'at-risk', label: 'Xavfli' },
+            { key: 'inactive', label: 'Faolsiz' },
+          ].map((f) => (
+            <button key={f.key} onClick={() => setActivityFilter(f.key)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activityFilter === f.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="px-4 py-3">
-        {customerStats.length === 0 ? (
+        {filteredCustomers.length === 0 ? (
           <p className="text-gray-500 text-center py-10">Mijozlar mavjud emas</p>
         ) : (
           <div className="space-y-3">
-            {customerStats.map((customer, idx) => {
+            {filteredCustomers.map((customer, idx) => {
               const rank = idx + 1;
-              const isTop3 = rank <= 3;
+              const isTop3 = activityFilter === 'all' && rank <= 3;
               const crownColor = rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : 'text-amber-700';
+              const customerKey = customer.user?.uid || customer.phone;
+              const activity = customerActivity(customerKey);
               return (
                 <div
                   key={idx}
@@ -105,9 +159,13 @@ const CustomersPage = () => {
                         {isTop3 ? <Crown className={`size-5 ${crownColor}`} /> : rank}
                       </div>
                       <div>
-                        <p className={`font-bold ${isTop3 ? 'text-lg' : 'text-sm'}`}>{customer.name}</p>
+                        <p className={`font-bold ${isTop3 ? 'text-lg' : 'text-sm'} flex items-center`}>
+                          <span className={`inline-block size-2.5 rounded-full ${activity.dot} mr-2`} title={activity.label} />
+                          {customer.name}
+                        </p>
                         <p className="text-xs text-gray-500 flex items-center gap-1">
                           <Phone className="size-3" /> {customer.phone}
+                          <span className={`ml-2 text-[10px] font-medium ${activity.color}`}>{activity.label}</span>
                         </p>
                       </div>
                     </div>

@@ -62,3 +62,20 @@ export interface StockReceipt {
   totalAmount: number;
   note?: string;
 }
+
+export type StockMovementType = 'kirim' | 'sotish' | 'tuzatish' | 'qaytarish' | 'zarar';
+
+export interface StockMovement {
+  id: string;
+  productId: string;
+  productTitle: string;
+  type: StockMovementType;
+  quantity: number;
+  stockBefore: number;
+  stockAfter: number;
+  reason: string;
+  reference?: string;
+  userId?: string;
+  userName?: string;
+  timestamp: Timestamp;
+}

@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment, writeBatch } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment, writeBatch, Timestamp } from "firebase/firestore";
 import { fireDB } from '@/firebase/config';
 import { Order, OrderStatus, ProductT } from "@/lib/types";
 
@@ -53,6 +53,15 @@ export const useOrderStore = create<StoreState>((set) => ({
 
       // Decrement stock when admin marks as DELIVERED (yetkazildi)
       if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
+        // Read current stock for each product before batch commit
+        const stockSnapshots: Map<string, number> = new Map();
+        for (const item of basketItems) {
+          if (item.id) {
+            const productSnap = await getDoc(doc(fireDB, "products", item.id));
+            stockSnapshots.set(item.id, productSnap.exists() ? (productSnap.data().stock ?? 0) : 0);
+          }
+        }
+
         const stockBatch = writeBatch(fireDB);
         for (const item of basketItems) {
           if (item.id) {
@@ -61,11 +70,38 @@ export const useOrderStore = create<StoreState>((set) => ({
           }
         }
         await stockBatch.commit();
+
+        // Log stock movements (fire-and-forget)
+        for (const item of basketItems) {
+          if (item.id) {
+            const stockBefore = stockSnapshots.get(item.id) ?? 0;
+            addDoc(collection(fireDB, "stockMovements"), {
+              productId: item.id,
+              productTitle: item.title,
+              type: 'sotish',
+              quantity: -item.quantity,
+              stockBefore,
+              stockAfter: stockBefore - item.quantity,
+              reason: `Buyurtma yetkazildi`,
+              reference: orderId,
+              timestamp: Timestamp.now(),
+            }).catch((err) => console.error('Error logging stock movement:', err));
+          }
+        }
       }
 
       // Restore stock if cancelling a DELIVERED order (rare but safe)
       // Or if cancelling any order that was already delivered
       if (status === 'bekor_qilindi' && prevStatus === 'yetkazildi') {
+        // Read current stock for each product before batch commit
+        const stockSnapshots: Map<string, number> = new Map();
+        for (const item of basketItems) {
+          if (item.id) {
+            const productSnap = await getDoc(doc(fireDB, "products", item.id));
+            stockSnapshots.set(item.id, productSnap.exists() ? (productSnap.data().stock ?? 0) : 0);
+          }
+        }
+
         const stockBatch = writeBatch(fireDB);
         for (const item of basketItems) {
           if (item.id) {
@@ -74,6 +110,24 @@ export const useOrderStore = create<StoreState>((set) => ({
           }
         }
         await stockBatch.commit();
+
+        // Log stock movements (fire-and-forget)
+        for (const item of basketItems) {
+          if (item.id) {
+            const stockBefore = stockSnapshots.get(item.id) ?? 0;
+            addDoc(collection(fireDB, "stockMovements"), {
+              productId: item.id,
+              productTitle: item.title,
+              type: 'qaytarish',
+              quantity: item.quantity,
+              stockBefore,
+              stockAfter: stockBefore + item.quantity,
+              reason: `Buyurtma bekor qilindi`,
+              reference: orderId,
+              timestamp: Timestamp.now(),
+            }).catch((err) => console.error('Error logging stock movement:', err));
+          }
+        }
       }
 
       await updateDoc(orderRef, { status });

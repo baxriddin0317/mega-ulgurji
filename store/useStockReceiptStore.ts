@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { collection, addDoc, query, onSnapshot, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, doc, getDoc, updateDoc, increment, Timestamp } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 import { StockReceipt, StockReceiptItem } from '@/lib/types';
 
@@ -17,7 +17,7 @@ export const useStockReceiptStore = create<StockReceiptState>((set) => ({
   addReceipt: async (receipt) => {
     try {
       // Save receipt document
-      await addDoc(collection(fireDB, 'stockReceipts'), {
+      const receiptDocRef = await addDoc(collection(fireDB, 'stockReceipts'), {
         ...receipt,
         date: new Date(),
       });
@@ -44,6 +44,19 @@ export const useStockReceiptStore = create<StockReceiptState>((set) => ({
             stock: increment(item.quantity),
             costPrice: weightedAvgCost,
           });
+
+          // Log stock movement (fire-and-forget)
+          addDoc(collection(fireDB, 'stockMovements'), {
+            productId: item.productId,
+            productTitle: item.productTitle,
+            type: 'kirim',
+            quantity: item.quantity,
+            stockBefore: currentStock,
+            stockAfter: currentStock + item.quantity,
+            reason: `Kirim: ${receipt.supplierName}`,
+            reference: receiptDocRef.id,
+            timestamp: Timestamp.now(),
+          }).catch((err) => console.error('Error logging stock movement:', err));
         }
       }
     } catch (error) {

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import useProductStore from "@/store/useProductStore";
 import toast from "react-hot-toast";
+import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { fireDB } from "@/firebase/config";
 
 interface BulkStockUpdateModalProps {
   selectedIds: string[];
@@ -15,6 +17,7 @@ export default function BulkStockUpdateModal({ selectedIds, onClose }: BulkStock
   const { products, bulkUpdateStock } = useProductStore();
   const [mode, setMode] = useState<"set" | "increment">("set");
   const [value, setValue] = useState<number>(0);
+  const [reason, setReason] = useState("Inventarizatsiya");
   const [loading, setLoading] = useState(false);
 
   const selectedProducts = products.filter((p) => selectedIds.includes(p.id));
@@ -31,6 +34,21 @@ export default function BulkStockUpdateModal({ selectedIds, onClose }: BulkStock
         stock: mode === "set" ? value : (typeof p.stock === "number" ? p.stock : 0) + value,
       }));
       const count = await bulkUpdateStock(updates);
+      // Log stock movements
+      for (const { id, stock: newStock } of updates) {
+        const product = selectedProducts.find(p => p.id === id);
+        const oldStock = typeof product?.stock === 'number' ? product.stock : 0;
+        await addDoc(collection(fireDB, "stockMovements"), {
+          productId: id,
+          productTitle: product?.title || '',
+          type: 'tuzatish' as const,
+          quantity: newStock - oldStock,
+          stockBefore: oldStock,
+          stockAfter: newStock,
+          reason: reason,
+          timestamp: Timestamp.now(),
+        });
+      }
       toast.success(`${count} ta mahsulot ombori yangilandi`);
       onClose();
     } catch {
@@ -59,6 +77,15 @@ export default function BulkStockUpdateModal({ selectedIds, onClose }: BulkStock
         </div>
 
         <input type="number" value={value} onChange={(e) => setValue(Number(e.target.value))} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder={mode === "set" ? "Yangi ombor soni" : "+10 yoki -5"} />
+
+        <select value={reason} onChange={(e) => setReason(e.target.value)}
+          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none mt-3">
+          <option value="Inventarizatsiya">Inventarizatsiya (sanash)</option>
+          <option value="Zarar / nosozlik">Zarar / nosozlik</option>
+          <option value="Qaytarish">Qaytarish</option>
+          <option value="Yangi tovar keldi">Yangi tovar keldi</option>
+          <option value="Boshqa">Boshqa</option>
+        </select>
 
         <div className="mt-4 max-h-48 overflow-y-auto space-y-1.5">
           {selectedProducts.slice(0, 8).map((p) => {

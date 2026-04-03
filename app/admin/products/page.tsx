@@ -171,12 +171,12 @@ const Products = () => {
       <PanelTitle title='Mahsulotlar' />
       <div className="flex gap-2 px-4 pb-4">
         <Link href="/admin/create-product">
-          <Button className="rounded-xl cursor-pointer text-sm gap-1.5 bg-black text-white hover:bg-black/90">
+          <Button className="rounded-xl cursor-pointer text-sm gap-1.5 bg-black text-white hover:bg-black/90 btn-press glow-green">
             <Plus className="size-4" /> Mahsulot qo&apos;shish
           </Button>
         </Link>
         <Link href="/admin/create-category">
-          <Button variant="outline" className="rounded-xl cursor-pointer text-sm gap-1.5">
+          <Button variant="outline" className="rounded-xl cursor-pointer text-sm gap-1.5 btn-press glow-green">
             <FolderPlus className="size-4" /> Kategoriya qo&apos;shish
           </Button>
         </Link>
@@ -203,14 +203,14 @@ const Products = () => {
       <div className="flex gap-2 px-4 pb-3 flex-wrap">
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 btn-press glow-amber"
           onClick={() => setShowBulkUpdate(true)}
         >
           <Percent className="size-3.5" /> Narxni ommaviy yangilash
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 btn-press glow-blue"
           onClick={() => {
             const filtered = activeCategory === 'all'
               ? products
@@ -222,7 +222,7 @@ const Products = () => {
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-cyan-300 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 hover:text-cyan-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-cyan-300 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 hover:text-cyan-800 btn-press glow-cyan"
           onClick={() => {
             const toExport = activeCategory === 'all' ? products : products.filter(p => p.category === activeCategory);
             exportProductsForUpdate(toExport);
@@ -233,21 +233,21 @@ const Products = () => {
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 btn-press glow-blue"
           onClick={() => generateProductTemplate(categories)}
         >
           <FileSpreadsheet className="size-3.5" /> Shablon yuklab olish
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 hover:text-violet-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100 hover:text-violet-800 btn-press glow-purple"
           onClick={() => setShowImport(true)}
         >
           <Upload className="size-3.5" /> Import
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800 btn-press glow-cyan"
           onClick={() => setShowReimport(true)}
         >
           <Upload className="size-3.5" /> Yangilash uchun import
@@ -255,7 +255,7 @@ const Products = () => {
         {products.length > 0 && (
           <Button
             variant="outline"
-            className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-red-300 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 ml-auto"
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1 border-red-300 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 ml-auto btn-press glow-red"
             onClick={() => setShowDeleteAll(true)}
           >
             <Trash2 className="size-3.5" /> Hammasini o&apos;chirish

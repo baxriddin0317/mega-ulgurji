@@ -155,3 +155,28 @@
   50% { background-position: 100% 100%; }
   100% { background-position: 0% 0%; }
 }
+
+/* Button press feedback */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Semantic glow effects for action buttons */
+.glow-green { transition: box-shadow 0.2s ease; }
+.glow-green:hover { box-shadow: 0 0 16px rgba(34, 197, 94, 0.35); }
+
+.glow-blue { transition: box-shadow 0.2s ease; }
+.glow-blue:hover { box-shadow: 0 0 16px rgba(59, 130, 246, 0.35); }
+
+.glow-amber { transition: box-shadow 0.2s ease; }
+.glow-amber:hover { box-shadow: 0 0 16px rgba(245, 158, 11, 0.35); }
+
+.glow-red { transition: box-shadow 0.2s ease; }
+.glow-red:hover { box-shadow: 0 0 16px rgba(239, 68, 68, 0.35); }
+
+.glow-purple { transition: box-shadow 0.2s ease; }
+.glow-purple:hover { box-shadow: 0 0 16px rgba(168, 85, 247, 0.35); }
+
+.glow-cyan { transition: box-shadow 0.2s ease; }
+.glow-cyan:hover { box-shadow: 0 0 16px rgba(6, 182, 212, 0.35); }

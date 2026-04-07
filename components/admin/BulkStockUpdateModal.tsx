@@ -23,9 +23,23 @@ export default function BulkStockUpdateModal({ selectedIds, onClose }: BulkStock
   const selectedProducts = products.filter((p) => selectedIds.includes(p.id));
 
   const handleSubmit = async () => {
-    if (value < 0 && mode === "set") {
+    if (mode === "set" && value < 0) {
       toast.error("Ombor soni manfiy bo'lishi mumkin emas");
       return;
+    }
+    if (mode === "set" && value > 999999) {
+      toast.error("Ombor soni 999 999 dan oshmasligi kerak");
+      return;
+    }
+    if (mode === "increment") {
+      const wouldGoNegative = selectedProducts.some((p) => {
+        const current = typeof p.stock === "number" ? p.stock : 0;
+        return current + value < 0;
+      });
+      if (wouldGoNegative) {
+        toast.error("Ombor soni manfiy bo'lishi mumkin emas");
+        return;
+      }
     }
     setLoading(true);
     try {

@@ -9,6 +9,7 @@ import useProductStore from "@/store/useProductStore";
 import { useOrderStore } from "@/store/useOrderStore";
 import { formatUZS } from "@/lib/formatPrice";
 import type { Order, ProductT } from "@/lib/types";
+import { Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import {
   Search,
@@ -49,10 +50,12 @@ export default function AdminQuickOrder() {
   // Fetch all data on mount
   useEffect(() => {
     const unsubUsers = fetchAllUsers() as (() => void) | undefined;
-    fetchProducts();
-    fetchAllOrders();
+    const unsubProducts = fetchProducts() as (() => void) | undefined;
+    const unsubOrders = fetchAllOrders() as (() => void) | undefined;
     return () => {
       if (typeof unsubUsers === "function") unsubUsers();
+      if (typeof unsubProducts === "function") unsubProducts();
+      if (typeof unsubOrders === "function") unsubOrders();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -200,7 +203,7 @@ export default function AdminQuickOrder() {
         id: "",
         clientName: selectedCustomer.name,
         clientPhone: selectedCustomer.phone,
-        date: null as any,
+        date: Timestamp.now(),
         basketItems: items.map(({ product, quantity }) => ({
           ...product,
           quantity,

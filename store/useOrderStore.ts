@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment, writeBatch, Timestamp } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, doc, updateDoc, getDoc, increment, writeBatch, Timestamp, where } from "firebase/firestore";
 import { fireDB } from '@/firebase/config';
 import { Order, OrderStatus, ProductT } from "@/lib/types";
 
@@ -48,8 +48,8 @@ export const useOrderStore = create<StoreState>((set) => ({
       if (!orderSnap.exists()) return;
 
       const orderData = orderSnap.data();
-      const prevStatus = (orderData.status || 'yangi') as OrderStatus;
-      const basketItems = (orderData.basketItems || []) as ProductT[];
+      const prevStatus = (orderData.status ?? 'yangi') as OrderStatus;
+      const basketItems = (orderData.basketItems ?? []) as ProductT[];
 
       // Decrement stock when admin marks as DELIVERED (yetkazildi)
       if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
@@ -141,6 +141,16 @@ export const useOrderStore = create<StoreState>((set) => ({
     const batch = writeBatch(fireDB);
     const results = { success: 0, failed: 0 };
 
+    // Collect stock movement data for audit trail
+    const movementLogs: Array<{
+      productId: string;
+      productTitle: string;
+      type: string;
+      quantity: number;
+      stockBefore: number;
+      reference: string;
+    }> = [];
+
     for (const orderId of orderIds) {
       try {
         const orderRef = doc(fireDB, "orders", orderId);
@@ -149,19 +159,39 @@ export const useOrderStore = create<StoreState>((set) => ({
 
         const orderData = orderSnap.data();
         const prevStatus = orderData.status || 'yangi';
-        const basketItems = orderData.basketItems || [];
+        const basketItems = orderData.basketItems ?? [];
 
         if (status === 'yetkazildi' && prevStatus !== 'yetkazildi') {
           for (const item of basketItems) {
             if (item.id) {
+              const productSnap = await getDoc(doc(fireDB, "products", item.id));
+              const stockBefore = productSnap.exists() ? (productSnap.data().stock ?? 0) : 0;
               batch.update(doc(fireDB, "products", item.id), { stock: increment(-item.quantity) });
+              movementLogs.push({
+                productId: item.id,
+                productTitle: item.title || '',
+                type: 'sotish',
+                quantity: -item.quantity,
+                stockBefore,
+                reference: orderId,
+              });
             }
           }
         }
         if (status === 'bekor_qilindi' && prevStatus === 'yetkazildi') {
           for (const item of basketItems) {
             if (item.id) {
+              const productSnap = await getDoc(doc(fireDB, "products", item.id));
+              const stockBefore = productSnap.exists() ? (productSnap.data().stock ?? 0) : 0;
               batch.update(doc(fireDB, "products", item.id), { stock: increment(item.quantity) });
+              movementLogs.push({
+                productId: item.id,
+                productTitle: item.title || '',
+                type: 'qaytarish',
+                quantity: item.quantity,
+                stockBefore,
+                reference: orderId,
+              });
             }
           }
         }
@@ -174,6 +204,21 @@ export const useOrderStore = create<StoreState>((set) => ({
     }
 
     await batch.commit();
+
+    // Log stock movements after successful batch commit
+    for (const log of movementLogs) {
+      addDoc(collection(fireDB, "stockMovements"), {
+        productId: log.productId,
+        productTitle: log.productTitle,
+        type: log.type,
+        quantity: log.quantity,
+        stockBefore: log.stockBefore,
+        stockAfter: log.stockBefore + log.quantity,
+        reason: log.type === 'sotish' ? 'Buyurtma yetkazildi (ommaviy)' : 'Buyurtma bekor qilindi (ommaviy)',
+        reference: log.reference,
+        timestamp: Timestamp.now(),
+      }).catch((err) => console.error('Error logging stock movement:', err));
+    }
 
     set((state) => ({
       orders: state.orders.map((o) =>
@@ -205,14 +250,11 @@ export const useOrderStore = create<StoreState>((set) => ({
   fetchUserOrders: async (userUid: string) => {
     set({ loadingOrders: true });
     try {
-      const q = query(collection(fireDB, "orders"));
+      const q = query(collection(fireDB, "orders"), where("userUid", "==", userUid));
       const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
         const OrderArray: Order[] = [];
-        QuerySnapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.userUid === userUid) {
-            OrderArray.push({ ...data, id: doc.id } as Order);
-          }
+        QuerySnapshot.forEach((d) => {
+          OrderArray.push({ ...d.data(), id: d.id } as Order);
         });
         set({ orders: OrderArray, loadingOrders: false });
       });

@@ -27,11 +27,13 @@ export default function BatchCategoryMoveModal({ selectedIds, onClose }: BatchCa
 
   const handleMove = async () => {
     if (!targetCategory) { toast.error("Kategoriyani tanlang"); return; }
+    const categoryExists = categories.some((c) => c.name === targetCategory);
+    if (!categoryExists) { toast.error("Tanlangan kategoriya mavjud emas"); return; }
     setLoading(true);
     try {
       const batch = writeBatch(fireDB);
       for (const id of selectedIds) {
-        batch.update(doc(fireDB, "products", id), { category: targetCategory });
+        batch.update(doc(fireDB, "products", id), { category: targetCategory, subcategory: '' });
       }
       await batch.commit();
       toast.success(`${selectedIds.length} ta mahsulot "${targetCategory}" ga ko'chirildi`);

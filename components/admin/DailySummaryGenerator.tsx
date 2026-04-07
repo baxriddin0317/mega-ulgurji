@@ -1,5 +1,5 @@
 "use client"
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useOrderStore } from '@/store/useOrderStore';
 import useProductStore from '@/store/useProductStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
@@ -12,13 +12,15 @@ function getTodayString() {
 const DailySummaryGenerator = () => {
   const { orders } = useOrderStore();
   const { products } = useProductStore();
-  const { _lastSummaryDate, addDailySummary, notifications } = useNotificationStore();
+  const { _lastSummaryDate, addDailySummary } = useNotificationStore();
+  const generatedRef = useRef(false);
 
   useEffect(() => {
     const today = getTodayString();
-    if (_lastSummaryDate === today) return;
-    // Wait for at least one store to have data
+    if (_lastSummaryDate === today || generatedRef.current) return;
     if (orders.length === 0 && products.length === 0) return;
+
+    generatedRef.current = true;
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -35,7 +37,7 @@ const DailySummaryGenerator = () => {
 
     const revenue = delivered.reduce((s, o) => s + (o.totalPrice || 0), 0);
     const profit = delivered.reduce((s, o) => {
-      const cost = (o.basketItems || []).reduce(
+      const cost = (o.basketItems ?? []).reduce(
         (c, item) => c + (item.costPrice || 0) * item.quantity,
         0
       );
@@ -46,7 +48,9 @@ const DailySummaryGenerator = () => {
       (p) => p.stock !== undefined && p.stock !== null && (p.stock as number) <= 5
     ).length;
 
-    const newUsers = notifications.filter(
+    // Count new users from notifications without subscribing to notification changes
+    const notifs = useNotificationStore.getState().notifications;
+    const newUsers = notifs.filter(
       (n) => n.type === 'new_user' && n.timestamp >= startMs
     ).length;
 
@@ -61,7 +65,7 @@ const DailySummaryGenerator = () => {
       newUsers,
       date: today,
     });
-  }, [orders, products, _lastSummaryDate, addDailySummary, notifications]);
+  }, [orders, products, _lastSummaryDate, addDailySummary]);
 
   return null;
 };

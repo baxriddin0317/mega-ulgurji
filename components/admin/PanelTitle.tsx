@@ -7,7 +7,7 @@ interface props {
 const PanelTitle = ({title}: props) => {
   return (
     <div className="flex flex-wrap justify-between gap-3 p-4">
-      <h1 className="text-black capitalize text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">{title}</h1>
+      <h1 className="text-black capitalize text-2xl sm:text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">{title}</h1>
     </div>
   )
 }

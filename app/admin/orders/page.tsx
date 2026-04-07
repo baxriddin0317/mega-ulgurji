@@ -85,36 +85,32 @@ const Orders = () => {
   return (
     <div>
       <PanelTitle title="Buyurtmalar" />
-      <div className="flex items-center justify-between px-4">
-        <div className="flex-1">
-          <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {newOrderCount > 0 && (
-            <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
-              className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber">
-              <CheckCheck className="size-3.5" />
-              {confirmingAll ? "Tasdiqlanmoqda..." : `${newOrderCount} ta yangi buyurtmani tasdiqlash`}
-            </Button>
-          )}
-          <Button onClick={() => {
-            const deliveryOrders = selectedOrderIds.size > 0
-              ? orders.filter(o => selectedOrderIds.has(o.id))
-              : orders.filter(o => o.status === 'tasdiqlangan' || o.status === 'yetkazilmoqda');
-            if (deliveryOrders.length === 0) { toast.error("Yetkazish uchun buyurtma yo'q"); return; }
-            generateDeliverySheet(deliveryOrders);
-            toast.success(`${deliveryOrders.length} ta buyurtma uchun varaqasi yaratildi`);
-          }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 btn-press glow-blue" variant="outline">
-            <FileText className="size-3.5" /> Yetkazish varaqasi
+      <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
+      <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+        {newOrderCount > 0 && (
+          <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
+            className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 shrink-0 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber">
+            <CheckCheck className="size-3.5" />
+            {confirmingAll ? "..." : `${newOrderCount} ta tasdiqlash`}
           </Button>
-          <Button
-            variant="outline"
-            className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
-            onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
-          >
-            <Download className="size-3.5" /> Excel
-          </Button>
-        </div>
+        )}
+        <Button onClick={() => {
+          const deliveryOrders = selectedOrderIds.size > 0
+            ? orders.filter(o => selectedOrderIds.has(o.id))
+            : orders.filter(o => o.status === 'tasdiqlangan' || o.status === 'yetkazilmoqda');
+          if (deliveryOrders.length === 0) { toast.error("Yetkazish uchun buyurtma yo'q"); return; }
+          generateDeliverySheet(deliveryOrders);
+          toast.success(`${deliveryOrders.length} ta buyurtma uchun varaqasi yaratildi`);
+        }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 shrink-0 btn-press glow-blue" variant="outline">
+          <FileText className="size-3.5" /> Yetkazish varaqasi
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
+          onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
+        >
+          <Download className="size-3.5" /> Excel
+        </Button>
       </div>
       {loadingOrders ? (
           <div className="flex items-center justify-center">
@@ -124,7 +120,7 @@ const Orders = () => {
           <Disclosure key={order.id}>
             {({ open }) => (
               <div className="mb-2">
-                <div className={`flex items-center w-full px-4 py-2 shadow-lg rounded-lg border border-l-4 ${
+                <div className={`flex items-center w-full px-2 sm:px-4 py-2 shadow-lg rounded-lg border border-l-4 ${
                   order.status === 'yetkazildi' ? 'border-l-green-500' :
                   order.status === 'yangi' || !order.status ? 'border-l-blue-500' :
                   order.status === 'tasdiqlangan' ? 'border-l-amber-500' :

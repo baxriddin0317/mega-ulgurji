@@ -151,38 +151,38 @@ const CustomersPage = () => {
                   key={idx}
                   className={`bg-white rounded-xl border p-4 ${isTop3 ? 'border-yellow-200 shadow-md' : 'border-gray-200'}`}
                 >
-                  <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className={`flex items-center justify-center size-10 rounded-full font-bold text-sm ${
+                      <div className={`flex items-center justify-center size-9 sm:size-10 rounded-full font-bold text-sm shrink-0 ${
                         isTop3 ? 'bg-yellow-100' : 'bg-gray-100'
                       }`}>
-                        {isTop3 ? <Crown className={`size-5 ${crownColor}`} /> : rank}
+                        {isTop3 ? <Crown className={`size-4 sm:size-5 ${crownColor}`} /> : rank}
                       </div>
-                      <div>
-                        <p className={`font-bold ${isTop3 ? 'text-lg' : 'text-sm'} flex items-center`}>
-                          <span className={`inline-block size-2.5 rounded-full ${activity.dot} mr-2`} title={activity.label} />
-                          {customer.name}
+                      <div className="min-w-0">
+                        <p className={`font-bold ${isTop3 ? 'text-base sm:text-lg' : 'text-sm'} flex items-center`}>
+                          <span className={`inline-block size-2.5 rounded-full ${activity.dot} mr-2 shrink-0`} title={activity.label} />
+                          <span className="truncate">{customer.name}</span>
                         </p>
                         <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <Phone className="size-3" /> {customer.phone}
+                          <Phone className="size-3 shrink-0" /> {customer.phone}
                           <span className={`ml-2 text-[10px] font-medium ${activity.color}`}>{activity.label}</span>
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-5 text-right">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                       <div>
                         <p className="text-[10px] text-gray-400 uppercase">Buyurtmalar</p>
-                        <p className="font-bold flex items-center gap-1 justify-end">
+                        <p className="font-bold text-sm flex items-center gap-1">
                           <ShoppingCart className="size-3.5 text-gray-400" /> {customer.totalOrders}
                         </p>
                       </div>
                       <div>
                         <p className="text-[10px] text-gray-400 uppercase">Xaridlar</p>
-                        <p className="font-bold text-green-600">{formatUZS(customer.totalSpent)}</p>
+                        <p className="font-bold text-sm text-green-600">{formatUZS(customer.totalSpent)}</p>
                       </div>
                       <div>
                         <p className="text-[10px] text-gray-400 uppercase">Foyda</p>
-                        <p className="font-bold text-amber-600 flex items-center gap-1 justify-end">
+                        <p className="font-bold text-sm text-amber-600 flex items-center gap-1">
                           <TrendingUp className="size-3.5" /> {formatUZS(customer.totalProfit)}
                         </p>
                       </div>

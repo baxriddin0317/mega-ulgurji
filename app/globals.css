@@ -180,3 +180,12 @@
 
 .glow-cyan { transition: box-shadow 0.2s ease; }
 .glow-cyan:hover { box-shadow: 0 0 16px rgba(6, 182, 212, 0.35); }
+
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

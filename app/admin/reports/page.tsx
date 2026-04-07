@@ -106,13 +106,13 @@ const ReportsPage = () => {
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <ShoppingCart className="size-4 text-blue-600" />
-              <p className="text-xs text-gray-500 uppercase font-semibold">Buyurtmalar</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase font-semibold">Buyurtmalar</p>
             </div>
-            <p className="text-2xl font-bold">{stats.totalOrders}</p>
+            <p className="text-xl sm:text-2xl font-bold">{stats.totalOrders}</p>
             <div className="flex gap-2 mt-1 text-[11px]">
               <span className="text-green-600">{stats.deliveredCount} yetkazildi</span>
               <span className="text-gray-400">{stats.pendingCount} kutilmoqda</span>
@@ -120,7 +120,7 @@ const ReportsPage = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="size-4 text-green-600" />
               <p className="text-xs text-gray-500 uppercase font-semibold">Daromad</p>
@@ -129,7 +129,7 @@ const ReportsPage = () => {
             <p className="text-[11px] text-gray-400 mt-1">{stats.totalItems} ta mahsulot sotildi</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <TrendingDown className="size-4 text-gray-500" />
               <p className="text-xs text-gray-500 uppercase font-semibold">Tan narxi</p>
@@ -138,7 +138,7 @@ const ReportsPage = () => {
             <p className="text-[11px] text-gray-400 mt-1">Yetkazilgan buyurtmalardan</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="size-4 text-amber-600" />
               <p className="text-xs text-gray-500 uppercase font-semibold">Sof foyda</p>

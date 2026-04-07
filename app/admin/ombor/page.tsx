@@ -66,7 +66,7 @@ const OmborPage = () => {
       </p>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-4 mb-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 px-4 mb-6">
         {/* Today's incoming */}
         <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-start justify-between">

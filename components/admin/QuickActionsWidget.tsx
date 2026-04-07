@@ -117,7 +117,7 @@ const QuickActionsWidget = () => {
           <Link
             key={action.href}
             href={action.href}
-            className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors ${action.color}`}
+            className={`flex items-center gap-1.5 sm:gap-2 rounded-xl border px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors ${action.color}`}
           >
             <action.icon className="size-4" />
             {action.label}

@@ -93,13 +93,13 @@ const NasiyaPage = () => {
       <PanelTitle title="Nasiya (Qarzlar)" />
       <div className="px-4 py-3">
         {/* Summary cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-red-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="size-4 text-red-600" />
-              <p className="text-xs text-gray-500 uppercase font-semibold">Umumiy qarz</p>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-red-200 p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <AlertTriangle className="size-3.5 sm:size-4 text-red-600 shrink-0" />
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase font-semibold">Umumiy qarz</p>
             </div>
-            <p className="text-2xl font-bold text-red-600">{formatUZS(totalDue)}</p>
+            <p className="text-lg sm:text-2xl font-bold text-red-600">{formatUZS(totalDue)}</p>
             <p className="text-xs text-gray-500">{activeRecords.length} ta faol nasiya</p>
           </div>
           <div className="bg-white rounded-xl border border-green-200 p-4">

@@ -18,25 +18,28 @@ const AdminHeader = () => {
   const { toggle } = useSidebarStore();
   const {logout} = useAuthStore();
   return (
-    <header className="sticky z-50 top-0 bg-white shadow-bottom-only p-4 px-6 flex items-center justify-between">
+    <header className="sticky z-50 top-0 bg-white shadow-bottom-only p-3 px-4 sm:p-4 sm:px-6 flex items-center justify-between">
       <div>
+        {/* Desktop sidebar toggle */}
         <Button onClick={toggle} className='hidden lg:inline-block cursor-pointer' variant={'ghost'}>
           <FiSidebar />
         </Button>
-        <Sheet >
-          <SheetTrigger className='lg:hidden cursor-pointer size-10 flex justify-center items-center'><FiSidebar /></SheetTrigger>
+        {/* Mobile hamburger — hidden since we have BottomNav, but kept for tablet */}
+        <Sheet>
+          <SheetTrigger className='lg:hidden cursor-pointer size-9 flex justify-center items-center'><FiSidebar /></SheetTrigger>
           <MobileMenu />
         </Sheet>
       </div>
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-2 sm:gap-3'>
         <NotificationPanel />
-        <Link className='flex items-center h-9 px-4 rounded-xl bg-primary text-primary-foreground shadow-xs hover:bg-primary/90' href={'/'}>
+        {/* "Back to store" link — desktop only */}
+        <Link className='hidden sm:flex items-center h-9 px-4 rounded-xl bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 text-sm' href={'/'}>
           Bosh sahifaga qaytish
         </Link>
         {/* avatar */}
         <DropdownMenu>
           <DropdownMenuTrigger className='cursor-pointer'>
-            <Avatar className='size-10'>
+            <Avatar className='size-9 sm:size-10'>
               <AvatarImage src="" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
@@ -45,6 +48,9 @@ const AdminHeader = () => {
             <DropdownMenuLabel>Mening hisobim</DropdownMenuLabel>
             <DropdownMenuItem asChild>
               <Link href="/admin/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/">Bosh sahifaga qaytish</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className='cursor-pointer' onClick={logout}>Chiqish</DropdownMenuItem>
           </DropdownMenuContent>

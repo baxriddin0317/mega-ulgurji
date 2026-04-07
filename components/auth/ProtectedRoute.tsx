@@ -17,25 +17,23 @@ const ProtectedRoute = ({
   redirectTo 
 }: ProtectedRouteProps) => {
   const router = useRouter()
-  const { isAuthenticated, userData, isLoading, isAdmin } = useAuthStore()
+  const { isAuthenticated, userData, isLoading, isAdmin, hasAdminAccess } = useAuthStore()
 
   useEffect(() => {
     if (!isLoading) {
-      // Agar authentication talab qilinsa va user login qilmagan bo'lsa
       if (requireAuth && !isAuthenticated) {
         router.push('/')
         return
       }
 
-      // Agar admin faqat sahifa bo'lsa va user admin bo'lmasa
-      if (adminOnly && isAuthenticated && !isAdmin()) {
-        router.push('/') // yoki boshqa sahifa
+      // Admin panel: allow admin and manager roles
+      if (adminOnly && isAuthenticated && !hasAdminAccess()) {
+        router.push('/')
         return
       }
 
-      // Agar custom redirect kerak bo'lsa
       if (redirectTo && isAuthenticated) {
-        if (isAdmin()) {
+        if (hasAdminAccess()) {
           router.push('/admin')
         } else {
           router.push('/')
@@ -43,7 +41,7 @@ const ProtectedRoute = ({
         return
       }
     }
-  }, [isAuthenticated, userData, isLoading, requireAuth, adminOnly, redirectTo, router, isAdmin])
+  }, [isAuthenticated, userData, isLoading, requireAuth, adminOnly, redirectTo, router, isAdmin, hasAdminAccess])
 
   // Loading state
   if (isLoading) {
@@ -59,8 +57,7 @@ const ProtectedRoute = ({
     return null // router.push ishga tushguncha
   }
 
-  // Agar admin faqat sahifa bo'lsa va user admin bo'lmasa
-  if (adminOnly && isAuthenticated && !isAdmin()) {
+  if (adminOnly && isAuthenticated && !hasAdminAccess()) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

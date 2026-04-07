@@ -8,11 +8,16 @@ import { updateDoc, doc } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 import { useNotificationStore } from '@/store/useNotificationStore';
 
-const roleOptions = ["admin", "user"];
+const roleOptions = ["admin", "manager", "user"];
+const roleLabels: Record<string, string> = {
+  admin: "Admin",
+  manager: "Menejer",
+  user: "Foydalanuvchi",
+};
 
 interface UsersTableProps {
   search: string;
-  roleFilter?: 'all' | 'admin' | 'user';
+  roleFilter?: 'all' | 'admin' | 'manager' | 'user';
 }
 
 const Spinner = () => (
@@ -147,7 +152,7 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
                 </td>
                 <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.email}</td>
                 <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.phone}</td>
-                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.role}</td>
+                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{roleLabels[user.role] || user.role}</td>
                 <td className="w-44 h-20 px-4 py-2 text-gray-700 text-sm font-normal text-center">
                   <select
                     className="border rounded px-2 py-1"
@@ -155,7 +160,7 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
                     onChange={e => handleRoleChange(user, e.target.value)}
                   >
                     {roleOptions.map(role => (
-                      <option key={role} value={role}>{role}</option>
+                      <option key={role} value={role}>{roleLabels[role]}</option>
                     ))}
                   </select>
                 </td>
@@ -207,7 +212,7 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Maqomi</span>
-                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.role}</span>
+                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{roleLabels[user.role] || user.role}</span>
               </div>
               <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
                 <select
@@ -216,7 +221,7 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
                   onChange={e => handleRoleChange(user, e.target.value)}
                 >
                   {roleOptions.map(role => (
-                    <option key={role} value={role}>{role}</option>
+                    <option key={role} value={role}>{roleLabels[role]}</option>
                   ))}
                 </select>
                 <Button

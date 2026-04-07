@@ -11,7 +11,7 @@ import { setDoc, doc, Timestamp } from 'firebase/firestore';
 import { useAuthStore } from '@/store/authStore';
 import { FirebaseError } from 'firebase/app';
 
-type Role = "admin" | "user"
+type Role = "admin" | "manager" | "user"
 
 // Form inputs type
 interface SignUpFormInputs {

@@ -87,7 +87,7 @@ const LoginForm = () => {
           console.log('User data:', userData)
 
           // Navigation based on user role
-          if (userData?.role === "admin") {
+          if (userData?.role === "admin" || userData?.role === "manager") {
             router.push('/admin')
           } else {
             router.push('/')

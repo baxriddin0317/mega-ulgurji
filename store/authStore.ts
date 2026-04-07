@@ -5,7 +5,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { fireDB } from '@/firebase/config'
 import { collection, onSnapshot } from 'firebase/firestore'
 
-type Role = "admin" | "user"
+type Role = "admin" | "manager" | "user"
 
 interface UserData {
   name: string
@@ -31,6 +31,8 @@ interface AuthState {
   fetchAllUsers: () => void
   logout: () => void
   isAdmin: () => boolean
+  isManager: () => boolean
+  hasAdminAccess: () => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -111,6 +113,16 @@ export const useAuthStore = create<AuthState>()(
       isAdmin: () => {
         const { userData } = get()
         return userData?.role === 'admin'
+      },
+
+      isManager: () => {
+        const { userData } = get()
+        return userData?.role === 'manager'
+      },
+
+      hasAdminAccess: () => {
+        const { userData } = get()
+        return userData?.role === 'admin' || userData?.role === 'manager'
       }
     }),
     {

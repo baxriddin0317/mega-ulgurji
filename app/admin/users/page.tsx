@@ -9,14 +9,15 @@ import { Users, ShieldCheck, UserPlus, UserCheck } from 'lucide-react';
 
 const UsersPage = () => {
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'user'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'manager' | 'user'>('all');
   const { users } = useAuthStore();
   const { notifications } = useNotificationStore();
 
   const stats = useMemo(() => {
     const total = users.length;
     const admins = users.filter((u) => u.role === 'admin').length;
-    const regularUsers = total - admins;
+    const managers = users.filter((u) => u.role === 'manager').length;
+    const regularUsers = total - admins - managers;
 
     // New users in last 24 hours
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
@@ -24,7 +25,7 @@ const UsersPage = () => {
       (n) => n.type === 'new_user' && n.timestamp >= oneDayAgo
     ).length;
 
-    return { total, admins, regularUsers, newToday };
+    return { total, admins, managers, regularUsers, newToday };
   }, [users, notifications]);
 
   const filteredSearch = useMemo(() => {
@@ -37,42 +38,41 @@ const UsersPage = () => {
       <PanelTitle title="Foydalanuvchilar" />
 
       {/* User Stats */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-3 px-4 pb-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center size-7 rounded-lg bg-blue-100">
-              <Users className="size-3.5 text-blue-600" />
-            </div>
+      <div className="grid grid-cols-5 gap-2 px-4 pb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-blue-100 mb-1">
+            <Users className="size-3.5 text-blue-600" />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Jami</p>
+          <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.total}</p>
+          <p className="text-[9px] sm:text-xs text-gray-500">Jami</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center size-7 rounded-lg bg-purple-100">
-              <ShieldCheck className="size-3.5 text-purple-600" />
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-purple-100 mb-1">
+            <ShieldCheck className="size-3.5 text-purple-600" />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.admins}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Adminlar</p>
+          <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.admins}</p>
+          <p className="text-[9px] sm:text-xs text-gray-500">Adminlar</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center size-7 rounded-lg bg-gray-100">
-              <UserCheck className="size-3.5 text-gray-600" />
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-amber-100 mb-1">
+            <UserCheck className="size-3.5 text-amber-600" />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.regularUsers}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Foydalanuvchilar</p>
+          <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.managers}</p>
+          <p className="text-[9px] sm:text-xs text-gray-500">Menejerlar</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center justify-center size-7 rounded-lg bg-green-100">
-              <UserPlus className="size-3.5 text-green-600" />
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-gray-100 mb-1">
+            <UserCheck className="size-3.5 text-gray-600" />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.newToday}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Yangi (24s)</p>
+          <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.regularUsers}</p>
+          <p className="text-[9px] sm:text-xs text-gray-500">Mijozlar</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3">
+          <div className="flex items-center justify-center size-7 rounded-lg bg-green-100 mb-1">
+            <UserPlus className="size-3.5 text-green-600" />
+          </div>
+          <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.newToday}</p>
+          <p className="text-[9px] sm:text-xs text-gray-500">Yangi</p>
         </div>
       </div>
 
@@ -81,7 +81,8 @@ const UsersPage = () => {
         {([
           { key: 'all', label: 'Barchasi' },
           { key: 'admin', label: 'Adminlar' },
-          { key: 'user', label: 'Foydalanuvchilar' },
+          { key: 'manager', label: 'Menejerlar' },
+          { key: 'user', label: 'Mijozlar' },
         ] as const).map((f) => (
           <button
             key={f.key}

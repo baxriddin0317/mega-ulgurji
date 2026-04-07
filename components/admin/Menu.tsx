@@ -10,8 +10,9 @@ import { useAuthStore } from '@/store/authStore'
 const Menu = () => {
   const pathname = usePathname();
   const { notifications } = useNotificationStore();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, hasAdminAccess } = useAuthStore();
   const admin = isAdmin();
+  const staffAccess = hasAdminAccess(); // admin OR manager
 
   const newOrderCount = notifications.filter((n) => !n.read && n.type === 'new_order').length;
   const newUserCount = notifications.filter((n) => !n.read && n.type === 'new_user').length;
@@ -38,8 +39,8 @@ const Menu = () => {
         </Link>
       )}
 
-      {/* Admin only: Categories */}
-      {admin && (
+      {/* Admin/Manager: Categories */}
+      {staffAccess && (
         <Link href={'/admin/categories'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/categories') ? 'bg-brand-gray-100' : ''}`}>
           <div className="text-black" data-icon="Package" data-size="24px" data-weight="regular">
             <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -89,24 +90,24 @@ const Menu = () => {
         <p className="text-black text-sm font-medium leading-normal">Ombor</p>
       </Link>
 
-      {/* Admin only: Reports */}
-      {admin && (
+      {/* Admin/Manager: Reports */}
+      {staffAccess && (
         <Link href={'/admin/reports'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/reports') ? 'bg-brand-gray-100' : ''}`}>
           <BarChart3 size={24} />
           <p className="text-black text-sm font-medium leading-normal">Hisobotlar</p>
         </Link>
       )}
 
-      {/* Admin only: Customer ranking */}
-      {admin && (
+      {/* Admin/Manager: Customer ranking */}
+      {staffAccess && (
         <Link href={'/admin/customers'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/customers') ? 'bg-brand-gray-100' : ''}`}>
           <Crown size={24} />
           <p className="text-black text-sm font-medium leading-normal">Mijozlar reytingi</p>
         </Link>
       )}
 
-      {/* Admin only: Nasiya */}
-      {admin && (
+      {/* Admin/Manager: Nasiya */}
+      {staffAccess && (
         <Link href={'/admin/nasiya'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/nasiya') ? 'bg-brand-gray-100' : ''}`}>
           <CreditCard size={24} />
           <p className="text-black text-sm font-medium leading-normal">Nasiya (qarzlar)</p>

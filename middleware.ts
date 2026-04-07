@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
     try {
       // Decode the session cookie (base64 JSON with role)
       const sessionData = JSON.parse(atob(session.value));
-      if (sessionData.role !== 'admin') {
+      if (sessionData.role !== 'admin' && sessionData.role !== 'manager') {
         return NextResponse.redirect(new URL('/', request.url));
       }
     } catch {

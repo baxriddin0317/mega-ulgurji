@@ -4,6 +4,8 @@ import Image from 'next/image'
 import React from 'react'
 import { useAuthStore } from '@/store/authStore'
 import Link from 'next/link'
+import WishlistButton from './WishlistButton'
+import ShareButton from './ShareButton'
 
 interface ProductProps {
   product: ProductT
@@ -29,6 +31,11 @@ const ProductCard = ({product}: ProductProps) => {
             Faqat {product.stock} ta qoldi!
           </div>
         ) : null}
+        {/* Wishlist + Share buttons */}
+        <div className='absolute top-2 right-2 flex flex-col gap-1.5 z-10'>
+          <WishlistButton productId={product.id} className='bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white transition-colors' />
+          <ShareButton product={{ title: product.title, price: product.price, id: product.id }} className='bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white transition-colors' />
+        </div>
       </div>
       <h3 className='font-bold text-lg md:text-xl line-clamp-1'>{product.title}</h3>
       {isAuthenticated ? (

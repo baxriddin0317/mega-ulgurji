@@ -4,7 +4,9 @@ import PanelTitle from '@/components/admin/PanelTitle';
 import { useOrderStore } from '@/store/useOrderStore';
 import { formatUZS } from '@/lib/formatPrice';
 import { getStatusInfo } from '@/lib/orderStatus';
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, BarChart3 } from 'lucide-react';
+import RevenueChart from '@/components/admin/charts/RevenueChart';
+import DailyOrdersChart from '@/components/admin/charts/DailyOrdersChart';
 
 type Period = 'today' | 'week' | 'month' | 'all';
 
@@ -147,6 +149,36 @@ const ReportsPage = () => {
               {formatUZS(stats.totalProfit)}
             </p>
             <p className="text-[11px] text-gray-400 mt-1">Marja: {stats.profitMargin.toFixed(1)}%</p>
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="size-4 text-emerald-600" />
+                <h3 className="text-sm font-bold text-gray-900">Daromad tendensiyasi</h3>
+              </div>
+              <div className="flex items-center gap-3 text-[10px]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Daromad</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Foyda</span>
+              </div>
+            </div>
+            <RevenueChart orders={orders} days={period === 'today' ? 1 : period === 'week' ? 7 : period === 'month' ? 30 : 90} />
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="size-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-gray-900">Kunlik buyurtmalar</h3>
+              </div>
+              <div className="flex items-center gap-3 text-[10px]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Jami</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Yetkazildi</span>
+              </div>
+            </div>
+            <DailyOrdersChart orders={orders} days={period === 'today' ? 1 : period === 'week' ? 7 : period === 'month' ? 30 : 90} />
           </div>
         </div>
 

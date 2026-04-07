@@ -1,13 +1,16 @@
 "use client";
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import DashboardSummary from '@/components/admin/DashboardSummary';
 import QuickActionsWidget from '@/components/admin/QuickActionsWidget';
+import RevenueChart from '@/components/admin/charts/RevenueChart';
+import OrderStatusChart from '@/components/admin/charts/OrderStatusChart';
+import DailyOrdersChart from '@/components/admin/charts/DailyOrdersChart';
 import { useOrderStore } from '@/store/useOrderStore';
 import { formatUZS } from '@/lib/formatPrice';
 import { getStatusInfo } from '@/lib/orderStatus';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, TrendingUp, BarChart3 } from 'lucide-react';
 
 const Dashboard = () => {
   const { orders, fetchAllOrders } = useOrderStore();
@@ -19,7 +22,7 @@ const Dashboard = () => {
   const recentOrders = useMemo(() => {
     return [...orders]
       .sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0))
-      .slice(0, 8);
+      .slice(0, 6);
   }, [orders]);
 
   return (
@@ -27,6 +30,50 @@ const Dashboard = () => {
       <PanelTitle title="Bosh sahifa" />
       <QuickActionsWidget />
       <DashboardSummary />
+
+      {/* Charts Section */}
+      <div className="px-4 pb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Revenue Trend */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="size-4 text-emerald-600" />
+              <h3 className="text-sm font-bold text-gray-900">Daromad va foyda</h3>
+            </div>
+            <div className="flex items-center gap-3 text-[10px]">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Daromad</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Foyda</span>
+            </div>
+          </div>
+          <RevenueChart orders={orders} days={14} />
+        </div>
+
+        {/* Order Status Donut */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="size-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-gray-900">Buyurtmalar holati</h3>
+          </div>
+          <OrderStatusChart orders={orders} />
+        </div>
+      </div>
+
+      {/* Daily Orders Bar Chart */}
+      <div className="px-4 pb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="size-4 text-blue-600" />
+              <h3 className="text-sm font-bold text-gray-900">Kunlik buyurtmalar</h3>
+            </div>
+            <div className="flex items-center gap-3 text-[10px]">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Jami</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Yetkazildi</span>
+            </div>
+          </div>
+          <DailyOrdersChart orders={orders} days={14} />
+        </div>
+      </div>
 
       {/* Recent Orders */}
       <div className="px-4 pb-4">

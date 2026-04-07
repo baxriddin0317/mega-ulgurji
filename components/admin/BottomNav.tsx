@@ -84,23 +84,20 @@ const BottomNav = () => {
       )}
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white border-t border-gray-200 print:hidden">
-        <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200 print:hidden pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-14 px-2 max-w-lg mx-auto">
           {tabs.map((tab) => (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
-                tab.active ? 'text-gray-900' : 'text-gray-400'
+              className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1 rounded-xl transition-all ${
+                tab.active ? 'text-gray-900 bg-gray-100' : 'text-gray-400 active:bg-gray-50'
               }`}
             >
-              {tab.active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gray-900 rounded-full" />
-              )}
               <tab.icon className={`size-5 ${tab.active ? 'stroke-[2.5]' : ''}`} />
               <span className={`text-[10px] ${tab.active ? 'font-bold' : 'font-medium'}`}>{tab.label}</span>
               {tab.badge && (
-                <span className="absolute top-1.5 left-1/2 ml-2 flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold text-white bg-green-500 rounded-full">
+                <span className="absolute top-0 right-1/2 -mr-4 flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold text-white bg-green-500 rounded-full animate-pulse">
                   {tab.badge > 9 ? '9+' : tab.badge}
                 </span>
               )}
@@ -110,13 +107,10 @@ const BottomNav = () => {
           {/* More button */}
           <button
             onClick={() => setShowMore(!showMore)}
-            className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors cursor-pointer ${
-              showMore || moreIsActive ? 'text-gray-900' : 'text-gray-400'
+            className={`relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+              showMore || moreIsActive ? 'text-gray-900 bg-gray-100' : 'text-gray-400 active:bg-gray-50'
             }`}
           >
-            {(showMore || moreIsActive) && (
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gray-900 rounded-full" />
-            )}
             <Menu className={`size-5 ${showMore || moreIsActive ? 'stroke-[2.5]' : ''}`} />
             <span className={`text-[10px] ${showMore || moreIsActive ? 'font-bold' : 'font-medium'}`}>Yana</span>
           </button>

@@ -9,8 +9,9 @@ import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { useAuthStore } from "@/store/authStore";
 import { formatUZS } from "@/lib/formatPrice";
-import { PaymentMethod } from "@/lib/types";
 import { auth } from "@/firebase/config";
+
+type PaymentMethod = 'naqd' | 'karta' | 'bank';
 import { telegramNotify } from "@/lib/telegram/notify-client";
 
 interface props {

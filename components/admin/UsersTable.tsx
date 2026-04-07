@@ -1,18 +1,28 @@
-import React, { useEffect, useMemo, useState } from 'react';
+"use client"
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import { BiTrash, BiUser } from 'react-icons/bi';
+import { Phone, ShoppingCart } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import type { UserData } from '@/store/authStore';
+import { useOrderStore } from '@/store/useOrderStore';
 import toast from 'react-hot-toast';
 import { updateDoc, doc } from 'firebase/firestore';
 import { fireDB } from '@/firebase/config';
 import { useNotificationStore } from '@/store/useNotificationStore';
+import { formatUZS } from '@/lib/formatPrice';
+import Link from 'next/link';
 
 const roleOptions = ["admin", "manager", "user"];
 const roleLabels: Record<string, string> = {
   admin: "Admin",
   manager: "Menejer",
   user: "Foydalanuvchi",
+};
+const roleBadge: Record<string, string> = {
+  admin: "bg-purple-100 text-purple-700",
+  manager: "bg-amber-100 text-amber-700",
+  user: "bg-gray-100 text-gray-600",
 };
 
 interface UsersTableProps {
@@ -21,16 +31,16 @@ interface UsersTableProps {
 }
 
 const Spinner = () => (
-  <span className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+  <span className="absolute inset-0 flex items-center justify-center bg-white/60 z-10 rounded-xl">
     <span className="inline-block w-6 h-6 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
   </span>
 );
 
 const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
   const { users, fetchAllUsers } = useAuthStore();
+  const { orders } = useOrderStore();
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const { isNewUser } = useNotificationStore();
-  // Re-render every 60s so YANGI badges auto-fade after 30 min
   const [, setTick] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 60000);
@@ -44,15 +54,26 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
     };
   }, [fetchAllUsers]);
 
+  // Pre-compute order stats per user
+  const userStats = useMemo(() => {
+    const stats: Record<string, { orderCount: number; totalSpent: number }> = {};
+    for (const order of orders) {
+      const key = order.userUid;
+      if (!key) continue;
+      if (!stats[key]) stats[key] = { orderCount: 0, totalSpent: 0 };
+      stats[key].orderCount++;
+      if (order.status === 'yetkazildi') {
+        stats[key].totalSpent += order.totalPrice || 0;
+      }
+    }
+    return stats;
+  }, [orders]);
+
   const filteredUsers = useMemo(() => {
     let filtered = users;
-
-    // Role filter
     if (roleFilter !== 'all') {
       filtered = filtered.filter((u: UserData) => u.role === roleFilter);
     }
-
-    // Search filter
     if (search.length >= 2) {
       const q = search.toLowerCase();
       filtered = filtered.filter((u: UserData) =>
@@ -61,16 +82,15 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
         (u.phone && u.phone.includes(q))
       );
     }
-
-    // Sort: admins first, then by time descending
     const admins = filtered.filter((u: UserData) => u.role === 'admin');
+    const managers = filtered.filter((u: UserData) => u.role === 'manager');
     const others = filtered
-      .filter((u: UserData) => u.role !== 'admin')
+      .filter((u: UserData) => u.role !== 'admin' && u.role !== 'manager')
       .sort((a: UserData, b: UserData) => {
         if (a.time && b.time) return b.time - a.time;
         return 0;
       });
-    return [...admins, ...others];
+    return [...admins, ...managers, ...others];
   }, [users, search, roleFilter]);
 
   const handleDelete = async (user: UserData) => {
@@ -83,17 +103,13 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast.success('Foydalanuvchi muvaffaqiyatli o‘chirildi');
+        toast.success("Foydalanuvchi o'chirildi");
         if (fetchAllUsers) fetchAllUsers();
       } else {
-        toast.error(data.error || 'Foydalanuvchini o‘chirishda xatolik yuz berdi');
+        toast.error(data.error || "O'chirishda xatolik");
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message || 'Foydalanuvchini o‘chirishda xatolik yuz berdi');
-      } else {
-        toast.error('Foydalanuvchini o‘chirishda xatolik yuz berdi');
-      }
+    } catch {
+      toast.error("O'chirishda xatolik");
     } finally {
       setLoadingUserId(null);
     }
@@ -104,14 +120,10 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
     try {
       const userDoc = doc(fireDB, 'user', user.uid);
       await updateDoc(userDoc, { role: newRole });
-      toast.success('Foydalanuvchi roli yangilandi');
+      toast.success(`${user.name} → ${roleLabels[newRole]}`);
       if (fetchAllUsers) fetchAllUsers();
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message || 'Rolni yangilashda xatolik yuz berdi');
-      } else {
-        toast.error('Rolni yangilashda xatolik yuz berdi');
-      }
+    } catch {
+      toast.error("Rolni yangilashda xatolik");
     } finally {
       setLoadingUserId(null);
     }
@@ -119,43 +131,84 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
 
   return (
     <div className="w-full px-4 py-3">
+      {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="min-w-full w-full">
           <thead>
-            <tr className="bg-white">
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Ism</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Email</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Telifon</th>
-              <th className="px-4 py-3 text-left text-black text-sm font-medium">Maqomi</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">Maqomni o&apos;zgartirish</th>
-              <th className="px-4 py-3 text-black text-sm font-medium text-center">O&apos;chirish</th>
+            <tr className="bg-gray-50">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Foydalanuvchi</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Aloqa</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Buyurtmalar</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Jami xarid</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Maqom</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase w-16"></th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-500">
-                  {search.length >= 2 ? 'No user found' : 'No user available'}
+                <td colSpan={6} className="h-20 px-4 py-2 text-center text-gray-400 text-sm">
+                  {search.length >= 2 ? "Foydalanuvchi topilmadi" : "Foydalanuvchilar mavjud emas"}
                 </td>
               </tr>
             ) : (filteredUsers.map((user: UserData) => {
               const isNew = isNewUser(user.uid);
+              const stats = userStats[user.uid];
               return (
-              <tr key={user.uid} className={`border-t border-gray-200 ${isNew ? 'bg-blue-50/60' : ''}`}>
-                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>
-                  {user.name}
-                  {isNew && (
-                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white uppercase tracking-wide animate-pulse">
-                      Yangi
-                    </span>
+              <tr key={user.uid} className={`border-t border-gray-100 hover:bg-gray-50/50 ${isNew ? 'bg-blue-50/40' : ''}`}>
+                {/* User info */}
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center justify-center size-9 rounded-full shrink-0 ${isNew ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                      <BiUser className={`size-4 ${isNew ? 'text-blue-600' : 'text-gray-500'}`} />
+                    </div>
+                    <div>
+                      <p className={`text-sm text-gray-900 ${isNew ? 'font-bold' : 'font-medium'}`}>
+                        {user.name}
+                        {isNew && (
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white animate-pulse">
+                            YANGI
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-400">{user.email}</p>
+                    </div>
+                  </div>
+                </td>
+                {/* Contact */}
+                <td className="px-4 py-3">
+                  {user.phone ? (
+                    <a href={`tel:${user.phone}`} className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-blue-600 transition-colors">
+                      <Phone className="size-3.5" />
+                      {user.phone}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
                   )}
                 </td>
-                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.email}</td>
-                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{user.phone}</td>
-                <td className={`h-20 px-4 py-2 text-black text-sm ${isNew ? 'font-bold' : 'font-normal'}`}>{roleLabels[user.role] || user.role}</td>
-                <td className="w-44 h-20 px-4 py-2 text-gray-700 text-sm font-normal text-center">
+                {/* Order count */}
+                <td className="px-4 py-3 text-center">
+                  {stats?.orderCount ? (
+                    <Link href={`/admin/orders`} className="inline-flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                      <ShoppingCart className="size-3.5" />
+                      {stats.orderCount}
+                    </Link>
+                  ) : (
+                    <span className="text-xs text-gray-400">0</span>
+                  )}
+                </td>
+                {/* Total spent */}
+                <td className="px-4 py-3 text-right">
+                  {stats?.totalSpent ? (
+                    <span className="text-sm font-semibold text-green-600">{formatUZS(stats.totalSpent)}</span>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
+                </td>
+                {/* Role */}
+                <td className="px-4 py-3 text-center">
                   <select
-                    className="border rounded px-2 py-1"
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg border-0 cursor-pointer focus:ring-2 focus:ring-blue-500 ${roleBadge[user.role] || roleBadge.user}`}
                     value={user.role}
                     onChange={e => handleRoleChange(user, e.target.value)}
                   >
@@ -164,14 +217,16 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
                     ))}
                   </select>
                 </td>
-                <td className="w-20 h-20 px-4 py-2 text-sm font-normal text-center">
+                {/* Delete */}
+                <td className="px-4 py-3 text-center">
                   <Button
                     onClick={() => handleDelete(user)}
                     disabled={loadingUserId === user.uid}
-                    variant="destructive"
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-400 hover:text-red-600 cursor-pointer"
                   >
-                    <BiTrash size={24} />
-                    {loadingUserId === user.uid && <Spinner />}
+                    <BiTrash size={18} />
                   </Button>
                 </td>
               </tr>
@@ -180,61 +235,89 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
           </tbody>
         </table>
       </div>
-      {/* Mobile view - Card layout */}
-      <div className="md:hidden space-y-4">
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
         {filteredUsers.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
-            {search.length >= 2 ? 'No user found' : 'No user available'}
+          <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-400 text-sm">
+            {search.length >= 2 ? "Foydalanuvchi topilmadi" : "Foydalanuvchilar mavjud emas"}
           </div>
-        ) : (filteredUsers.map((user: UserData, index: number) => {
+        ) : (filteredUsers.map((user: UserData) => {
           const isNew = isNewUser(user.uid);
+          const stats = userStats[user.uid];
           return (
-          <div key={index} className={`relative bg-white rounded-xl border p-4 ${isNew ? 'border-blue-300 bg-blue-50/40' : 'border-gray-200'}`}>
-            <div className="flex justify-between items-center mb-3">
-              <h3 className={`text-black flex items-center gap-2 ${isNew ? 'font-bold' : 'font-medium'}`}>
-                <BiUser />
-                {user.name}
-                {isNew && (
-                  <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white uppercase tracking-wide animate-pulse">
-                    Yangi
-                  </span>
-                )}
-              </h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Email</span>
-                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.email}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Telifon</span>
-                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{user.phone}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Maqomi</span>
-                <span className={`text-sm text-black ${isNew ? 'font-bold' : ''}`}>{roleLabels[user.role] || user.role}</span>
-              </div>
-              <div className="flex flex-1 gap-3 flex-wrap pt-3 justify-end">
-                <select
-                  className="border rounded px-2 py-1"
-                  value={user.role}
-                  onChange={e => handleRoleChange(user, e.target.value)}
-                >
-                  {roleOptions.map(role => (
-                    <option key={role} value={role}>{roleLabels[role]}</option>
-                  ))}
-                </select>
-                <Button
-                  onClick={() => handleDelete(user)}
-                  disabled={loadingUserId === user.uid}
-                  variant="destructive"
-                  className='!cursor-pointer'
-                >
-                  <BiTrash size={24} />
-                </Button>
-              </div>
-            </div>
+          <div key={user.uid} className={`relative bg-white rounded-xl border p-4 ${isNew ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200'}`}>
             {loadingUserId === user.uid && <Spinner />}
+
+            {/* Header: avatar + name + role badge */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`flex items-center justify-center size-9 rounded-full shrink-0 ${isNew ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                  <BiUser className={`size-4 ${isNew ? 'text-blue-600' : 'text-gray-500'}`} />
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-sm truncate ${isNew ? 'font-bold' : 'font-medium'}`}>
+                    {user.name}
+                    {isNew && (
+                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-500 text-white animate-pulse">YANGI</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                </div>
+              </div>
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0 ${roleBadge[user.role] || roleBadge.user}`}>
+                {roleLabels[user.role] || user.role}
+              </span>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {/* Phone */}
+              <div>
+                {user.phone ? (
+                  <a href={`tel:${user.phone}`} className="flex items-center gap-1 text-xs text-gray-600 hover:text-blue-600">
+                    <Phone className="size-3 shrink-0" />
+                    <span className="truncate">{user.phone}</span>
+                  </a>
+                ) : (
+                  <span className="text-xs text-gray-400">Tel yo&apos;q</span>
+                )}
+              </div>
+              {/* Orders */}
+              <div className="text-center">
+                <p className="text-xs text-gray-400">Buyurtmalar</p>
+                <p className="text-sm font-bold">{stats?.orderCount || 0}</p>
+              </div>
+              {/* Spent */}
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Xarid</p>
+                <p className="text-sm font-bold text-green-600">
+                  {stats?.totalSpent ? formatUZS(stats.totalSpent) : '—'}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+              <select
+                className={`flex-1 text-xs font-bold px-3 py-1.5 rounded-lg border-0 cursor-pointer ${roleBadge[user.role] || roleBadge.user}`}
+                value={user.role}
+                onChange={e => handleRoleChange(user, e.target.value)}
+              >
+                {roleOptions.map(role => (
+                  <option key={role} value={role}>{roleLabels[role]}</option>
+                ))}
+              </select>
+              <Button
+                onClick={() => handleDelete(user)}
+                disabled={loadingUserId === user.uid}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-red-600 cursor-pointer shrink-0"
+              >
+                <BiTrash size={16} />
+              </Button>
+            </div>
           </div>
           );
         }))}
@@ -243,4 +326,4 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
   );
 };
 
-export default UsersTable; 
+export default UsersTable;

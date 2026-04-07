@@ -12,6 +12,7 @@ const roleOptions = ["admin", "user"];
 
 interface UsersTableProps {
   search: string;
+  roleFilter?: 'all' | 'admin' | 'user';
 }
 
 const Spinner = () => (
@@ -20,7 +21,7 @@ const Spinner = () => (
   </span>
 );
 
-const UsersTable = ({ search }: UsersTableProps) => {
+const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
   const { users, fetchAllUsers } = useAuthStore();
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const { isNewUser } = useNotificationStore();
@@ -39,27 +40,33 @@ const UsersTable = ({ search }: UsersTableProps) => {
   }, [fetchAllUsers]);
 
   const filteredUsers = useMemo(() => {
-    if (search.length < 2) {
-      // Admin userlarni yuqoriga, qolganlarni time bo'yicha teskari tartibda
-      const admins = users.filter((user: UserData) => user.role === 'admin');
-      const others = users
-        .filter((user: UserData) => user.role !== 'admin')
-        .sort((a: UserData, b: UserData) => {
-          // time mavjud bo'lsa, teskari tartibda
-          if (a.time && b.time) {
-            return b.time - a.time;
-          }
-          // time yo'q bo'lsa, tartib o'zgarmaydi
-          return 0;
-        });
-      return [...admins, ...others];
+    let filtered = users;
+
+    // Role filter
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter((u: UserData) => u.role === roleFilter);
     }
-    // Search ishlatilsa, hozirgi filter logikasi
-    return users.filter((user: UserData) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      (user.email && user.email.toLowerCase().includes(search.toLowerCase()))
-    );
-  }, [users, search]);
+
+    // Search filter
+    if (search.length >= 2) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter((u: UserData) =>
+        u.name.toLowerCase().includes(q) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.includes(q))
+      );
+    }
+
+    // Sort: admins first, then by time descending
+    const admins = filtered.filter((u: UserData) => u.role === 'admin');
+    const others = filtered
+      .filter((u: UserData) => u.role !== 'admin')
+      .sort((a: UserData, b: UserData) => {
+        if (a.time && b.time) return b.time - a.time;
+        return 0;
+      });
+    return [...admins, ...others];
+  }, [users, search, roleFilter]);
 
   const handleDelete = async (user: UserData) => {
     setLoadingUserId(user.uid);

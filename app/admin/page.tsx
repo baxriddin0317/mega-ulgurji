@@ -1,25 +1,79 @@
 "use client";
-import UsersTable from '@/components/admin/UsersTable';
+import React, { useEffect, useMemo } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
-import Search from '@/components/admin/Search';
 import DashboardSummary from '@/components/admin/DashboardSummary';
 import QuickActionsWidget from '@/components/admin/QuickActionsWidget';
-import React, { useState } from 'react';
+import { useOrderStore } from '@/store/useOrderStore';
+import { formatUZS } from '@/lib/formatPrice';
+import { getStatusInfo } from '@/lib/orderStatus';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
-const Users = () => {
-  const [search, setSearch] = useState<string>('');
-  const handleSearchChange = (e: string) => {
-    setSearch(e);
-  };
+const Dashboard = () => {
+  const { orders, fetchAllOrders } = useOrderStore();
+
+  useEffect(() => {
+    fetchAllOrders();
+  }, [fetchAllOrders]);
+
+  const recentOrders = useMemo(() => {
+    return [...orders]
+      .sort((a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0))
+      .slice(0, 8);
+  }, [orders]);
+
   return (
     <div>
+      <PanelTitle title="Bosh sahifa" />
       <QuickActionsWidget />
       <DashboardSummary />
-      <PanelTitle title='Foydalanuvchilar' />
-      <Search search={search} handleSearchChange={handleSearchChange} placeholder='Foydalanuvchilarni qidirish' />
-      <UsersTable search={search} />
+
+      {/* Recent Orders */}
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-gray-900">Oxirgi buyurtmalar</h2>
+          <Link href="/admin/orders" className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors">
+            Barchasini ko&apos;rish <ArrowRight className="size-3" />
+          </Link>
+        </div>
+        {recentOrders.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-6">Buyurtmalar mavjud emas</p>
+        ) : (
+          <div className="space-y-2">
+            {recentOrders.map((order) => {
+              const statusInfo = getStatusInfo(order.status);
+              const date = order.date?.seconds
+                ? new Date(order.date.seconds * 1000).toLocaleDateString('uz-UZ')
+                : '';
+              return (
+                <div key={order.id} className="flex items-center justify-between bg-white rounded-xl border border-gray-200 px-3 sm:px-4 py-2.5 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-1 h-8 rounded-full shrink-0 ${
+                      order.status === 'yetkazildi' ? 'bg-green-500' :
+                      order.status === 'yangi' || !order.status ? 'bg-blue-500' :
+                      order.status === 'bekor_qilindi' ? 'bg-red-500' :
+                      'bg-amber-500'
+                    }`} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 capitalize truncate">{order.clientName}</p>
+                      <p className="text-xs text-gray-400">{date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-xs text-gray-500 hidden sm:inline">{order.totalQuantity} ta</span>
+                    <span className="text-sm font-bold text-gray-900">{formatUZS(order.totalPrice)}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold ${statusInfo.color} ${statusInfo.bg}`}>
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default Users; 
+export default Dashboard;

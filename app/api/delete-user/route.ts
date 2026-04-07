@@ -14,11 +14,34 @@ function getAdminApp() {
   return admin;
 }
 
+async function verifyAdmin(req: NextRequest): Promise<boolean> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) return false;
+
+  try {
+    const token = authHeader.split('Bearer ')[1];
+    const adminApp = getAdminApp();
+    const decodedToken = await adminApp.auth().verifyIdToken(token);
+
+    // Check if user has admin role in Firestore
+    const userDoc = await adminApp.firestore().collection('user').doc(decodedToken.uid).get();
+    return userDoc.exists && userDoc.data()?.role === 'admin';
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // Verify the requester is an authenticated admin
+    const isAdmin = await verifyAdmin(req);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
+    }
+
     const { uid } = await req.json();
-    if (!uid) {
-      return NextResponse.json({ error: 'Missing uid' }, { status: 400 });
+    if (!uid || typeof uid !== 'string') {
+      return NextResponse.json({ error: 'Missing or invalid uid' }, { status: 400 });
     }
 
     const adminApp = getAdminApp();
@@ -35,4 +58,4 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unknown error' }, { status: 500 });
     }
   }
-} 
+}

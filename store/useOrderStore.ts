@@ -229,7 +229,7 @@ export const useOrderStore = create<StoreState>((set) => ({
     return results;
   },
 
-  fetchAllOrders: async () => {
+  fetchAllOrders: () => {
     set({ loadingOrders: true });
     try {
       const q = query(collection(fireDB, "orders"));
@@ -247,7 +247,7 @@ export const useOrderStore = create<StoreState>((set) => ({
     }
   },
 
-  fetchUserOrders: async (userUid: string) => {
+  fetchUserOrders: (userUid: string) => {
     set({ loadingOrders: true });
     try {
       const q = query(collection(fireDB, "orders"), where("userUid", "==", userUid));

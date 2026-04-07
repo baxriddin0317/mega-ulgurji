@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 import { useAuthStore } from '@/store/authStore'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { fireDB } from '@/firebase/config'
 
 interface AuthProviderProps {
@@ -16,25 +16,25 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true)
-      
+
       if (user) {
         setUser(user)
-        
+
         try {
-          // Firestore'dan user ma'lumotlarini olish
-          const userQuery = query(
-            collection(fireDB, 'user'),
-            where('uid', '==', user.uid)
-          )
-          
-          const querySnapshot = await getDocs(userQuery)
-          
-          if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0]
-            const userData = userDoc.data()
+          // Direct document fetch by UID (more efficient than query)
+          const userDocRef = doc(fireDB, 'user', user.uid)
+          const userSnapshot = await getDoc(userDocRef)
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data()
             setUserData(userData as any)
+
+            // Set session cookie for middleware
+            if (typeof window !== 'undefined') {
+              const sessionData = btoa(JSON.stringify({ role: userData.role, uid: userData.uid }));
+              document.cookie = `__session=${sessionData}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+            }
           } else {
-            console.error('User document not found in Firestore')
             setUserData(null)
           }
         } catch (error) {
@@ -44,8 +44,12 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       } else {
         setUser(null)
         setUserData(null)
+        // Clear session cookie
+        if (typeof window !== 'undefined') {
+          document.cookie = '__session=; path=/; max-age=0';
+        }
       }
-      
+
       setLoading(false)
     })
 

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useOrderStore } from '@/store/useOrderStore';
 import useProductStore from '@/store/useProductStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
+import { telegramNotify } from '@/lib/telegram/notify-client';
 
 function getTodayString() {
   const d = new Date();
@@ -48,13 +49,12 @@ const DailySummaryGenerator = () => {
       (p) => p.stock !== undefined && p.stock !== null && (p.stock as number) <= 5
     ).length;
 
-    // Count new users from notifications without subscribing to notification changes
     const notifs = useNotificationStore.getState().notifications;
     const newUsers = notifs.filter(
       (n) => n.type === 'new_user' && n.timestamp >= startMs
     ).length;
 
-    addDailySummary({
+    const summaryData = {
       totalOrders: todayOrders.length,
       newOrders: newOrd.length,
       deliveredOrders: delivered.length,
@@ -64,7 +64,20 @@ const DailySummaryGenerator = () => {
       lowStockCount,
       newUsers,
       date: today,
-    });
+    };
+
+    addDailySummary(summaryData);
+
+    // Send daily summary to admin via Telegram
+    telegramNotify('daily_summary', summaryData);
+
+    // Alert admin about low stock products
+    if (lowStockCount > 0) {
+      const lowStockProducts = products
+        .filter((p) => p.stock !== undefined && (p.stock as number) <= 5)
+        .map((p) => ({ title: p.title, stock: p.stock as number }));
+      telegramNotify('low_stock', { products: lowStockProducts });
+    }
   }, [orders, products, _lastSummaryDate, addDailySummary]);
 
   return null;

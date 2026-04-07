@@ -1,29 +1,73 @@
 import { ProductT } from '@/lib/types';
 import nodemailer from 'nodemailer';
+import * as admin from 'firebase-admin';
+
+function getAdminApp() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+  }
+  return admin;
+}
 
 export async function POST(req: Request) {
-  const { clientName, clientLastName, clientPhone, date, basketItems, totalPrice, totalQuantity } = await req.json();
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER || "megahomeweb@gmail.com",
-      pass: process.env.GMAIL_APP_PASSWORD || "",
-    },
-  });
+  try {
+    // Verify the requester is authenticated
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-  const orderDetails = basketItems.map((item: ProductT) => `${item.title} - ${item.quantity} ta buyurtma qilingan`).join('\n');
+    try {
+      const token = authHeader.split('Bearer ')[1];
+      const adminApp = getAdminApp();
+      await adminApp.auth().verifyIdToken(token);
+    } catch {
+      return new Response(JSON.stringify({ message: "Invalid token" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-  const mailOptions = {
-    from: process.env.GMAIL_USER || "megahomeweb@gmail.com",
-    to: process.env.GMAIL_USER || 'megahomeweb@gmail.com',
-    subject: `Yangi buyurtma: ${clientName} ${clientLastName}`,
-    text: `
+    const body = await req.json();
+    const { clientName, clientPhone, date, basketItems, totalPrice, totalQuantity } = body;
+
+    // Input validation
+    if (!clientName || !clientPhone || !basketItems || !totalPrice) {
+      return new Response(JSON.stringify({ message: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER || "megahomeweb@gmail.com",
+        pass: process.env.GMAIL_APP_PASSWORD || "",
+      },
+    });
+
+    const orderDetails = basketItems.map((item: ProductT) => `${item.title} - ${item.quantity} ta buyurtma qilingan`).join('\n');
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER || "megahomeweb@gmail.com",
+      to: process.env.GMAIL_USER || 'megahomeweb@gmail.com',
+      subject: `Yangi buyurtma: ${clientName}`,
+      text: `
       Yangi buyurtma berildi! (mega ulgurji uchun)
       Buyurtma tafsilotlari:
-      Ism: ${clientName} ${clientLastName}
+      Ism: ${clientName}
       Telefon: ${clientPhone}
-      Sana: ${new Date(date.seconds * 1000).toLocaleString()}
+      Sana: ${date?.seconds ? new Date(date.seconds * 1000).toLocaleString() : new Date().toLocaleString()}
 
       Mahsulotlar:
       ${orderDetails}
@@ -31,11 +75,10 @@ export async function POST(req: Request) {
       Umumiy narx: ${totalPrice}
       Umumiy miqdor: ${totalQuantity}
     `,
-  };
-  
-  try {
+    };
+
     await transporter.sendMail(mailOptions);
-    return new Response(JSON.stringify({ message: "POST so'rovi qabul qilindi" }), {
+    return new Response(JSON.stringify({ message: "Email yuborildi" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

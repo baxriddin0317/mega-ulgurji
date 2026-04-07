@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { BiUser } from 'react-icons/bi'
-import { LayoutDashboard, ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText, Warehouse } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText, Warehouse, MessageCircle } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore'
 import { useAuthStore } from '@/store/authStore'
 
@@ -50,7 +50,7 @@ const Menu = () => {
         </Link>
       )}
 
-      {/* All staff: Products (view-only for manager) */}
+      {/* All staff: Products */}
       <Link href={'/admin/products'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/products') ? 'bg-brand-gray-100' : ''}`}>
         <div className="text-black" data-icon="Table" data-size="24px" data-weight="fill">
           <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -89,7 +89,7 @@ const Menu = () => {
         <p className="text-black text-sm font-medium leading-normal">Ombor</p>
       </Link>
 
-      {/* Admin only: Reports (financial data) */}
+      {/* Admin only: Reports */}
       {admin && (
         <Link href={'/admin/reports'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/reports') ? 'bg-brand-gray-100' : ''}`}>
           <BarChart3 size={24} />
@@ -105,11 +105,19 @@ const Menu = () => {
         </Link>
       )}
 
-      {/* Admin only: Nasiya (financial) */}
+      {/* Admin only: Nasiya */}
       {admin && (
         <Link href={'/admin/nasiya'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/nasiya') ? 'bg-brand-gray-100' : ''}`}>
           <CreditCard size={24} />
           <p className="text-black text-sm font-medium leading-normal">Nasiya (qarzlar)</p>
+        </Link>
+      )}
+
+      {/* Admin only: Telegram Bot */}
+      {admin && (
+        <Link href={'/admin/telegram'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/telegram') ? 'bg-brand-gray-100' : ''}`}>
+          <MessageCircle size={24} />
+          <p className="text-black text-sm font-medium leading-normal">Telegram Bot</p>
         </Link>
       )}
     </div>

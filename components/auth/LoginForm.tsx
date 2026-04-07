@@ -76,15 +76,15 @@ const LoginForm = () => {
         })
 
         if (userData) {
-          // Store user data (Note: localStorage not available in Claude artifacts)
-          // localStorage.setItem("users", JSON.stringify(userData))
-          
           // Reset form
           reset()
-          
+
+          // Set session cookie for middleware
+          const sessionData = btoa(JSON.stringify({ role: userData.role, uid: userData.uid }));
+          document.cookie = `__session=${sessionData}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
           // Success message
           toast.success("Tizimga muvaffaqiyatli kirdingiz")
-          console.log('User data:', userData)
 
           // Navigation based on user role
           if (userData?.role === "admin" || userData?.role === "manager") {

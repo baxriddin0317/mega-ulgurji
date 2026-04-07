@@ -75,7 +75,7 @@ const useCategoryStore = create<CategoryStoreI>((set) => ({
   },
 
   // Fetch all categories
-  fetchCategories: async () => {
+  fetchCategories: () => {
     set({ loading: true });
     try {
       const q = query(collection(fireDB, "categories"));

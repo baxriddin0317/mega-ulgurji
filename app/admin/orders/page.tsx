@@ -22,6 +22,7 @@ import { generateDeliverySheet } from '@/lib/generateDeliverySheet';
 import BulkOrderStatusModal from '@/components/admin/BulkOrderStatusModal';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { telegramNotify } from '@/lib/telegram/notify-client';
 
 const StatusBadge = ({ status }: { status?: string }) => {
   const info = getStatusInfo(status);
@@ -75,6 +76,17 @@ const Orders = () => {
       await updateOrderStatus(orderId, newStatus);
       const info = getStatusInfo(newStatus);
       toast.success(`Buyurtma holati: ${info.label}`);
+      // Notify customer via Telegram
+      const order = orders.find((o) => o.id === orderId);
+      if (order) {
+        telegramNotify('order_status_changed', {
+          orderId,
+          clientName: order.clientName,
+          totalPrice: order.totalPrice,
+          userUid: order.userUid,
+          newStatus,
+        });
+      }
     } catch {
       toast.error("Holatni yangilashda xatolik");
     } finally {

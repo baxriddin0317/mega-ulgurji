@@ -8,7 +8,7 @@ import type { UserData } from '@/store/authStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import toast from 'react-hot-toast';
 import { updateDoc, doc } from 'firebase/firestore';
-import { fireDB } from '@/firebase/config';
+import { fireDB, auth } from '@/firebase/config';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import { formatUZS } from '@/lib/formatPrice';
 import Link from 'next/link';
@@ -96,9 +96,11 @@ const UsersTable = ({ search, roleFilter = 'all' }: UsersTableProps) => {
   const handleDelete = async (user: UserData) => {
     setLoadingUserId(user.uid);
     try {
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) { toast.error("Avtorizatsiya xatosi"); setLoadingUserId(null); return; }
       const res = await fetch('/api/delete-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ uid: user.uid }),
       });
       const data = await res.json();

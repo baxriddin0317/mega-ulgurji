@@ -9,6 +9,9 @@ import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { useAuthStore } from "@/store/authStore";
 import { formatUZS } from "@/lib/formatPrice";
+import { PaymentMethod } from "@/lib/types";
+import { auth } from "@/firebase/config";
+import { telegramNotify } from "@/lib/telegram/notify-client";
 
 interface props {
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -17,7 +20,16 @@ interface props {
 interface OrderFormData {
   firstName: string;
   phoneNumber: string;
+  deliveryAddress: string;
+  orderNote: string;
+  paymentMethod: PaymentMethod;
 }
+
+const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
+  { value: "naqd", label: "Naqd (yetkazishda)" },
+  { value: "karta", label: "Karta orqali" },
+  { value: "bank", label: "Bank o\u2018tkazmasi" },
+];
 
 const SubmitModal = ({ setOpen }: props) => {
   const [loading, setLoading] = useState(false);
@@ -36,7 +48,10 @@ const SubmitModal = ({ setOpen }: props) => {
   } = useForm({
     defaultValues: {
       firstName: userData?.name || "",
-      phoneNumber: userData?.phone || ""
+      phoneNumber: userData?.phone || "",
+      deliveryAddress: "",
+      orderNote: "",
+      paymentMethod: "naqd" as PaymentMethod,
     }
   });
 
@@ -71,14 +86,30 @@ const SubmitModal = ({ setOpen }: props) => {
       totalPrice: totalPrice,
       totalQuantity: totalQuantity,
       userUid: userData?.uid || "",
+      ...(data.deliveryAddress.trim() && { deliveryAddress: data.deliveryAddress.trim() }),
+      ...(data.orderNote.trim() && { orderNote: data.orderNote.trim() }),
+      paymentMethod: data.paymentMethod,
     };
     try {
       setLoading(true);
       await addOrder(submitData);
-      await fetch('/api/sendOrderEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
+      const idToken = await auth.currentUser?.getIdToken();
+      if (idToken) {
+        await fetch('/api/sendOrderEmail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+          body: JSON.stringify(submitData),
+        });
+      }
+      // Notify admin + customer via Telegram (fire-and-forget)
+      telegramNotify('order_placed', {
+        orderId: submitData.id || '',
+        clientName: submitData.clientName,
+        clientPhone: submitData.clientPhone,
+        totalPrice: submitData.totalPrice,
+        totalQuantity: submitData.totalQuantity,
+        userUid: submitData.userUid,
+        basketItems: submitData.basketItems.map((i) => ({ title: i.title, quantity: i.quantity })),
       });
       clearBasket();
       setLoading(false);
@@ -97,7 +128,7 @@ const SubmitModal = ({ setOpen }: props) => {
         onClick={() => setOpen(false)}
         className="absolute inset-0 size-full bg-black/80 z-0"
       ></div>
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-sm w-full bg-white rounded-md space-y-3 p-5 z-10">
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-md w-full bg-white rounded-md space-y-3 p-5 z-10 max-h-[90vh] overflow-y-auto">
         {/* Order summary */}
         <div className="bg-gray-50 rounded-xl p-3 mb-4">
           <p className="text-sm font-bold text-gray-900 mb-2">Buyurtma ({totalQuantity} ta mahsulot)</p>
@@ -155,6 +186,65 @@ const SubmitModal = ({ setOpen }: props) => {
             {errors.phoneNumber && <span className="text-red-500 text-sm mt-1">{errors.phoneNumber.message as string}</span>}
           </div>
         </div>
+        {/* Delivery address */}
+        <div>
+          <label htmlFor="delivery-address" className="block text-sm font-medium text-gray-900">
+            Yetkazish manzili
+          </label>
+          <div className="mt-1">
+            <textarea
+              id="delivery-address"
+              rows={2}
+              placeholder="Shahar, tuman, ko'cha, uy raqami..."
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm px-2 resize-none"
+              {...register("deliveryAddress")}
+            />
+          </div>
+        </div>
+
+        {/* Order notes */}
+        <div>
+          <label htmlFor="order-note" className="block text-sm font-medium text-gray-900">
+            Buyurtma uchun izoh
+          </label>
+          <div className="mt-1">
+            <textarea
+              id="order-note"
+              rows={2}
+              placeholder="Maxsus ko'rsatmalar, yetkazish vaqti..."
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:outline-none focus:ring-inset focus:ring-indigo-600 sm:text-sm px-2 resize-none"
+              {...register("orderNote")}
+            />
+          </div>
+        </div>
+
+        {/* Payment method */}
+        <div>
+          <label className="block text-sm font-medium text-gray-900 mb-2">
+            To&apos;lov usuli
+          </label>
+          <div className="space-y-2">
+            {PAYMENT_METHODS.map((method) => (
+              <label
+                key={method.value}
+                className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                  watch("paymentMethod") === method.value
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  value={method.value}
+                  className="accent-indigo-600"
+                  {...register("paymentMethod")}
+                />
+                <span className="text-sm text-gray-800">{method.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="pt-3">
           <Button
             variant={"default"}

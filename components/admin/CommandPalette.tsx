@@ -8,7 +8,7 @@ import { useOrderStore } from "@/store/useOrderStore";
 import { formatUZS } from "@/lib/formatPrice";
 import {
   Package, ShoppingCart, Users, BarChart3, FileText,
-  CreditCard, Truck, Settings, Search, Plus,
+  CreditCard, Truck, Settings, Search, Plus, MessageCircle,
 } from "lucide-react";
 
 export default function CommandPalette() {
@@ -81,6 +81,7 @@ export default function CommandPalette() {
                 { name: "Mijozlar", icon: Users, path: "/admin/customers" },
                 { name: "Fakturalar", icon: FileText, path: "/admin/invoices" },
                 { name: "Nasiya", icon: CreditCard, path: "/admin/nasiya" },
+                { name: "Telegram Bot", icon: MessageCircle, path: "/admin/telegram" },
                 { name: "Kirim", icon: Truck, path: "/admin/kirim" },
                 { name: "Hisobotlar", icon: BarChart3, path: "/admin/reports" },
                 { name: "Profil", icon: Settings, path: "/admin/profile" },

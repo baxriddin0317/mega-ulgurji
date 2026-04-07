@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { User as FirebaseUser } from 'firebase/auth'
+import { User as FirebaseUser, signOut } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
-import { fireDB } from '@/firebase/config'
+import { auth, fireDB } from '@/firebase/config'
 import { collection, onSnapshot } from 'firebase/firestore'
 
 type Role = "admin" | "manager" | "user"
@@ -98,7 +98,16 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error('Error signing out:', error);
+        }
+        // Clear session cookie
+        if (typeof window !== 'undefined') {
+          document.cookie = '__session=; path=/; max-age=0';
+        }
         set({
           user: null,
           userData: null,
@@ -128,7 +137,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        user: state.user,
         userData: state.userData,
         isAuthenticated: state.isAuthenticated
       })

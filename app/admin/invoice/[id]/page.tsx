@@ -7,7 +7,8 @@ import { Order } from '@/lib/types';
 import { formatUZS } from '@/lib/formatPrice';
 import { formatDateUz, formatTimeUz } from "@/lib/formatDate";
 import { getStatusInfo } from '@/lib/orderStatus';
-import { Printer, Share2, Copy } from 'lucide-react';
+import { Printer, Share2, Copy, Link as LinkIcon, MapPin, Banknote } from 'lucide-react';
+import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 
@@ -96,6 +97,8 @@ const InvoicePage = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -146,15 +149,42 @@ const InvoicePage = () => {
     : 0;
   const profit = totalPrice - totalCost;
 
-  /* ---------- Telegram share ---------- */
-  const handleShareTelegram = async () => {
-    const url = window.location.href;
+  /* ---------- Share helpers ---------- */
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
+        setShareOpen(false);
+      }
+    };
+    if (shareOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [shareOpen]);
+
+  const invoiceUrl = typeof window !== "undefined" ? window.location.href : "";
+  const invoiceShareText = `Schyot-faktura ${invoiceNumber} | ${order.clientName} | ${formatUZS(totalPrice)} | MegaHome Ulgurji`;
+
+  const handleShareTelegram = () => {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(invoiceUrl)}&text=${encodeURIComponent(invoiceShareText)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    setShareOpen(false);
+  };
+
+  const handleShareWhatsapp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(invoiceShareText + " " + invoiceUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    setShareOpen(false);
+  };
+
+  const handleCopyInvoiceLink = async () => {
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Havola nusxalandi! Telegram'ga yuboring.");
+      await navigator.clipboard.writeText(invoiceUrl);
+      toast.success("Havola nusxalandi!");
     } catch {
       toast.error("Nusxalab bo'lmadi");
     }
+    setShareOpen(false);
   };
 
   /* ---------- Render ---------- */
@@ -164,14 +194,50 @@ const InvoicePage = () => {
       <div className="print:hidden flex items-center justify-between mb-4 max-w-[800px] mx-auto">
         <h1 className="text-2xl font-black">Schyot-faktura</h1>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleShareTelegram}
-            variant="outline"
-            className="rounded-xl cursor-pointer gap-2"
-          >
-            <Share2 className="size-4" />
-            Telegram orqali yuborish
-          </Button>
+          {/* Share dropdown */}
+          <div ref={shareRef} className="relative">
+            <Button
+              onClick={() => setShareOpen((prev) => !prev)}
+              variant="outline"
+              className="rounded-xl cursor-pointer gap-2"
+            >
+              <Share2 className="size-4" />
+              Ulashish
+            </Button>
+            <div
+              className={`absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[220px] overflow-hidden transition-all duration-200 origin-top-right ${
+                shareOpen
+                  ? "opacity-100 scale-100 translate-y-0"
+                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={handleShareTelegram}
+                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
+              >
+                <FaTelegram className="text-[#229ED9] text-lg" />
+                <span>Telegram orqali yuborish</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShareWhatsapp}
+                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors duration-150 cursor-pointer"
+              >
+                <FaWhatsapp className="text-[#25D366] text-lg" />
+                <span>WhatsApp orqali yuborish</span>
+              </button>
+              <div className="border-t border-gray-100" />
+              <button
+                type="button"
+                onClick={handleCopyInvoiceLink}
+                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+              >
+                <LinkIcon className="size-[18px] text-gray-500" />
+                <span>Havolani nusxalash</span>
+              </button>
+            </div>
+          </div>
           <Button
             onClick={() => window.print()}
             className="rounded-xl cursor-pointer gap-2 bg-black text-white hover:bg-black/90"

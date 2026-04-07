@@ -24,7 +24,7 @@ const useProductStore = create<ProductStore>((set, get) => ({
   product: null,
   loading: false,
 
-  fetchProducts: async () => {
+  fetchProducts: () => {
     set({ loading: true });
     try {
       const q = query(collection(fireDB, "products"), orderBy("time"));

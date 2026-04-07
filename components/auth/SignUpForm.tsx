@@ -10,6 +10,7 @@ import { auth, fireDB } from '@/firebase/config';
 import { setDoc, doc, Timestamp } from 'firebase/firestore';
 import { useAuthStore } from '@/store/authStore';
 import { FirebaseError } from 'firebase/app';
+import { telegramNotify } from '@/lib/telegram/notify-client';
 
 type Role = "admin" | "manager" | "user"
 
@@ -84,8 +85,6 @@ const SignUpForm = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
       const firebaseUser = userCredential.user
       
-      console.log('Firebase user created:', phoneNumber)
-      
       // Firestore uchun user obyektini yaratish
       const user: User = {
         name: data.name,
@@ -107,11 +106,16 @@ const SignUpForm = () => {
       // Firestore ga user ma'lumotlarini saqlash
       await setDoc(doc(fireDB, "user", firebaseUser.uid), user);
       
-      console.log('User saved to Firestore with ID:', firebaseUser.uid)
-
       // Zustand store'ni yangilash
       setUser(firebaseUser)
       setUserData(user)
+
+      // Notify admin via Telegram (fire-and-forget)
+      telegramNotify('new_user', {
+        name: data.name,
+        email: data.email,
+        phone: phoneNumber,
+      });
 
       // Form ni tozalash
       reset()
@@ -174,7 +178,7 @@ const SignUpForm = () => {
                   message: "Ism kamida 2 ta belgidan iborat bo'lishi kerak"
                 },
                 pattern: {
-                  value: /^[A-Za-z\s]+$/,
+                  value: /^[\p{L}\p{M}\s'ʻʼ\-]+$/u,
                   message: "Ism faqat harflar va bo'sh joylardan iborat bo'lishi mumkin"
                 }
               })}
@@ -240,7 +244,7 @@ const SignUpForm = () => {
           <label className="flex flex-col min-w-40 flex-1">
             <p className="text-black text-base font-medium leading-normal pb-2">Parol</p>
             <input
-              type='Parol'
+              type='password'
               placeholder="Sizning parolingiz"
               className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
                 errors.password ? 'border-red-500 border-2' : ''
@@ -248,8 +252,8 @@ const SignUpForm = () => {
               {...register('password', {
                 required: "Parol majburiy kiritilishi kerak",
                 minLength: {
-                  value: 4,
-                  message: "Parol kamida 4 ta belgidan iborat bo'lishi kerak"
+                  value: 6,
+                  message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak"
                 }
               })}
             />

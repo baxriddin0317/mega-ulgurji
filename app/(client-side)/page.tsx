@@ -81,7 +81,7 @@ export default function Home() {
               <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             {!isAuthenticated && (
-              <Link href="/signup"
+              <Link href="/sign-up"
                 className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white font-semibold px-7 py-3.5 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300"
               >
                 Ro&apos;yxatdan o&apos;tish
@@ -221,7 +221,7 @@ export default function Home() {
               Minglab mijozlar allaqachon bizni tanlashdi.
             </TimelineContent>
             <TimelineContent as="div" animationNum={2} timelineRef={ctaRef} className="flex flex-wrap justify-center gap-4">
-              <Link href="/signup"
+              <Link href="/sign-up"
                 className="group inline-flex items-center gap-2 bg-[#00bad8] hover:bg-[#00a8c4] text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 text-lg"
               >
                 Bepul ro&apos;yxatdan o&apos;tish

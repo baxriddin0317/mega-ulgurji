@@ -5,6 +5,7 @@ import { auth } from '@/firebase/config'
 import { useAuthStore } from '@/store/authStore'
 import { doc, getDoc } from 'firebase/firestore'
 import { fireDB } from '@/firebase/config'
+import type { UserData } from '@/store/authStore'
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -21,18 +22,23 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(user)
 
         try {
-          // Direct document fetch by UID (more efficient than query)
           const userDocRef = doc(fireDB, 'user', user.uid)
           const userSnapshot = await getDoc(userDocRef)
 
           if (userSnapshot.exists()) {
-            const userData = userSnapshot.data()
-            setUserData(userData as any)
+            const userData = userSnapshot.data() as UserData
+            setUserData(userData)
 
-            // Set session cookie for middleware
-            if (typeof window !== 'undefined') {
-              const sessionData = btoa(JSON.stringify({ role: userData.role, uid: userData.uid }));
-              document.cookie = `__session=${sessionData}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+            // Create server-signed session cookie via API
+            try {
+              const idToken = await user.getIdToken()
+              await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+              })
+            } catch {
+              // Session creation is best-effort — user can still use client-side auth
             }
           } else {
             setUserData(null)
@@ -44,10 +50,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       } else {
         setUser(null)
         setUserData(null)
-        // Clear session cookie
-        if (typeof window !== 'undefined') {
-          document.cookie = '__session=; path=/; max-age=0';
-        }
+        // Clear server-signed session cookie
+        fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {})
       }
 
       setLoading(false)

@@ -24,14 +24,10 @@ const Quantity = ({id}: {id: string}) => {
   const handleDeleteQuantity = () => {
     decrementQuantity(id);
     calculateTotals();
-    // When quantity was 1 and we decrement, item gets removed from cart
-    if (quantityInBasket <= 1) {
-      router.push("/");
-    }
   };
 
   return (
-    <div className="ml-auto rounded-xl border border-gray-300 flex items-center gap-8 w-fit py-1.5 px-2">
+    <div className="ml-auto rounded-xl border border-gray-300 flex items-center gap-3 sm:gap-5 w-fit py-1.5 px-2">
       <Button
         variant={'outline'}
         onClick={handleDeleteQuantity}

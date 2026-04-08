@@ -50,8 +50,8 @@ const ProductCard = ({product}: ProductProps) => {
           </div>
         ) : null}
 
-        {/* Action buttons */}
-        <div className='absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+        {/* Action buttons — always visible on mobile, hover on desktop */}
+        <div className='absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200'>
           <WishlistButton productId={product.id} className='bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors' />
           <ShareButton product={{ title: product.title, price: product.price, id: product.id }} className='bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors' />
         </div>

@@ -116,6 +116,19 @@ const InvoicePage = () => {
     fetchOrder();
   }, [id]);
 
+  // IMPORTANT: All hooks must be called before any early returns
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
+        setShareOpen(false);
+      }
+    };
+    if (shareOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [shareOpen]);
+
   /* ---------- Loading state ---------- */
   if (loading) {
     return <InvoiceSkeleton />;
@@ -148,19 +161,6 @@ const InvoicePage = () => {
       }, 0)
     : 0;
   const profit = totalPrice - totalCost;
-
-  /* ---------- Share helpers ---------- */
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (shareRef.current && !shareRef.current.contains(e.target as Node)) {
-        setShareOpen(false);
-      }
-    };
-    if (shareOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [shareOpen]);
 
   const invoiceUrl = typeof window !== "undefined" ? window.location.href : "";
   const invoiceShareText = `Schyot-faktura ${invoiceNumber} | ${order.clientName} | ${formatUZS(totalPrice)} | MegaHome Ulgurji`;

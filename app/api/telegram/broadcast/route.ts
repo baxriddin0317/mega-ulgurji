@@ -1,36 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminApp } from '@/lib/firebase-admin';
 import { telegram } from '@/lib/telegram/bot';
-
-function getAdminApp() {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  }
-  return admin;
-}
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify admin (check Authorization header)
+    // Verify admin (require Authorization header)
     const authHeader = req.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      try {
-        const token = authHeader.split('Bearer ')[1];
-        const adminApp = getAdminApp();
-        const decoded = await adminApp.auth().verifyIdToken(token);
-        const userDoc = await adminApp.firestore().collection('user').doc(decoded.uid).get();
-        if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
-          return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-        }
-      } catch {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Authorization required' }, { status: 401 });
+    }
+    try {
+      const token = authHeader.split('Bearer ')[1];
+      const adminApp = getAdminApp();
+      const decoded = await adminApp.auth().verifyIdToken(token);
+      const userDoc = await adminApp.firestore().collection('user').doc(decoded.uid).get();
+      if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
+        return NextResponse.json({ error: 'Admin only' }, { status: 403 });
       }
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const { text } = await req.json();

@@ -144,9 +144,9 @@ const CategoryContent = ({slug}: {slug:string}) => {
 
           {/* Subcategory pills */}
           {category?.subcategory && category.subcategory.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3 scrollbar-hide">
+            <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
               <button
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   activeSubcategory === 'all'
                     ? 'bg-gray-900 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -158,7 +158,7 @@ const CategoryContent = ({slug}: {slug:string}) => {
               {category.subcategory.map((subcat: string) => (
                 <button
                   key={subcat}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     activeSubcategory === subcat
                       ? 'bg-gray-900 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

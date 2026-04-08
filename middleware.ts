@@ -1,7 +1,44 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+const SESSION_SECRET = process.env.SESSION_SECRET || process.env.FIREBASE_PROJECT_ID || 'mega-ulgurji-session-key';
+
+async function verifySession(sessionValue: string): Promise<{ role: string; uid: string } | null> {
+  try {
+    const dotIndex = sessionValue.lastIndexOf('.');
+    if (dotIndex === -1) return null; // Old unsigned cookie format — reject
+
+    const payloadB64 = sessionValue.slice(0, dotIndex);
+    const signature = sessionValue.slice(dotIndex + 1);
+    if (!payloadB64 || !signature) return null;
+
+    const payload = atob(payloadB64);
+
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(SESSION_SECRET),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+
+    const signatureBuffer = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+    const isValid = await crypto.subtle.verify('HMAC', key, signatureBuffer, encoder.encode(payload));
+    if (!isValid) return null;
+
+    const data = JSON.parse(payload);
+
+    // Check expiry
+    if (data.exp && data.exp < Math.floor(Date.now() / 1000)) return null;
+
+    return { role: data.role, uid: data.uid };
+  } catch {
+    return null;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect admin routes
@@ -9,22 +46,18 @@ export function middleware(request: NextRequest) {
     const session = request.cookies.get('__session');
 
     if (!session?.value) {
-      // No session cookie — redirect to login
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    try {
-      // Decode the session cookie (base64 JSON with role)
-      const sessionData = JSON.parse(atob(session.value));
-      if (sessionData.role !== 'admin' && sessionData.role !== 'manager') {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-    } catch {
-      // Invalid cookie — redirect to login
+    const sessionData = await verifySession(session.value);
+    if (!sessionData || (sessionData.role !== 'admin' && sessionData.role !== 'manager')) {
+      // Invalid or forged cookie — clear it and redirect
       const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.set('__session', '', { path: '/', maxAge: 0 });
+      return response;
     }
   }
 

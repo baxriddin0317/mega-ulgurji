@@ -257,7 +257,7 @@ const CreateCategory = () => {
                 htmlFor='upload'
               >
                 <GrGallery />
-                <span>{false ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
+                <span>{imageUploading ? 'Yuklanmoqda...' : 'Rasm yuklash'}</span>
               </label>
               <input 
                 className='sr-only' 
@@ -289,7 +289,7 @@ const CreateCategory = () => {
           <div className="flex flex-col max-w-[480px] gap-4">
             <div className="flex items-end space-x-2">
               <label className="flex flex-col min-w-40 flex-1">
-              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Kategoriya nomi*</p>
+              <p className="text-brand-black-text text-base font-medium leading-normal pb-2">Subkategoriya*</p>
                 <input
                   type="text"
                   value={tagInput}

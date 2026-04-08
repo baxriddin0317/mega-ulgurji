@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { getAdminApp } from '@/lib/firebase-admin';
 import { notifyOrderConfirmed, notifyOrderStatusChanged, notifyDeliveryArriving, notifyNasiyaReminder } from '@/lib/telegram/notifications';
 import { alertNewOrder, alertLowStock, alertNewUser, alertDailySummary } from '@/lib/telegram/admin-alerts';
 
-function getAdminApp() {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  }
-  return admin;
-}
-
 export async function POST(req: NextRequest) {
   try {
+    // Verify the caller is authenticated
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    try {
+      const token = authHeader.split('Bearer ')[1];
+      const adminApp = getAdminApp();
+      await adminApp.auth().verifyIdToken(token);
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     const { type, data } = await req.json();
 
     switch (type) {

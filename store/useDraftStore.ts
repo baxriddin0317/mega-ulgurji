@@ -137,8 +137,8 @@ const useDraftStore = create<DraftStore>()(
         if(productDraft == null) return;
 
         // Product rasmlarini o'chirish logikasi
-        if (productDraft?.newProduct?.productImgUrl?.length > 0) {
-          const deletePromises = productDraft.newProduct.productImgUrl.map(async (img: any) => {
+        if (productDraft?.newProduct?.productImageUrl?.length > 0) {
+          const deletePromises = productDraft.newProduct.productImageUrl.map(async (img: { path: string }) => {
             try {
               const imageRef = ref(fireStorage, img.path);
               await deleteObject(imageRef);

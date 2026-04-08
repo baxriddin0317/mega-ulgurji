@@ -5,7 +5,6 @@ import DailySummaryGenerator from '@/components/admin/DailySummaryGenerator'
 import CommandPalette from '@/components/admin/CommandPalette'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { ReactNode } from 'react'
-import { Toaster } from 'react-hot-toast'
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {
   return (
@@ -37,7 +36,6 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       <BottomNav />
 
       <DailySummaryGenerator />
-      <Toaster position="bottom-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontSize: '13px' } }} />
     </ProtectedRoute>
   )
 }

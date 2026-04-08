@@ -7,17 +7,20 @@ interface StoreState {
   orders: Order[];
   currentOrder: Order | null;
   loadingOrders: boolean;
+  _unsubOrders: (() => void) | null;
   addOrder: (order: Order) => Promise<void>;
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   bulkUpdateOrderStatus: (orderIds: string[], status: OrderStatus) => Promise<{ success: number; failed: number }>;
   fetchAllOrders: () => void;
   fetchUserOrders: (userUid: string) => void;
+  cleanup: () => void;
 }
 
-export const useOrderStore = create<StoreState>((set) => ({
+export const useOrderStore = create<StoreState>((set, get) => ({
   orders: [],
   currentOrder: null,
   loadingOrders: true,
+  _unsubOrders: null,
 
   addOrder: async (order: Order) => {
     try {
@@ -229,7 +232,17 @@ export const useOrderStore = create<StoreState>((set) => ({
     return results;
   },
 
+  cleanup: () => {
+    const unsub = get()._unsubOrders;
+    if (unsub) {
+      unsub();
+      set({ _unsubOrders: null });
+    }
+  },
+
   fetchAllOrders: () => {
+    // Prevent duplicate listeners
+    if (get()._unsubOrders) return;
     set({ loadingOrders: true });
     try {
       const q = query(collection(fireDB, "orders"));
@@ -240,7 +253,7 @@ export const useOrderStore = create<StoreState>((set) => ({
         });
         set({ orders: OrderArray, loadingOrders: false });
       });
-      return () => unsubscribe();
+      set({ _unsubOrders: unsubscribe });
     } catch (error) {
       console.error("Error fetching orders: ", error);
       set({ loadingOrders: false });
@@ -248,6 +261,8 @@ export const useOrderStore = create<StoreState>((set) => ({
   },
 
   fetchUserOrders: (userUid: string) => {
+    // Cleanup previous listener (user vs all)
+    get().cleanup();
     set({ loadingOrders: true });
     try {
       const q = query(collection(fireDB, "orders"), where("userUid", "==", userUid));
@@ -258,7 +273,7 @@ export const useOrderStore = create<StoreState>((set) => ({
         });
         set({ orders: OrderArray, loadingOrders: false });
       });
-      return () => unsubscribe();
+      set({ _unsubOrders: unsubscribe });
     } catch (error) {
       console.error("Error fetching user orders: ", error);
       set({ loadingOrders: false });

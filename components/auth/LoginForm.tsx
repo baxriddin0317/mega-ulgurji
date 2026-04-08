@@ -65,7 +65,7 @@ const LoginForm = () => {
       )
 
       // Use onSnapshot for real-time listener (though for login, a one-time fetch might be better)
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const unsubscribe = onSnapshot(q, async (querySnapshot) => {
         let userData: User | undefined
         
         querySnapshot.forEach((doc) => {
@@ -79,9 +79,17 @@ const LoginForm = () => {
           // Reset form
           reset()
 
-          // Set session cookie for middleware
-          const sessionData = btoa(JSON.stringify({ role: userData.role, uid: userData.uid }));
-          document.cookie = `__session=${sessionData}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+          // Create server-signed session cookie
+          try {
+            const idToken = await user.getIdToken()
+            await fetch('/api/auth/session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken }),
+            })
+          } catch {
+            // Session creation best-effort
+          }
 
           // Success message
           toast.success("Tizimga muvaffaqiyatli kirdingiz")
@@ -145,7 +153,7 @@ const LoginForm = () => {
                 required: "Email majburiy kiritilishi kerak",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address'
+                  message: "Email manzili noto'g'ri"
                 }
               })}
             />
@@ -167,7 +175,7 @@ const LoginForm = () => {
                 required: "Parol majburiy kiritilishi kerak",
                 minLength: {
                   value: 6,
-                  message: 'Password must be at least 6 characters'
+                  message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak"
                 }
               })}
             />
@@ -183,7 +191,7 @@ const LoginForm = () => {
             disabled={loading || isSubmitting}
             className="cursor-pointer overflow-hidden rounded-xl w-full h-12 bg-black text-[#FFFFFF] text-sm font-bold leading-normal tracking-[0.015em]"
           >
-            <span className="truncate"> {loading ? 'Hisobga kirish...' : 'Hisobga kirish'}</span>
+            <span className="truncate">{loading ? 'Kirilyapti...' : 'Hisobga kirish'}</span>
           </Button>
         </div>
         <div className='flex justify-center gap-2 py-3'>

@@ -12,16 +12,15 @@ import { useAuthStore } from '@/store/authStore';
 import { FirebaseError } from 'firebase/app';
 import { telegramNotify } from '@/lib/telegram/notify-client';
 
-type Role = "admin" | "manager" | "user"
-
 // Form inputs type
 interface SignUpFormInputs {
   name: string
   email: string
   password: string
-  role: Role
   phone: string
 }
+
+type Role = "admin" | "manager" | "user"
 
 // User type for Firestore
 interface User {
@@ -29,7 +28,7 @@ interface User {
   email: string | null
   uid: string
   role: Role
-  time: Timestamp // Timestamp
+  time: Timestamp
   date: string
   phone: string
 }
@@ -51,7 +50,6 @@ const SignUpForm = () => {
       name: "",
       email: "",
       password: "",
-      role: "user",
       phone: ""
     }
   })
@@ -90,7 +88,7 @@ const SignUpForm = () => {
         name: data.name,
         email: firebaseUser.email,
         uid: firebaseUser.uid,
-        role: data.role,
+        role: "user",
         time: Timestamp.now(),
         date: new Date().toLocaleString(
           "en-US",
@@ -125,8 +123,8 @@ const SignUpForm = () => {
       
       setLoading(false)
       
-      // Login sahifasiga yo'naltirish
-      router.push('/login')
+      // Auto-login: user is already authenticated, redirect to home
+      router.push('/')
 
     } catch (error) {
       setLoading(false)
@@ -164,10 +162,10 @@ const SignUpForm = () => {
         {/* full name */}
         <div className="flex flex-wrap items-end gap-4 md:px-4 py-3">
           <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-black text-base font-medium leading-normal pb-2">Toliq ism</p>
+            <p className="text-black text-base font-medium leading-normal pb-2">To&apos;liq ism</p>
             <input
               type='text'
-              placeholder="Sizning Toliq ismingiz"
+              placeholder="Sizning to'liq ismingiz"
               className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
                 errors.name ? 'border-red-500 border-2' : ''
               }`}
@@ -222,7 +220,7 @@ const SignUpForm = () => {
             <p className="text-black text-base font-medium leading-normal pb-2">Email</p>
             <input
               type='email'
-              placeholder="Your email"
+              placeholder="Sizning emailingiz"
               className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-black focus:outline-0 focus:ring-0 border-none bg-[#EEEEEE] focus:border-none h-10 placeholder:text-[#6B6B6B] p-4 text-base font-normal leading-normal ${
                 errors.email ? 'border-red-500 border-2' : ''
               }`}

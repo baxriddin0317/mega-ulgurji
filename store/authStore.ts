@@ -104,10 +104,8 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Error signing out:', error);
         }
-        // Clear session cookie
-        if (typeof window !== 'undefined') {
-          document.cookie = '__session=; path=/; max-age=0';
-        }
+        // Clear server-signed session cookie
+        fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
         set({
           user: null,
           userData: null,

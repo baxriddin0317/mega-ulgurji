@@ -13,7 +13,7 @@ const Footer = () => {
           {/* Left column: Logo + description */}
           <div>
             <div className='relative w-[192px] h-12 mb-4'>
-              <Image className='absolute object-cover' src={'/images/black-logo.png'} fill alt='' />
+              <Image className='absolute object-cover' src={'/images/black-logo.png'} fill alt='MegaHome logo' />
             </div>
             <p className='text-gray-400 text-sm'>MegaHome — Eng yaxshi ulgurji narxlar</p>
           </div>
@@ -24,8 +24,8 @@ const Footer = () => {
             <nav className='flex flex-col gap-2'>
               <Link href='/' className='text-gray-400 text-sm hover:text-white transition-colors'>Bosh sahifa</Link>
               <Link href='/#category' className='text-gray-400 text-sm hover:text-white transition-colors'>Katalog</Link>
+              <Link href='/wishlist' className='text-gray-400 text-sm hover:text-white transition-colors'>Sevimlilar</Link>
               <Link href='/history-order' className='text-gray-400 text-sm hover:text-white transition-colors'>Buyurtmalar tarixi</Link>
-              <Link href='/login' className='text-gray-400 text-sm hover:text-white transition-colors'>Kirish</Link>
             </nav>
           </div>
 
@@ -33,21 +33,21 @@ const Footer = () => {
           <div>
             <h4 className='text-white font-bold mb-4'>Aloqa</h4>
             <div className='flex flex-col gap-3'>
-              <div className='flex items-center gap-2'>
-                <Phone className='size-4 text-gray-400 shrink-0' />
-                <span className='text-gray-400 text-sm'>+998 XX XXX XX XX</span>
-              </div>
+              <a href='tel:+998880039000' className='flex items-center gap-2 group'>
+                <Phone className='size-4 text-gray-400 group-hover:text-white shrink-0 transition-colors' />
+                <span className='text-gray-400 text-sm group-hover:text-white transition-colors'>+998 88 003 90 00</span>
+              </a>
               <div className='flex items-center gap-2'>
                 <MapPin className='size-4 text-gray-400 shrink-0' />
                 <span className='text-gray-400 text-sm'>Toshkent, O&apos;zbekiston</span>
               </div>
               <div className='flex items-center gap-4 mt-2'>
-                <Link href={'#'}>
+                <a href='https://t.me/megahomeuz' target='_blank' rel='noopener noreferrer' aria-label='Telegram'>
                   <BiLogoTelegram className='text-gray-400 hover:text-white transition-colors' size={22} />
-                </Link>
-                <Link href={'#'}>
+                </a>
+                <a href='https://instagram.com/megahome.ulgurji' target='_blank' rel='noopener noreferrer' aria-label='Instagram'>
                   <FiInstagram className='text-gray-400 hover:text-white transition-colors' size={22} />
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -55,7 +55,7 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <div className='border-t border-gray-800 mt-10 pt-6'>
-          <p className='text-gray-400 text-sm text-center'>&copy; 2026 MegaHome Ulgurji. Barcha huquqlar himoyalangan.</p>
+          <p className='text-gray-400 text-sm text-center'>&copy; {new Date().getFullYear()} MegaHome Ulgurji. Barcha huquqlar himoyalangan.</p>
         </div>
       </div>
     </footer>

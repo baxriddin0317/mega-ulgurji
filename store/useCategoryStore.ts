@@ -7,17 +7,20 @@ interface CategoryStoreI {
   categories: CategoryI[];
   category: CategoryI | null;
   loading: boolean;
+  _unsubCategories: (() => void) | null;
   addCategory: (newCategory: CategoryI) => Promise<void>;
   fetchCategories: () => void;
+  cleanup: () => void;
   fetchSingleCategory: (id: string) => void;
   updateCategory: (id: string, updatedCategory: CategoryI) => Promise<void>;
   deleteCategory: (categoryId: string) => void;
 }
 
-const useCategoryStore = create<CategoryStoreI>((set) => ({
+const useCategoryStore = create<CategoryStoreI>((set, get) => ({
   categories: [],
   category: null,
   loading: false,
+  _unsubCategories: null,
   
   // Add a new category
   addCategory: async (newCategory: CategoryI) => {
@@ -74,19 +77,29 @@ const useCategoryStore = create<CategoryStoreI>((set) => ({
     }
   },
 
+  cleanup: () => {
+    const unsub = get()._unsubCategories;
+    if (unsub) {
+      unsub();
+      set({ _unsubCategories: null });
+    }
+  },
+
   // Fetch all categories
   fetchCategories: () => {
+    // Prevent duplicate listeners
+    if (get()._unsubCategories) return;
     set({ loading: true });
     try {
       const q = query(collection(fireDB, "categories"));
       const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
-        let CategoryArray: any = [];
+        const categoryArray: CategoryI[] = [];
         QuerySnapshot.forEach((doc) => {
-          CategoryArray.push({ ...doc.data(), id: doc.id });
+          categoryArray.push({ ...doc.data(), id: doc.id } as CategoryI);
         });
-        set({ categories: CategoryArray, loading: false });
+        set({ categories: categoryArray, loading: false });
       });
-      return () => unsubscribe(); 
+      set({ _unsubCategories: unsubscribe });
     } catch (error) {
       console.error('Error fetching categories:', error);
       set({ loading: false });

@@ -7,7 +7,9 @@ interface ProductStore {
   products: ProductT[];
   product: ProductT | null;
   loading: boolean;
+  _unsubProducts: (() => void) | null;
   fetchProducts: () => void;
+  cleanup: () => void;
   fetchSingleProduct: (id: string) => Promise<void>;
   updateProduct: (id: string, updatedProduct: ProductT) => Promise<void>;
   bulkUpdatePrices: (productIds: string[], percentChange: number, updateCost: boolean) => Promise<number>;
@@ -23,8 +25,11 @@ const useProductStore = create<ProductStore>((set, get) => ({
   products: [],
   product: null,
   loading: false,
+  _unsubProducts: null,
 
   fetchProducts: () => {
+    // Prevent duplicate listeners
+    if (get()._unsubProducts) return;
     set({ loading: true });
     try {
       const q = query(collection(fireDB, "products"), orderBy("time"));
@@ -35,10 +40,18 @@ const useProductStore = create<ProductStore>((set, get) => ({
         });
         set({ products: productArray, loading: false });
       });
-      return () => unsubscribe();
+      set({ _unsubProducts: unsubscribe });
     } catch (error) {
       console.error('Error fetching products:', error);
       set({ loading: false });
+    }
+  },
+
+  cleanup: () => {
+    const unsub = get()._unsubProducts;
+    if (unsub) {
+      unsub();
+      set({ _unsubProducts: null });
     }
   },
 

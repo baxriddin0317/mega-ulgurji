@@ -122,9 +122,11 @@
   }
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
   body {
-    @apply bg-black/90 text-foreground;
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 }
 

@@ -28,14 +28,17 @@ export interface NasiyaRecord {
 interface NasiyaState {
   records: NasiyaRecord[];
   loading: boolean;
+  _unsubNasiya: (() => void) | null;
   createNasiya: (data: Omit<NasiyaRecord, 'id' | 'createdDate' | 'paymentHistory' | 'paidAmount' | 'remainingAmount' | 'status'>) => Promise<void>;
   recordPayment: (nasiyaId: string, amount: number, method: string, note?: string) => Promise<void>;
   fetchNasiya: () => void;
+  cleanup: () => void;
 }
 
-export const useNasiyaStore = create<NasiyaState>((set) => ({
+export const useNasiyaStore = create<NasiyaState>((set, get) => ({
   records: [],
   loading: true,
+  _unsubNasiya: null,
 
   createNasiya: async (data) => {
     try {
@@ -84,11 +87,20 @@ export const useNasiyaStore = create<NasiyaState>((set) => ({
     }
   },
 
+  cleanup: () => {
+    const unsub = get()._unsubNasiya;
+    if (unsub) {
+      unsub();
+      set({ _unsubNasiya: null });
+    }
+  },
+
   fetchNasiya: () => {
+    if (get()._unsubNasiya) return;
     set({ loading: true });
     try {
       const q = query(collection(fireDB, 'nasiya'));
-      onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         const records: NasiyaRecord[] = [];
         snapshot.forEach((d) => {
           records.push({ ...d.data(), id: d.id } as NasiyaRecord);
@@ -100,6 +112,7 @@ export const useNasiyaStore = create<NasiyaState>((set) => ({
         });
         set({ records, loading: false });
       });
+      set({ _unsubNasiya: unsubscribe });
     } catch (error) {
       console.error('Error fetching nasiya:', error);
       set({ loading: false });

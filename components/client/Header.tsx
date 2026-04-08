@@ -106,7 +106,7 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
           <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Hisobga kirish</Link>
         ) : (
           <>
-          <Link href="/cart-product" className="relative">
+          <Link href="/cart-product" className="relative" aria-label="Savat">
             <ShoppingCart className="size-5 text-white" />
             {cartProducts.length > 0 && (
               <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full flex items-center justify-center">
@@ -118,11 +118,11 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
             <DropdownMenuTrigger className='cursor-pointer'>
               <Avatar className='size-10'>
                 <AvatarImage src="" />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarFallback>{useAuthStore.getState().userData?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'MH'}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Mening Accountim</DropdownMenuLabel>
+              <DropdownMenuLabel>Mening hisobim</DropdownMenuLabel>
               {isAdmin() && (
                 <DropdownMenuItem className='cursor-pointer'>
                   <Link href="/admin">Adminga o&apos;tish</Link>
@@ -175,7 +175,7 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
             <nav className="flex flex-col items-center gap-10 pt-6">
               <Links />
               {!isAuthenticated ? (
-                <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Login</Link>
+                <Link href={'/login'} className='flex items-center bg-white rounded-md text-accent-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground transition-all h-9 px-4 has-[>svg]:px-3 cursor-pointer' type='button'>Hisobga kirish</Link>
               ) : (
                 <div className="flex flex-col items-center gap-4">
                   {isAdmin() && (
@@ -196,7 +196,7 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
 const Links = () => {
   return (
     <>
-      <Link className="text-lg text-[#d1d1d1] hover:text-white" href={'/'}>Home</Link>
+      <Link className="text-lg text-[#d1d1d1] hover:text-white" href={'/'}>Bosh sahifa</Link>
       <Link className="text-lg text-[#d1d1d1] hover:text-white" href={'/#category'}>Katalog</Link>
       <Link className="text-lg text-[#d1d1d1] hover:text-white" href={'/#location'}>Manzil</Link>
     </>

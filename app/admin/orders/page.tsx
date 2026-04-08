@@ -128,7 +128,15 @@ const Orders = () => {
           <div className="flex items-center justify-center">
             Yuklanmoqda...
           </div>
-        ) : orders.length > 0 ? orders.map((order, idx) => (
+        ) : (() => {
+          const filteredOrders = search.trim()
+            ? orders.filter(o =>
+                o.clientName?.toLowerCase().includes(search.toLowerCase()) ||
+                o.clientPhone?.includes(search) ||
+                o.id?.toLowerCase().includes(search.toLowerCase())
+              )
+            : orders;
+          return filteredOrders.length > 0 ? filteredOrders.map((order, idx) => (
           <Disclosure key={order.id}>
             {({ open }) => (
               <div className="mb-2">
@@ -164,7 +172,7 @@ const Orders = () => {
                   </div>
                   <IoIosArrowDown
                     className={`text-xl transition-all duration-300 ${
-                      open ? "" : "-rotate-180"
+                      open ? "rotate-180" : ""
                     }`}
                   />
                 </DisclosureButton>
@@ -272,10 +280,11 @@ const Orders = () => {
             )}
           </Disclosure>
         )) : (
-          <div className="flex items-center justify-center">
-            Buyurtmalar mavjud emas
+          <div className="flex items-center justify-center py-10 text-gray-500">
+            {search ? `"${search}" bo'yicha buyurtma topilmadi` : 'Buyurtmalar mavjud emas'}
           </div>
-        )}
+        );
+        })()}
 
       {selectedOrderIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-gray-700">

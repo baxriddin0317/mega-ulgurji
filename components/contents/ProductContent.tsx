@@ -12,21 +12,27 @@ const ProductContent = ({ slug }: { slug: string }) => {
   useWhiteBody();
   const router = useRouter();
   return (
-    <>
-      <Header forceFixed={true} />
-      <div className="max-w-7xl mx-auto px-4 lg:px-10 py-20">
+    <main className="bg-white min-h-screen">
+      {/* Dark header area */}
+      <div className="bg-gray-950">
+        <Header forceFixed={true} />
+      </div>
+
+      {/* Product content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-8 pb-16">
         <Button
           variant="ghost"
-          className="flex cursor-pointer items-center gap-1 w-fit text-gray-900 text-sm hover:text-black py-4 px-2"
+          className="flex cursor-pointer items-center gap-1.5 w-fit text-gray-500 text-sm hover:text-gray-900 mb-6 -ml-2"
           onClick={() => router.back()}
         >
-          <ArrowLeft className="text-xl" />
-          <span>Orqaga</span>
+          <ArrowLeft className="size-4" />
+          <span>Orqaga qaytish</span>
         </Button>
         <ProductItem id={slug} />
       </div>
+
       <LocationSection />
-    </>
+    </main>
   );
 };
 

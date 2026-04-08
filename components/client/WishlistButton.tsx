@@ -1,32 +1,43 @@
 "use client";
+import React from "react";
 import { Heart } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
+import useWishlistStore from "@/store/useWishlistStore";
 
 interface WishlistButtonProps {
   productId: string;
   className?: string;
 }
 
-export default function WishlistButton({ productId, className }: WishlistButtonProps) {
-  const [liked, setLiked] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const saved = localStorage.getItem("wishlist");
-    return saved ? JSON.parse(saved).includes(productId) : false;
-  });
+const WishlistButton = ({ productId, className = "" }: WishlistButtonProps) => {
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+  const active = isInWishlist(productId);
 
-  const toggle = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const saved: string[] = JSON.parse(localStorage.getItem("wishlist") || "[]");
-    const next = liked ? saved.filter((id) => id !== productId) : [...saved, productId];
-    localStorage.setItem("wishlist", JSON.stringify(next));
-    setLiked(!liked);
+    toggleWishlist(productId);
+    if (active) {
+      toast("Sevimlilardan olib tashlandi", { icon: "💔" });
+    } else {
+      toast.success("Sevimlilar ga qo'shildi");
+    }
   };
 
   return (
-    <button onClick={toggle} className={cn("cursor-pointer", className)} aria-label="Sevimli">
-      <Heart className={`size-4 ${liked ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
+    <button
+      type="button"
+      onClick={handleClick}
+      className={`btn-press cursor-pointer rounded-full bg-white/90 hover:bg-white p-2 shadow-md transition-all duration-200 ${className}`}
+      aria-label={active ? "Sevimlilardan olib tashlash" : "Sevimlilarga qo'shish"}
+    >
+      <Heart
+        className={`size-5 transition-colors duration-200 ${
+          active ? "fill-red-500 text-red-500" : "text-gray-600"
+        }`}
+      />
     </button>
   );
-}
+};
+
+export default WishlistButton;

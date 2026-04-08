@@ -189,3 +189,22 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Product showcase infinite scroll */
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 35s linear infinite;
+}
+
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
+
+.scroll-mask {
+  mask: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+}

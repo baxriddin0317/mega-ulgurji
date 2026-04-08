@@ -24,7 +24,7 @@ const CartProduct = () => {
         </Button>
         <CartProductContent />
       </div>
-      <LocationSection forceColor={true} />
+      <LocationSection />
     </main>
   );
 };

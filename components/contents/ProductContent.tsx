@@ -25,7 +25,7 @@ const ProductContent = ({ slug }: { slug: string }) => {
         </Button>
         <ProductItem id={slug} />
       </div>
-      <LocationSection forceColor={true} />
+      <LocationSection />
     </>
   );
 };

@@ -117,15 +117,17 @@ export const useNotificationStore = create<NotificationState>()(
             const s = get();
 
             if (!s._ordersInitialized) {
-              // On first load, record all existing order IDs and their statuses
-              const statusMap: Record<string, string> = {};
+              // On first load, merge persisted seen IDs with current snapshot
+              const statusMap: Record<string, string> = { ...s._orderStatusMap };
               snapshot.docs.forEach((d) => {
                 const data = d.data();
                 statusMap[d.id] = data.status || 'yangi';
               });
+              const snapshotIds = snapshot.docs.map((d) => d.id);
+              const merged = [...new Set([...snapshotIds, ...s._seenOrderIds])];
               set({
                 _ordersInitialized: true,
-                _seenOrderIds: snapshot.docs.map((d) => d.id),
+                _seenOrderIds: merged,
                 _orderStatusMap: statusMap,
               });
               return;
@@ -201,14 +203,19 @@ export const useNotificationStore = create<NotificationState>()(
             }
 
             if (newNotifs.length > 0 || Object.keys(statusUpdates).length > 0) {
-              set((prev) => ({
-                notifications: newNotifs.length > 0
-                  ? [...newNotifs, ...prev.notifications].slice(0, 50)
-                  : prev.notifications,
-                unreadCount: prev.unreadCount + newNotifs.length,
-                _seenOrderIds: [...Object.keys(statusUpdates).filter((k) => !prev._seenOrderIds.includes(k)), ...prev._seenOrderIds],
-                _orderStatusMap: { ...prev._orderStatusMap, ...statusUpdates },
-              }));
+              set((prev) => {
+                // Deduplicate: skip notifications that already exist
+                const existingIds = new Set(prev.notifications.map((n) => n.id));
+                const uniqueNotifs = newNotifs.filter((n) => !existingIds.has(n.id));
+                return {
+                  notifications: uniqueNotifs.length > 0
+                    ? [...uniqueNotifs, ...prev.notifications].slice(0, 50)
+                    : prev.notifications,
+                  unreadCount: prev.unreadCount + uniqueNotifs.length,
+                  _seenOrderIds: [...Object.keys(statusUpdates).filter((k) => !prev._seenOrderIds.includes(k)), ...prev._seenOrderIds],
+                  _orderStatusMap: { ...prev._orderStatusMap, ...statusUpdates },
+                };
+              });
             }
           });
           set({ _unsubOrders: ordersUnsub });
@@ -220,9 +227,12 @@ export const useNotificationStore = create<NotificationState>()(
             const s = get();
 
             if (!s._usersInitialized) {
+              // Merge persisted seen IDs with current snapshot to avoid re-notifying
+              const snapshotIds = snapshot.docs.map((d) => d.id);
+              const merged = [...new Set([...snapshotIds, ...s._seenUserIds])];
               set({
                 _usersInitialized: true,
-                _seenUserIds: snapshot.docs.map((d) => d.id),
+                _seenUserIds: merged,
               });
               return;
             }
@@ -255,12 +265,19 @@ export const useNotificationStore = create<NotificationState>()(
             }
 
             if (newNotifs.length > 0) {
-              set((prev) => ({
-                notifications: [...newNotifs, ...prev.notifications].slice(0, 50),
-                unreadCount: prev.unreadCount + newNotifs.length,
-                _seenUserIds: [...newUids, ...prev._seenUserIds],
-                newUserIds: [...newUids, ...prev.newUserIds],
-              }));
+              set((prev) => {
+                // Deduplicate: skip notifications that already exist
+                const existingIds = new Set(prev.notifications.map((n) => n.id));
+                const uniqueNotifs = newNotifs.filter((n) => !existingIds.has(n.id));
+                const uniqueUids = newUids.filter((uid) => !prev._seenUserIds.includes(uid));
+                if (uniqueNotifs.length === 0) return prev;
+                return {
+                  notifications: [...uniqueNotifs, ...prev.notifications].slice(0, 50),
+                  unreadCount: prev.unreadCount + uniqueNotifs.length,
+                  _seenUserIds: [...uniqueUids, ...prev._seenUserIds],
+                  newUserIds: [...uniqueUids, ...prev.newUserIds],
+                };
+              });
             }
           });
           set({ _unsubUsers: usersUnsub });
@@ -271,7 +288,12 @@ export const useNotificationStore = create<NotificationState>()(
         const s = get();
         if (s._unsubOrders) { s._unsubOrders(); }
         if (s._unsubUsers) { s._unsubUsers(); }
-        set({ _unsubOrders: null, _unsubUsers: null });
+        set({
+          _unsubOrders: null,
+          _unsubUsers: null,
+          _ordersInitialized: false,
+          _usersInitialized: false,
+        });
       },
 
       markAsRead: (id) => {

@@ -11,7 +11,7 @@ import { getStatusInfo } from "@/lib/orderStatus";
 const NotificationPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const prevCountRef = useRef<number>(0);
+  const prevCountRef = useRef<number>(-1);
   const {
     notifications,
     unreadCount,
@@ -28,8 +28,16 @@ const NotificationPanel = () => {
   }, [startListening, stopListening]);
 
   // Instant toast + sound when new notifications arrive
+  // prevCountRef starts at -1 to skip the initial mount (persisted unread count).
+  // On first render we just record the current count without firing toasts.
   useEffect(() => {
-    if (unreadCount > prevCountRef.current && prevCountRef.current >= 0) {
+    if (prevCountRef.current === -1) {
+      // First render: sync ref with current persisted count, don't fire toast
+      prevCountRef.current = unreadCount;
+      return;
+    }
+
+    if (unreadCount > prevCountRef.current) {
       const newest = notifications[0];
       if (newest && !newest.read) {
         const isOrder = newest.type === "new_order";

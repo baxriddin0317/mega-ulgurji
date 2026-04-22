@@ -10,7 +10,6 @@ import { useOrderStore } from "@/store/useOrderStore";
 import { formatUZS } from "@/lib/formatPrice";
 import { matchesSearch } from "@/lib/searchMatch";
 import type { Order, ProductT } from "@/lib/types";
-import { Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import {
   Search,
@@ -38,7 +37,7 @@ export default function AdminQuickOrder() {
 
   const { users, fetchAllUsers } = useAuthStore();
   const { products, fetchProducts } = useProductStore();
-  const { orders, addOrder, fetchAllOrders } = useOrderStore();
+  const { orders, createOrder, fetchAllOrders } = useOrderStore();
 
   const [step, setStep] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<UserData | null>(null);
@@ -197,25 +196,40 @@ export default function AdminQuickOrder() {
     [items]
   );
 
-  // Submit order
+  // Submit order — server validates stock + prices inside a transaction.
   const handleSubmit = async () => {
     if (!selectedCustomer || items.length === 0) return;
     setSubmitting(true);
     try {
-      const order: Order = {
-        id: "",
+      const result = await createOrder({
+        items: items
+          .filter(({ product }) => product.id)
+          .map(({ product, quantity }) => ({ productId: product.id, quantity })),
         clientName: selectedCustomer.name,
         clientPhone: selectedCustomer.phone,
-        date: Timestamp.now(),
-        basketItems: items.map(({ product, quantity }) => ({
-          ...product,
-          quantity,
-        })),
-        totalPrice,
-        totalQuantity,
-        userUid: selectedCustomer.uid,
-      };
-      await addOrder(order);
+        targetUserUid: selectedCustomer.uid,
+        totalPriceHint: totalPrice,
+      });
+
+      if (!result.ok) {
+        if (result.status === 409 && result.stockErrors?.length) {
+          const names = result.stockErrors
+            .map((e) => e.title || e.productId)
+            .slice(0, 3)
+            .join(", ");
+          toast.error(`Ombordagi mahsulot yetarli emas: ${names}`);
+        } else if (result.status === 403) {
+          toast.error("Faqat admin boshqalar uchun buyurtma yarata oladi");
+        } else {
+          toast.error(result.message || "Buyurtma yaratishda xatolik yuz berdi");
+        }
+        return;
+      }
+
+      if (result.priceChanged) {
+        toast(`Narxlar yangilandi. Jami: ${formatUZS(result.totalPrice)}`);
+      }
+
       toast.success("Buyurtma muvaffaqiyatli yaratildi!");
       router.push("/admin/orders");
     } catch (error) {

@@ -1,7 +1,6 @@
 "use client";
 import useCartProductStore from "@/store/useCartStore";
 import { useOrderStore } from "@/store/useOrderStore";
-import { Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import toast from "react-hot-toast";
@@ -35,7 +34,7 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
 const SubmitModal = ({ setOpen }: props) => {
   const [loading, setLoading] = useState(false);
   const { cartProducts, totalPrice, totalQuantity, clearBasket } = useCartProductStore();
-  const { addOrder } = useOrderStore();
+  const { createOrder } = useOrderStore();
   const navigate = useRouter();
   const { userData } = useAuthStore();
   
@@ -73,53 +72,79 @@ const SubmitModal = ({ setOpen }: props) => {
     setValue("phoneNumber", formattedValue);
   };
 
-  // Form submit
+  // Form submit — server validates prices + stock, then creates the order.
   const onSubmit = async (data: OrderFormData) => {
     if (cartProducts.length === 0) {
       return toast.error("Savat bo'sh.");
     }
-    const submitData = {
-      id: "",
-      clientName: data.firstName,
-      clientPhone: data.phoneNumber,
-      date: Timestamp.now(),
-      basketItems: cartProducts,
-      totalPrice: totalPrice,
-      totalQuantity: totalQuantity,
-      userUid: userData?.uid || "",
-      ...(data.deliveryAddress.trim() && { deliveryAddress: data.deliveryAddress.trim() }),
-      ...(data.orderNote.trim() && { orderNote: data.orderNote.trim() }),
-      paymentMethod: data.paymentMethod,
-    };
+
+    setLoading(true);
     try {
-      setLoading(true);
-      await addOrder(submitData);
+      const result = await createOrder({
+        items: cartProducts
+          .filter((p) => p.id)
+          .map((p) => ({ productId: p.id, quantity: p.quantity })),
+        clientName: data.firstName,
+        clientPhone: data.phoneNumber,
+        deliveryAddress: data.deliveryAddress.trim() || undefined,
+        orderNote: data.orderNote.trim() || undefined,
+        paymentMethod: data.paymentMethod,
+        totalPriceHint: totalPrice,
+      });
+
+      if (!result.ok) {
+        if (result.status === 409 && result.stockErrors?.length) {
+          const names = result.stockErrors
+            .map((e) => e.title || e.productId)
+            .slice(0, 3)
+            .join(', ');
+          toast.error(`Ombordagi mahsulot yetarli emas: ${names}`);
+        } else if (result.status === 401) {
+          toast.error("Avval tizimga kiring");
+        } else {
+          toast.error(result.message || "Buyurtma yaratilmadi");
+        }
+        return;
+      }
+
+      if (result.priceChanged) {
+        toast(`Narxlar yangilandi. Jami: ${formatUZS(result.totalPrice)}`);
+      }
+
+      // Fire-and-forget: email + Telegram notifications
       const idToken = await auth.currentUser?.getIdToken();
       if (idToken) {
-        await fetch('/api/sendOrderEmail', {
+        fetch('/api/sendOrderEmail', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-          body: JSON.stringify(submitData),
-        });
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+          body: JSON.stringify({
+            clientName: data.firstName,
+            clientPhone: data.phoneNumber,
+            basketItems: result.basketItems,
+            totalPrice: result.totalPrice,
+            totalQuantity: result.totalQuantity,
+            date: { seconds: Math.floor(Date.now() / 1000) },
+          }),
+        }).catch(() => {});
       }
-      // Notify admin + customer via Telegram (fire-and-forget)
       telegramNotify('order_placed', {
-        orderId: submitData.id || '',
-        clientName: submitData.clientName,
-        clientPhone: submitData.clientPhone,
-        totalPrice: submitData.totalPrice,
-        totalQuantity: submitData.totalQuantity,
-        userUid: submitData.userUid,
-        basketItems: submitData.basketItems.map((i) => ({ title: i.title, quantity: i.quantity })),
+        orderId: result.orderId,
+        clientName: data.firstName,
+        clientPhone: data.phoneNumber,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        userUid: userData?.uid || '',
+        basketItems: result.basketItems.map((i) => ({ title: i.title, quantity: i.quantity })),
       });
+
       clearBasket();
-      setLoading(false);
       toast.success("Buyurtma muvaffaqiyatli qo'shildi");
       navigate.push("/");
     } catch (error) {
-      setLoading(false);
+      console.error(error);
       toast.error("Buyurtma qo'shilmadi");
-      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 

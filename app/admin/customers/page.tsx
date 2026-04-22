@@ -8,6 +8,7 @@ import { formatUZS } from '@/lib/formatPrice';
 import { Crown, TrendingUp, ShoppingCart, Phone, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exportCustomersToExcel } from '@/lib/importExcel';
+import { CustomerListSkeleton } from '@/components/admin/skeletons/ListSkeletons';
 
 const CustomersPage = () => {
   const { orders, fetchAllOrders, loadingOrders } = useOrderStore();
@@ -98,7 +99,16 @@ const CustomersPage = () => {
     });
   }, [customerStats, activityFilter, customerActivity]);
 
-  if (loadingOrders) return <div className="flex items-center justify-center p-10">Yuklanmoqda...</div>;
+  if (loadingOrders) {
+    return (
+      <div>
+        <PanelTitle title="Mijozlar reytingi" />
+        <div className="px-4 py-3">
+          <CustomerListSkeleton rows={5} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

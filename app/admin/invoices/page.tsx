@@ -10,6 +10,7 @@ import { FileText, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { InvoiceListSkeleton } from '@/components/admin/skeletons/ListSkeletons';
 
 const getStartDate = (p: string): number => {
   const now = new Date();
@@ -52,7 +53,9 @@ const InvoicesPage = () => {
     return (
       <div>
         <PanelTitle title="Schyot-fakturalar" />
-        <div className="flex items-center justify-center p-10">Yuklanmoqda...</div>
+        <div className="px-4 py-3">
+          <InvoiceListSkeleton rows={6} />
+        </div>
       </div>
     );
   }

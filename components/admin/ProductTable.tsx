@@ -9,6 +9,7 @@ import useProductStore from '@/store/useProductStore';
 import { formatUZS } from '@/lib/formatPrice';
 import { matchesSearch } from '@/lib/searchMatch';
 import { ProductT } from '@/lib/types';
+import { ProductTableSkeleton, ProductCardListSkeleton } from './skeletons/ListSkeletons';
 import { fireStorage } from '@/firebase/config';
 import { deleteObject, listAll, ref } from 'firebase/storage';
 import toast from 'react-hot-toast';
@@ -24,7 +25,7 @@ interface ProductTableProps {
 
 const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedIds, onSelectionChange, onQuickEdit }: ProductTableProps) => {
   const router = useRouter();
-  const { products, fetchProducts, deleteProduct, updateProduct, duplicateProduct } = useProductStore();
+  const { products, loading, fetchProducts, deleteProduct, updateProduct, duplicateProduct } = useProductStore();
   
   useEffect(() => {
     fetchProducts();
@@ -122,7 +123,9 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.length === 0 ? (
+            {loading && products.length === 0 ? (
+              <ProductTableSkeleton rows={6} />
+            ) : filteredProducts.length === 0 ? (
               <tr>
                 <td colSpan={11} className="h-20 px-4 py-2 text-center text-gray-500">
                   {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
@@ -225,7 +228,9 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
 
       {/* Mobile view - Card layout */}
       <div className="custom:hidden space-y-4">
-        {filteredProducts.length === 0 ? (
+        {loading && products.length === 0 ? (
+          <ProductCardListSkeleton rows={5} />
+        ) : filteredProducts.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500">
             {search.length >= 2 ? "Mahsulotlar topilmadi" : "Mahsulotlar mavjud emas"}
           </div>

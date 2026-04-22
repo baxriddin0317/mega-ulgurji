@@ -19,6 +19,7 @@ import toast from 'react-hot-toast';
 import { exportOrdersToExcel } from '@/lib/exportExcel';
 import { CheckCheck, Download, FileText, X, Send, MessageCircle } from 'lucide-react';
 import { shareOrderToTelegram, shareOrderToWhatsApp, copyOrderText } from '@/lib/shareOrder';
+import { OrderListSkeleton } from '@/components/admin/skeletons/ListSkeletons';
 import { generateDeliverySheet } from '@/lib/generateDeliverySheet';
 import BulkOrderStatusModal from '@/components/admin/BulkOrderStatusModal';
 import { Button } from '@/components/ui/button';
@@ -126,8 +127,8 @@ const Orders = () => {
         </Button>
       </div>
       {loadingOrders ? (
-          <div className="flex items-center justify-center">
-            Yuklanmoqda...
+          <div className="px-4 pb-4">
+            <OrderListSkeleton rows={6} />
           </div>
         ) : (() => {
           const filteredOrders = search.trim()

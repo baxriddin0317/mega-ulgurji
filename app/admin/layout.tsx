@@ -4,6 +4,7 @@ import BottomNav from '@/components/admin/BottomNav'
 import DailySummaryGenerator from '@/components/admin/DailySummaryGenerator'
 import CommandPalette from '@/components/admin/CommandPalette'
 import SwipeableAdminContent from '@/components/admin/SwipeableAdminContent'
+import OfflineBanner from '@/components/admin/OfflineBanner'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { ReactNode } from 'react'
 
@@ -19,9 +20,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out">
-          {/* Header — hidden during print */}
+          {/* Header + offline status — hidden during print */}
           <div className="print:hidden">
             <AdminHeader />
+            <OfflineBanner />
           </div>
 
           {/* Page content — extra bottom padding on mobile for BottomNav */}

@@ -99,11 +99,11 @@ const Orders = () => {
     <div>
       <PanelTitle title="Buyurtmalar" />
       <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
-      <div data-no-swipe className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+      <div data-no-swipe className="flex flex-wrap gap-2 px-4 pb-3">
         {newOrderCount > 0 && (
           <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
-            className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 shrink-0 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber">
-            <CheckCheck className="size-3.5" />
+            className="rounded-xl cursor-pointer text-sm h-10 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber px-3 sm:px-4">
+            <CheckCheck className="size-4" />
             {confirmingAll ? "..." : `${newOrderCount} ta tasdiqlash`}
           </Button>
         )}
@@ -114,15 +114,15 @@ const Orders = () => {
           if (deliveryOrders.length === 0) { toast.error("Yetkazish uchun buyurtma yo'q"); return; }
           generateDeliverySheet(deliveryOrders);
           toast.success(`${deliveryOrders.length} ta buyurtma uchun varaqasi yaratildi`);
-        }} className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 shrink-0 btn-press glow-blue" variant="outline">
-          <FileText className="size-3.5" /> Yetkazish varaqasi
+        }} className="rounded-xl cursor-pointer text-sm h-10 gap-1.5 btn-press px-3 sm:px-4" variant="outline">
+          <FileText className="size-4" /> <span className="hidden xs:inline">Yetkazish </span>varaqasi
         </Button>
         <Button
           variant="outline"
-          className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0"
+          className="rounded-xl cursor-pointer text-sm h-10 gap-1.5 px-3 sm:px-4"
           onClick={() => exportOrdersToExcel(orders, 'buyurtmalar')}
         >
-          <Download className="size-3.5" /> Excel
+          <Download className="size-4" /> Excel
         </Button>
       </div>
       {loadingOrders ? (

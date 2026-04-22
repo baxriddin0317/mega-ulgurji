@@ -131,6 +131,12 @@
 }
 
 @theme {
+  /*
+   * xs: targets narrow Samsung Galaxy viewports (360–389dp) where long
+   * button labels must be hidden. Labels become visible at 390dp
+   * (iPhone 15/16 width) and up.
+   */
+  --breakpoint-xs: 390px;
   --breakpoint-custom: 860px;
 }
 

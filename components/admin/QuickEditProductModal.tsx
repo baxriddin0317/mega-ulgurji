@@ -40,30 +40,30 @@ export default function QuickEditProductModal({ product, onClose }: QuickEditPro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="relative bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full sm:mx-4 p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <button onClick={onClose} aria-label="Yopish" className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100">
           <X className="size-5 text-gray-400" />
         </button>
         <h2 className="text-lg font-bold text-gray-900 mb-4">Tezkor tahrirlash</h2>
         <div className="space-y-3">
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1 block">Nomi</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus className="w-full h-11 px-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">Sotish narxi</label>
-              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="number" inputMode="numeric" pattern="[0-9]*" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full h-11 px-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500 mb-1 block">Tan narxi</label>
-              <input type="number" value={costPrice} onChange={(e) => setCostPrice(Number(e.target.value))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="number" inputMode="numeric" pattern="[0-9]*" value={costPrice} onChange={(e) => setCostPrice(Number(e.target.value))} className="w-full h-11 px-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500 mb-1 block">Ombor soni</label>
-            <input type="number" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            <input type="number" inputMode="numeric" pattern="[0-9]*" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="w-full h-11 px-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
           <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-gray-50 text-sm">
             <span className="text-gray-500">Foyda:</span>

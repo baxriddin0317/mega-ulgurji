@@ -156,18 +156,20 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
                     <button
                       onClick={(e) => { e.stopPropagation(); handleStockChange(product, -1); }}
                       disabled={(typeof product.stock === 'number' ? product.stock : 0) <= 0}
-                      className="size-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 text-xs font-bold"
+                      aria-label="Stokni kamaytirish"
+                      className="size-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 active:scale-95 disabled:opacity-30 text-sm font-bold transition"
                     >
-                      -
+                      −
                     </button>
-                    <span className={`min-w-[32px] text-center text-xs font-bold ${
-                      (typeof product.stock === 'number' ? product.stock : 0) <= 5 ? 'text-red-600' : 'text-green-600'
+                    <span className={`min-w-[36px] text-center text-sm font-bold ${
+                      (typeof product.stock === 'number' ? product.stock : 0) <= 5 ? 'text-red-600' : 'text-green-700'
                     }`}>
                       {typeof product.stock === 'number' ? product.stock : 0}
                     </span>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleStockChange(product, 1); }}
-                      className="size-6 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 text-xs font-bold"
+                      aria-label="Stokni ko'paytirish"
+                      className="size-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 active:scale-95 text-sm font-bold transition"
                     >
                       +
                     </button>

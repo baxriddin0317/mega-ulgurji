@@ -23,7 +23,6 @@ interface TelegramUser {
   lastActivity?: { seconds: number };
   settings: {
     orderNotifications: boolean;
-    nasiyaReminders: boolean;
     promotions: boolean;
   };
 }
@@ -280,7 +279,6 @@ const TelegramPage = () => {
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Telefon</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Chat ID</th>
                     <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Buyurtma</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Nasiya</th>
                     <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Aksiya</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Ulangan</th>
                     <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amallar</th>
@@ -302,13 +300,6 @@ const TelegramPage = () => {
                       <td className="px-4 py-3 text-sm text-gray-400 font-mono">{user.chatId}</td>
                       <td className="px-4 py-3 text-center">
                         {user.settings?.orderNotifications ? (
-                          <CheckCircle size={16} className="mx-auto text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="mx-auto text-gray-300" />
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {user.settings?.nasiyaReminders ? (
                           <CheckCircle size={16} className="mx-auto text-green-500" />
                         ) : (
                           <XCircle size={16} className="mx-auto text-gray-300" />
@@ -368,10 +359,6 @@ const TelegramPage = () => {
                         Buyurtma
                       </span>
                       <span className="flex items-center gap-1">
-                        {user.settings?.nasiyaReminders ? <Bell size={12} className="text-green-500" /> : <BellOff size={12} className="text-gray-300" />}
-                        Nasiya
-                      </span>
-                      <span className="flex items-center gap-1">
                         {user.settings?.promotions ? <Bell size={12} className="text-green-500" /> : <BellOff size={12} className="text-gray-300" />}
                         Aksiya
                       </span>
@@ -393,7 +380,7 @@ const TelegramPage = () => {
         <ul className="space-y-1 text-xs">
           <li>Bot: <a href="https://t.me/megahome_ulgurji_bot" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">@megahome_ulgurji_bot</a></li>
           <li>Webhook: <code className="bg-gray-200 px-1 rounded">/api/telegram/webhook</code></li>
-          <li>Buyruqlar: /start, /products, /cart, /order, /myorders, /nasiya, /settings, /help</li>
+          <li>Buyruqlar: /start, /products, /cart, /order, /myorders, /reorder, /settings, /help</li>
           <li>Foydalanuvchilar telefon raqami orqali hisoblarini ulaydi</li>
         </ul>
       </div>

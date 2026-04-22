@@ -17,6 +17,7 @@ import useProductStore from '@/store/useProductStore';
 import { Search, ShoppingCart, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useCartProductStore from '@/store/useCartStore';
+import { matchesSearch } from '@/lib/searchMatch';
 
 const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
   const [fixed, setFixed] = useState(false);
@@ -49,7 +50,10 @@ const Header = ({ forceFixed = false }: { forceFixed?: boolean }) => {
   }, []);
 
   const filteredProducts = searchQuery.length >= 2
-    ? products.filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6)
+    ? products.filter((p) => (
+        matchesSearch(p.title, searchQuery) ||
+        matchesSearch(p.category ?? '', searchQuery)
+      )).slice(0, 6)
     : [];
 
   return (

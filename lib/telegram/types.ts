@@ -99,7 +99,6 @@ export interface TelegramUserDoc {
   lastActivity?: FirebaseFirestore.Timestamp;
   settings: {
     orderNotifications: boolean;
-    nasiyaReminders: boolean;
     promotions: boolean;
   };
 }

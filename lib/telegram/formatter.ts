@@ -26,8 +26,7 @@ export function formatWelcome(userName: string): string {
     'Bu bot orqali siz:',
     '📦 Mahsulotlarni ko\'rishingiz',
     '🛒 Buyurtma berishingiz',
-    '📋 Buyurtmalar tarixini ko\'rishingiz',
-    '💳 Nasiya holatini tekshirishingiz mumkin',
+    '📋 Buyurtmalar tarixini ko\'rishingiz mumkin',
     '',
     'Quyidagi menyudan tanlang:',
   ].join('\n');
@@ -44,7 +43,6 @@ export function formatHelp(): string {
     '/order — Buyurtma berish',
     '/reorder — Oxirgi buyurtmani takrorlash',
     '/myorders — Buyurtmalar tarixi',
-    '/nasiya — Nasiya holati',
     '/settings — Xabar sozlamalari',
     '/help — Yordam',
     '',
@@ -143,36 +141,6 @@ export function formatStatusUpdate(
     `📊 Holat: ${label}`,
     `💰 Summa: ${formatPrice(order.totalPrice)} UZS`,
   ].join('\n');
-}
-
-export function formatNasiyaSummary(
-  records: { originalAmount: number; remainingAmount: number; status: string; dueDate?: string }[]
-): string {
-  if (records.length === 0) {
-    return '💳 Sizda faol nasiya mavjud emas.';
-  }
-
-  const active = records.filter((r) => r.status === 'active');
-  const totalRemaining = active.reduce((sum, r) => sum + r.remainingAmount, 0);
-
-  const lines = [
-    '💳 <b>Nasiya holati</b>',
-    '',
-    `📊 Faol nasiyalar: <b>${active.length} ta</b>`,
-    `💰 Jami qoldiq: <b>${formatPrice(totalRemaining)} UZS</b>`,
-    '',
-  ];
-
-  active.slice(0, 5).forEach((r, i) => {
-    const statusText = r.status === 'overdue' ? '🔴 Muddati o\'tgan' : '🟢 Faol';
-    lines.push(
-      `${i + 1}. ${statusText}`,
-      `   Summa: ${formatPrice(r.originalAmount)} UZS | Qoldiq: <b>${formatPrice(r.remainingAmount)} UZS</b>`,
-      ''
-    );
-  });
-
-  return lines.join('\n');
 }
 
 // ── Admin alerts ──

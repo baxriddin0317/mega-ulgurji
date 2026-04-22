@@ -8,7 +8,6 @@ import { handleProducts, handleCategoryProducts, handleProductDetail } from './c
 import { handleCart, handleAddToCart, handleRemoveFromCart, handleUpdateCartQty, handleClearCart } from './commands/cart';
 import { handleOrder, handleConfirmOrder, handleCancelOrder, handleReorder } from './commands/order';
 import { handleMyOrders, handleOrderDetail } from './commands/myorders';
-import { handleNasiya } from './commands/nasiya';
 import { formatHelp } from './formatter';
 import { mainMenuKeyboard } from './keyboards';
 
@@ -49,8 +48,6 @@ async function handleCommand(message: TelegramMessage): Promise<void> {
     case '/cart':
     case '/savatcha':
       return handleCart(chatId);
-    case '/nasiya':
-      return handleNasiya(chatId);
     case '/settings':
     case '/sozlamalar':
       return handleSettings(chatId);
@@ -121,7 +118,7 @@ async function handleMenuAction(chatId: number, section: string): Promise<void> 
     case 'products': return handleProducts(chatId);
     case 'cart': return handleCart(chatId);
     case 'myorders': return handleMyOrders(chatId);
-    case 'nasiya': return handleNasiya(chatId);
+    case 'reorder': return handleReorder(chatId);
     case 'settings': return handleSettings(chatId);
     case 'help': return handleHelp(chatId);
   }

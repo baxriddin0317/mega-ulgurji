@@ -97,7 +97,6 @@ export async function handleContact(message: TelegramMessage): Promise<void> {
     lastActivity: new Date(),
     settings: {
       orderNotifications: true,
-      nasiyaReminders: true,
       promotions: true,
     },
   };

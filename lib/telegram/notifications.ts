@@ -82,62 +82,6 @@ export async function notifyDeliveryArriving(order: {
   }
 }
 
-export async function notifyNasiyaReminder(record: {
-  userId: string;
-  userName: string;
-  remainingAmount: number;
-  dueDate?: { toDate?: () => Date; seconds?: number };
-}): Promise<void> {
-  try {
-    const telegramUser = await findTelegramUser(record.userId);
-    if (!telegramUser || !telegramUser.settings?.nasiyaReminders) return;
-
-    const dueDateStr = record.dueDate?.toDate
-      ? record.dueDate.toDate().toLocaleDateString('uz-UZ')
-      : record.dueDate?.seconds
-        ? new Date(record.dueDate.seconds * 1000).toLocaleDateString('uz-UZ')
-        : '';
-
-    await telegram.sendMessage(
-      telegramUser.chatId,
-      [
-        '💳 <b>Nasiya to\'lov eslatmasi</b>',
-        '',
-        `💰 Qoldiq: <b>${Number(record.remainingAmount).toLocaleString('uz-UZ').replace(/,/g, ' ')} UZS</b>`,
-        dueDateStr ? `📅 Muddat: ${dueDateStr}` : '',
-        '',
-        'Iltimos, o\'z vaqtida to\'lang.',
-      ].filter(Boolean).join('\n')
-    );
-  } catch (error) {
-    console.error('Telegram nasiya reminder error:', error);
-  }
-}
-
-export async function notifyNasiyaOverdue(record: {
-  userId: string;
-  userName: string;
-  remainingAmount: number;
-}): Promise<void> {
-  try {
-    const telegramUser = await findTelegramUser(record.userId);
-    if (!telegramUser || !telegramUser.settings?.nasiyaReminders) return;
-
-    await telegram.sendMessage(
-      telegramUser.chatId,
-      [
-        '🔴 <b>Nasiya muddati o\'tgan!</b>',
-        '',
-        `💰 Qoldiq: <b>${Number(record.remainingAmount).toLocaleString('uz-UZ').replace(/,/g, ' ')} UZS</b>`,
-        '',
-        '⚠️ Iltimos, tezroq to\'lang yoki admin bilan bog\'laning.',
-      ].join('\n')
-    );
-  } catch (error) {
-    console.error('Telegram nasiya overdue error:', error);
-  }
-}
-
 export async function notifyWelcome(chatId: number, userName: string): Promise<void> {
   try {
     await telegram.sendMessage(chatId, formatWelcome(userName), {

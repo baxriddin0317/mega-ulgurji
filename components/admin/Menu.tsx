@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { BiUser } from 'react-icons/bi'
-import { LayoutDashboard, ShoppingCart, PackagePlus, BarChart3, Crown, CreditCard, FileText, Warehouse, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, PackagePlus, BarChart3, Crown, FileText, Warehouse, MessageCircle } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore'
 import { useAuthStore } from '@/store/authStore'
 
@@ -103,14 +103,6 @@ const Menu = () => {
         <Link href={'/admin/customers'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/customers') ? 'bg-brand-gray-100' : ''}`}>
           <Crown size={24} />
           <p className="text-black text-sm font-medium leading-normal">Mijozlar reytingi</p>
-        </Link>
-      )}
-
-      {/* Admin/Manager: Nasiya */}
-      {staffAccess && (
-        <Link href={'/admin/nasiya'} className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-link-hover ${isActive('/admin/nasiya') ? 'bg-brand-gray-100' : ''}`}>
-          <CreditCard size={24} />
-          <p className="text-black text-sm font-medium leading-normal">Nasiya (qarzlar)</p>
         </Link>
       )}
 

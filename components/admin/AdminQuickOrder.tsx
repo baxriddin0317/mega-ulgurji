@@ -8,6 +8,7 @@ import { useAuthStore, type UserData } from "@/store/authStore";
 import useProductStore from "@/store/useProductStore";
 import { useOrderStore } from "@/store/useOrderStore";
 import { formatUZS } from "@/lib/formatPrice";
+import { matchesSearch } from "@/lib/searchMatch";
 import type { Order, ProductT } from "@/lib/types";
 import { Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -68,14 +69,13 @@ export default function AdminQuickOrder() {
     return () => clearTimeout(timer);
   }, [productSearch]);
 
-  // Filter non-admin users by name or phone
+  // Filter non-admin users by name or phone (Cyrillic ↔ Latin tolerant)
   const filteredUsers = useMemo(() => {
     const nonAdmins = users.filter((u) => u.role !== "admin");
     if (customerSearch.length < 2) return nonAdmins;
-    const q = customerSearch.toLowerCase();
     return nonAdmins.filter(
       (u) =>
-        u.name.toLowerCase().includes(q) ||
+        matchesSearch(u.name, customerSearch) ||
         (u.phone && u.phone.includes(customerSearch))
     );
   }, [users, customerSearch]);
@@ -133,11 +133,14 @@ export default function AdminQuickOrder() {
     [orders]
   );
 
-  // Filter products by search
+  // Filter products by search (Cyrillic ↔ Latin tolerant)
   const filteredProducts = useMemo(() => {
     if (debouncedProductSearch.length < 2) return products;
-    const q = debouncedProductSearch.toLowerCase();
-    return products.filter((p) => p.title.toLowerCase().includes(q));
+    return products.filter((p) => (
+      matchesSearch(p.title, debouncedProductSearch) ||
+      matchesSearch(p.category ?? '', debouncedProductSearch) ||
+      matchesSearch(p.subcategory ?? '', debouncedProductSearch)
+    ));
   }, [products, debouncedProductSearch]);
 
   // Select customer

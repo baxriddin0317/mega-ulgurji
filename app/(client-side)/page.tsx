@@ -9,7 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Package, CreditCard, Truck, Layers,
+  Package, Truck, Layers,
   ArrowRight, ShieldCheck, BarChart3, Headphones,
 } from "lucide-react";
 
@@ -148,9 +148,9 @@ export default function Home() {
               index={1}
             />
             <FeatureCard
-              icon={<CreditCard className="size-6" />}
-              title="Nasiya tizimi"
-              description="Qulay bo'lib to'lash imkoniyati. Ishonchli nasiya tizimi bilan xarid qiling."
+              icon={<ShieldCheck className="size-6" />}
+              title="Ishonchli sifat"
+              description="Har bir mahsulot sinovdan o'tgan. Xaridorlarimiz 5 yildan beri bizga ishonadi."
               color="amber"
               timelineRef={featuresRef}
               index={2}

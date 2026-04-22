@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, ShoppingCart, Package, FileText, Menu, X, PackagePlus, Warehouse, BarChart3, Crown, CreditCard, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, FileText, Menu, X, PackagePlus, Warehouse, BarChart3, Crown, Users, Settings } from 'lucide-react';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import { useAuthStore } from '@/store/authStore';
 
@@ -38,7 +38,6 @@ const BottomNav = () => {
     ...(admin ? [
       { href: '/admin/reports', icon: BarChart3, label: 'Hisobotlar' },
       { href: '/admin/customers', icon: Crown, label: 'Mijozlar' },
-      { href: '/admin/nasiya', icon: CreditCard, label: 'Nasiya' },
     ] : []),
     { href: '/admin/profile', icon: Settings, label: 'Profil' },
   ];

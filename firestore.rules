@@ -47,12 +47,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Nasiya (credit) — admin only
-    match /nasiya/{nasiyaId} {
-      allow read: if isAdmin() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow write: if isAdmin();
-    }
-
     // Stock receipts — admin only
     match /stockReceipts/{receiptId} {
       allow read, write: if isAdmin();

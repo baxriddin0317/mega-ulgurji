@@ -7,6 +7,7 @@ import { Copy, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useProductStore from '@/store/useProductStore';
 import { formatUZS } from '@/lib/formatPrice';
+import { matchesSearch } from '@/lib/searchMatch';
 import { ProductT } from '@/lib/types';
 import { fireStorage } from '@/firebase/config';
 import { deleteObject, listAll, ref } from 'firebase/storage';
@@ -39,9 +40,11 @@ const ProductTable = ({ search, category = 'all', subcategory = 'all', selectedI
       filtered = filtered.filter(product => product.subcategory === subcategory);
     }
     if (search.length >= 2) {
-      filtered = filtered.filter(product =>
-        product.title.toLowerCase().includes(search.toLowerCase())
-      );
+      filtered = filtered.filter((product) => (
+        matchesSearch(product.title, search) ||
+        matchesSearch(product.category ?? '', search) ||
+        matchesSearch(product.subcategory ?? '', search)
+      ));
     }
     return filtered;
   }, [products, search, category, subcategory]);

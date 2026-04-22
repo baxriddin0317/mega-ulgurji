@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminApp } from '@/lib/firebase-admin';
-import { notifyOrderConfirmed, notifyOrderStatusChanged, notifyDeliveryArriving, notifyNasiyaReminder } from '@/lib/telegram/notifications';
+import { notifyOrderConfirmed, notifyOrderStatusChanged, notifyDeliveryArriving } from '@/lib/telegram/notifications';
 import { alertNewOrder, alertLowStock, alertNewUser, alertDailySummary } from '@/lib/telegram/admin-alerts';
 
 export async function POST(req: NextRequest) {
@@ -87,16 +87,6 @@ export async function POST(req: NextRequest) {
 
       case 'daily_summary': {
         await alertDailySummary(data);
-        break;
-      }
-
-      case 'nasiya_reminder': {
-        await notifyNasiyaReminder({
-          userId: data.userId || '',
-          userName: data.userName || '',
-          remainingAmount: data.remainingAmount || 0,
-          dueDate: data.dueDate,
-        });
         break;
       }
 

@@ -84,6 +84,19 @@ function mapColumnKey(header: string): string | null {
   return COLUMN_MAP[normalized] || null;
 }
 
+/**
+ * Normalize a user-entered category / subcategory name so we compare values
+ * that may differ only by case, surrounding whitespace, collapsed interior
+ * whitespace, or Unicode composition form.
+ */
+function normalizeLookup(value: string): string {
+  return value
+    .normalize('NFC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
 export function parseProductsFromFile(file: File, categories: CategoryI[]): Promise<ParsedProduct[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -111,29 +124,49 @@ export function parseProductsFromFile(file: File, categories: CategoryI[]): Prom
           return '';
         };
 
-        const categoryNames = categories.map((c) => c.name);
+        // Build a lookup map once: normalized-name -> canonical Category
+        const categoryLookup = new Map<string, CategoryI>();
+        for (const c of categories) {
+          if (c?.name) categoryLookup.set(normalizeLookup(c.name), c);
+        }
 
         const products: ParsedProduct[] = rows.map((row) => {
           const errors: string[] = [];
           const title = get(row, 'title');
-          const category = get(row, 'category');
-          const subcategory = get(row, 'subcategory');
+          const rawCategory = get(row, 'category');
+          const rawSubcategory = get(row, 'subcategory');
           const price = get(row, 'price') || '0';
           const costPrice = Number(get(row, 'costPrice') || 0);
           const stock = Number(get(row, 'stock') || 0);
           const description = get(row, 'description');
 
+          // Resolve to the canonical category name (stored in Firestore) so
+          // imported products correctly link to the existing category instead
+          // of being filed under a lower-case or whitespace-bent duplicate.
+          const matchedCategory = rawCategory
+            ? categoryLookup.get(normalizeLookup(rawCategory))
+            : undefined;
+          const category = matchedCategory?.name ?? rawCategory;
+
+          let subcategory = rawSubcategory;
+          if (rawSubcategory && matchedCategory?.subcategory?.length) {
+            const subLookup = new Map<string, string>();
+            for (const s of matchedCategory.subcategory) subLookup.set(normalizeLookup(s), s);
+            const canonicalSub = subLookup.get(normalizeLookup(rawSubcategory));
+            if (canonicalSub) subcategory = canonicalSub;
+          }
+
           if (!title) errors.push('Nomi kiritilmagan');
-          if (!category) errors.push('Kategoriya kiritilmagan');
-          else if (!categoryNames.includes(category)) errors.push(`"${category}" kategoriyasi mavjud emas`);
+          if (!rawCategory) errors.push('Kategoriya kiritilmagan');
+          else if (!matchedCategory) errors.push(`"${rawCategory}" kategoriyasi mavjud emas`);
           if (!price || isNaN(Number(price)) || Number(price) <= 0) errors.push("Narx noto'g'ri");
           if (isNaN(costPrice) || costPrice < 0) errors.push("Tan narx noto'g'ri");
           if (isNaN(stock) || stock < 0) errors.push("Ombor soni noto'g'ri");
 
-          if (subcategory && category) {
-            const cat = categories.find((c) => c.name === category);
-            if (cat?.subcategory?.length && !cat.subcategory.includes(subcategory)) {
-              errors.push(`"${subcategory}" subkategoriyasi mavjud emas`);
+          if (rawSubcategory && matchedCategory?.subcategory?.length) {
+            const subNames = matchedCategory.subcategory.map(normalizeLookup);
+            if (!subNames.includes(normalizeLookup(rawSubcategory))) {
+              errors.push(`"${rawSubcategory}" subkategoriyasi mavjud emas`);
             }
           }
 

@@ -17,7 +17,6 @@ export async function handleSettings(chatId: number): Promise<void> {
   const data = snap.docs[0].data();
   const settings = data.settings || {
     orderNotifications: true,
-    nasiyaReminders: true,
     promotions: true,
   };
 
@@ -29,7 +28,7 @@ export async function handleSettings(chatId: number): Promise<void> {
 }
 
 export async function handleSettingsToggle(chatId: number, setting: string): Promise<void> {
-  const validSettings = ['orderNotifications', 'nasiyaReminders', 'promotions'];
+  const validSettings = ['orderNotifications', 'promotions'];
   if (!validSettings.includes(setting)) return;
 
   const db = getDb();
@@ -44,7 +43,6 @@ export async function handleSettingsToggle(chatId: number, setting: string): Pro
   const data = snap.docs[0].data();
   const currentSettings = data.settings || {
     orderNotifications: true,
-    nasiyaReminders: true,
     promotions: true,
   };
 

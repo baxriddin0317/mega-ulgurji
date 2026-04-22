@@ -5,6 +5,7 @@ import Image from 'next/image';
 import useCategoryStore from '@/store/useCategoryStore';
 import { useRouter } from 'next/navigation';
 import { CategoryI } from '@/lib/types';
+import { matchesSearch } from '@/lib/searchMatch';
 import { deleteObject, listAll, ref } from 'firebase/storage';
 import { fireStorage } from '@/firebase/config';
 import toast from 'react-hot-toast';
@@ -28,9 +29,7 @@ const CategoryTable = ({ search }: CategoryTableProps) => {
       return categories;
     }
     
-    return categories.filter(category =>
-      category.name.toLowerCase().includes(search.toLowerCase())
-    );
+    return categories.filter((category) => matchesSearch(category.name, search));
   }, [categories, search]);
 
   const handleEdit = (id: string) => {

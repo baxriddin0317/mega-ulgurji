@@ -222,8 +222,7 @@ app/admin/
 ├── invoice/[id]/page.tsx → Invoice detail (existing)
 ├── kirim/                → Stock receipts (existing)
 ├── products/             → Product management (existing)
-├── categories/           → Category management (existing)
-└── nasiya/               → Credit/installment tracking (existing)
+└── categories/           → Category management (existing)
 ```
 
 ## Key Files

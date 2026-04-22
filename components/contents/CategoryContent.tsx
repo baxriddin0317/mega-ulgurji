@@ -9,6 +9,7 @@ import { TimelineContent } from '@/components/ui/timeline-animation'
 import { ImageAutoSlider } from '@/components/ui/image-auto-slider'
 import { Search, X, SlidersHorizontal } from 'lucide-react'
 import Image from 'next/image'
+import { matchesSearch } from '@/lib/searchMatch'
 
 const CategoryContent = ({slug}: {slug:string}) => {
   const { category, fetchSingleCategory } = useCategoryStore()
@@ -44,8 +45,10 @@ const CategoryContent = ({slug}: {slug:string}) => {
       filtered = filtered.filter(product => product.subcategory === activeSubcategory);
     }
     if (search.trim().length >= 2) {
-      const needle = search.toLowerCase();
-      filtered = filtered.filter(product => product.title.toLowerCase().includes(needle));
+      filtered = filtered.filter((product) => (
+        matchesSearch(product.title, search) ||
+        matchesSearch(product.subcategory ?? '', search)
+      ));
     }
     return filtered;
   }, [productsInCategory, category, activeSubcategory, search]);

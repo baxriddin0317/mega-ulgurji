@@ -17,7 +17,7 @@ function urlBtn(text: string, url: string): InlineKeyboardButton {
 export function mainMenuKeyboard(): InlineKeyboardMarkup {
   return inline([
     [btn('📦 Mahsulotlar', 'menu:products'), btn('🛒 Savatcha', 'menu:cart')],
-    [btn('📋 Buyurtmalarim', 'menu:myorders'), btn('💳 Nasiya', 'menu:nasiya')],
+    [btn('📋 Buyurtmalarim', 'menu:myorders'), btn('🔁 Qayta buyurtma', 'menu:reorder')],
     [btn('⚙️ Sozlamalar', 'menu:settings'), btn('❓ Yordam', 'menu:help')],
   ]);
 }
@@ -112,10 +112,9 @@ export function orderHistoryKeyboard(orders: { id: string; date: string; totalPr
 }
 
 // ── Settings toggles ──
-export function settingsKeyboard(settings: { orderNotifications: boolean; nasiyaReminders: boolean; promotions: boolean }): InlineKeyboardMarkup {
+export function settingsKeyboard(settings: { orderNotifications: boolean; promotions: boolean }): InlineKeyboardMarkup {
   return inline([
     [btn(`${settings.orderNotifications ? '✅' : '❌'} Buyurtma xabarlari`, 'settings:orderNotifications')],
-    [btn(`${settings.nasiyaReminders ? '✅' : '❌'} Nasiya eslatmalari`, 'settings:nasiyaReminders')],
     [btn(`${settings.promotions ? '✅' : '❌'} Aksiya va yangiliklar`, 'settings:promotions')],
     [btn('🔙 Bosh menyu', 'back:main')],
   ]);

@@ -1,7 +1,7 @@
 # MegaHome Ulgurji - E-Commerce Platform
 
 ## Project Overview
-Uzbek wholesale e-commerce platform ("MegaHome ulgurji" = MegaHome wholesale). Built with Next.js 16 App Router, Firebase backend, Zustand state management, Tailwind CSS 4. Features ERP-like capabilities: stock management, credit tracking (nasiya), invoicing, profit reports, Excel import/export, and Remotion video marketing.
+Uzbek wholesale e-commerce platform ("MegaHome ulgurji" = MegaHome wholesale). Built with Next.js 16 App Router, Firebase backend, Zustand state management, Tailwind CSS 4. Features ERP-like capabilities: stock management, invoicing, profit reports, Excel import/export, and Remotion video marketing.
 
 ## Tech Stack
 - **Framework**: Next.js 16.1.1 (App Router, React 19)
@@ -24,7 +24,7 @@ app/
 ├── (auth)/           # Login & signup pages
 ├── (client-side)/    # Customer-facing pages (home, product, category, cart, orders)
 ├── admin/            # Admin panel (dashboard, products, categories, orders, customers,
-│                     #   nasiya, kirim, invoices, reports, profile)
+│                     #   kirim, invoices, reports, profile)
 ├── api/              # API routes (delete-user, sendOrderEmail)
 ├── layout.tsx        # Root layout (AuthProvider, Toaster, fonts)
 └── globals.css       # Tailwind theme + custom CSS variables
@@ -42,7 +42,6 @@ store/                # Zustand stores (10 stores)
 ├── useProductStore.ts  # Product CRUD with real-time listeners
 ├── useOrderStore.ts  # Order management with status tracking
 ├── useDraftStore.ts  # Auto-save drafts (24h expiry)
-├── useNasiyaStore.ts # Credit/debt tracking
 ├── useNotificationStore.ts # Admin notifications
 ├── useStockReceiptStore.ts # Stock receipt (kirim) management
 └── useToggleStore.ts # Sidebar toggle state
@@ -72,7 +71,6 @@ providers/            # AuthProvider (Firebase onAuthStateChanged)
 - **"categories"**: `{id, name, description, categoryImgUrl[], storageFileId, subcategory[]}`
 - **"products"**: `{id, title, price, costPrice?, productImageUrl[], category, description, quantity, stock?, time, date, storageFileId, subcategory}`
 - **"orders"**: `{id, clientName, clientPhone, date, basketItems[], totalPrice, totalQuantity, userUid, status?}`
-- **"nasiya"**: Credit/debt tracking records
 - **"receipts"**: Stock receipt documents
 - **"invoices"**: Generated invoices (schyot-faktura)
 

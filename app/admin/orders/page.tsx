@@ -17,7 +17,8 @@ import { ORDER_STATUSES, getStatusInfo } from '@/lib/orderStatus';
 import { OrderStatus } from '@/lib/types';
 import toast from 'react-hot-toast';
 import { exportOrdersToExcel } from '@/lib/exportExcel';
-import { CheckCheck, Download, FileText, X } from 'lucide-react';
+import { CheckCheck, Download, FileText, X, Send, MessageCircle } from 'lucide-react';
+import { shareOrderToTelegram, shareOrderToWhatsApp, copyOrderText } from '@/lib/shareOrder';
 import { generateDeliverySheet } from '@/lib/generateDeliverySheet';
 import BulkOrderStatusModal from '@/components/admin/BulkOrderStatusModal';
 import { Button } from '@/components/ui/button';
@@ -211,6 +212,33 @@ const Orders = () => {
                           <FileText className="size-3" /> Faktura
                         </Button>
                       </Link>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => shareOrderToTelegram(order)}
+                        className="rounded-lg cursor-pointer text-xs h-7 gap-1 border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100"
+                      >
+                        <Send className="size-3" /> Telegram
+                      </Button>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={() => shareOrderToWhatsApp(order)}
+                        className="rounded-lg cursor-pointer text-xs h-7 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <MessageCircle className="size-3" /> WhatsApp
+                      </Button>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={async () => {
+                          const ok = await copyOrderText(order);
+                          toast.success(ok ? 'Buyurtma matni nusxalandi' : 'Nusxalab bo\'lmadi');
+                        }}
+                        className="rounded-lg cursor-pointer text-xs h-7 gap-1"
+                      >
+                        <Download className="size-3" /> Nusxalash
+                      </Button>
                       <div className="ml-auto flex items-center gap-4 text-right">
                         <div>
                           <p className="text-[10px] text-gray-400 uppercase">Jami</p>

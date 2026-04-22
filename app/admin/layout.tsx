@@ -3,6 +3,7 @@ import Sidebar from '@/components/admin/Sidebar'
 import BottomNav from '@/components/admin/BottomNav'
 import DailySummaryGenerator from '@/components/admin/DailySummaryGenerator'
 import CommandPalette from '@/components/admin/CommandPalette'
+import SwipeableAdminContent from '@/components/admin/SwipeableAdminContent'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { ReactNode } from 'react'
 
@@ -25,8 +26,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
 
           {/* Page content — extra bottom padding on mobile for BottomNav */}
           <main className="flex-1 p-2 sm:p-4 md:p-6 pb-20 lg:pb-6 print:p-0">
-            <div className='bg-white w-full h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-xl sm:shadow-2xl print:shadow-none print:rounded-none print:p-0'>
-            {children}
+            <div className='bg-white w-full h-full rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-xl sm:shadow-2xl print:shadow-none print:rounded-none print:p-0 overflow-x-hidden'>
+              <SwipeableAdminContent>
+                {children}
+              </SwipeableAdminContent>
             </div>
           </main>
         </div>

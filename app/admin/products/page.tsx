@@ -200,7 +200,7 @@ const Products = () => {
         setActiveSubcategory={setActiveSubcategory}
       />
       {/* Action buttons */}
-      <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+      <div data-no-swipe className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
         <Button
           variant="outline"
           className="rounded-xl cursor-pointer text-xs h-8 gap-1 shrink-0 border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 btn-press glow-amber"

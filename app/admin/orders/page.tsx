@@ -99,7 +99,7 @@ const Orders = () => {
     <div>
       <PanelTitle title="Buyurtmalar" />
       <Search search={search} handleSearchChange={setSearch} placeholder="Buyurtmalarni qidirish" />
-      <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+      <div data-no-swipe className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
         {newOrderCount > 0 && (
           <Button onClick={handleConfirmAllNew} disabled={confirmingAll}
             className="rounded-xl cursor-pointer text-xs h-8 gap-1.5 shrink-0 bg-amber-500 hover:bg-amber-600 text-white btn-press glow-amber">
@@ -269,7 +269,7 @@ const Orders = () => {
                     </div>
 
                     {/* Items table */}
-                    <div className="overflow-x-auto">
+                    <div data-no-swipe className="overflow-x-auto">
                       <table className="min-w-full text-left table-auto">
                         <thead>
                           <tr>

@@ -23,15 +23,25 @@ export async function POST(req: NextRequest) {
   try {
     const update: TelegramUpdate = await req.json();
 
-    // Process update asynchronously — respond 200 immediately
-    // Telegram retries on non-200, so always return OK
-    handleUpdate(update).catch((err) => {
-      console.error('Telegram webhook handler error:', err);
-    });
+    // Await the handler so Vercel's serverless runtime does not tear down
+    // the container mid-execution. Prior code used fire-and-forget with
+    // `.catch()`; Telegram would see 200 and mark delivery "successful"
+    // while handleUpdate's Firestore reads + sendMessage calls were killed
+    // before they finished, so /start silently never replied.
+    //
+    // Telegram allows up to 60 s for a webhook response, and our handlers
+    // finish well under 3 s in practice.
+    try {
+      await handleUpdate(update);
+    } catch (handlerErr) {
+      // Log but still 200 — Telegram would otherwise flood retries for
+      // an error we're already aware of.
+      console.error('[telegram-webhook] handler error:', handlerErr);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error('Telegram webhook parse error:', error);
+    console.error('[telegram-webhook] parse error:', error);
     return NextResponse.json({ ok: true }); // Still return 200 to prevent retries
   }
 }

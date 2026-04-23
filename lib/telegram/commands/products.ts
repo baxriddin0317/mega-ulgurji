@@ -4,6 +4,11 @@ import { formatProductCard, escapeHtml } from '../formatter';
 import { categoryKeyboard, productListKeyboard, productDetailKeyboard } from '../keyboards';
 
 const PRODUCTS_PER_PAGE = 5;
+// Hard cap on products fetched per category view — keeps Telegram response
+// times predictable and caps Firestore reads even if a category has
+// thousands of items. A true cursor-based paginator would need the seek key
+// in callback_data; this bound is a pragmatic middle ground.
+const MAX_CATEGORY_PRODUCTS = 50;
 
 export async function handleProducts(chatId: number): Promise<void> {
   const db = getDb();
@@ -32,9 +37,11 @@ export async function handleCategoryProducts(chatId: number, categoryId: string,
   const catDoc = await db.collection('categories').doc(categoryId).get();
   const categoryName = catDoc.exists ? catDoc.data()?.name || '' : '';
 
-  // Get products in category
+  // Get products in category. Bounded fetch keeps Telegram latency + read
+  // cost predictable; no orderBy so we don't require a composite index.
   const snap = await db.collection('products')
     .where('category', '==', categoryName)
+    .limit(MAX_CATEGORY_PRODUCTS)
     .get();
 
   const products = snap.docs.map((d) => ({

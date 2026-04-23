@@ -64,11 +64,19 @@ async function handleCallback(query: TelegramCallbackQuery): Promise<void> {
   const chatId = query.message?.chat.id;
   if (!chatId || !query.data) return;
 
-  // Always acknowledge the callback
-  await telegram.answerCallbackQuery(query.id);
+  // Fire the ack in parallel with the real work — removes the loading
+  // spinner on the client without blocking the handler on a round-trip
+  // to api.telegram.org. Errors are logged but don't abort dispatch.
+  const ack = telegram.answerCallbackQuery(query.id).catch((err) => {
+    console.error('[telegram-callback] ack failed:', err);
+  });
 
   const [action, ...params] = query.data.split(':');
+  const work = dispatchCallback(chatId, action, params);
+  await Promise.all([ack, work]);
+}
 
+function dispatchCallback(chatId: number, action: string, params: string[]): Promise<void> | void {
   switch (action) {
     // Menu navigation
     case 'menu':

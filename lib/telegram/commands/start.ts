@@ -48,26 +48,61 @@ export async function handleContact(message: TelegramMessage): Promise<void> {
 
   const db = getDb();
   const phone = normalizePhone(contact.phone_number);
-
-  // Search for user with matching phone
-  const usersSnap = await db.collection('user').get();
+  const from = message.from;
   let matchedUser: { uid: string; name: string; phone: string; role: string } | null = null;
 
-  for (const doc of usersSnap.docs) {
-    const data = doc.data();
-    const userPhone = normalizePhone(data.phone || '');
-    if (userPhone === phone && phone.length >= 9) {
-      matchedUser = {
-        uid: doc.id,
-        name: data.name || '',
-        phone: data.phone || '',
-        role: data.role || 'user',
-      };
-      break;
+  // Fast path — env-var admin whitelist. Auto-provisions a `user` doc with
+  // role=admin so the operator can bootstrap admin access via Telegram
+  // without signing up on the website first. Also skips the full-collection
+  // scan below, which is O(n) on the user table.
+  const adminPhones = (process.env.TELEGRAM_ADMIN_PHONES || '')
+    .split(',')
+    .map((p) => normalizePhone(p))
+    .filter((p) => p.length >= 9);
+
+  if (phone.length >= 9 && adminPhones.includes(phone)) {
+    const adminUid = `tg-admin-${chatId}`;
+    const adminData = {
+      uid: adminUid,
+      name: from?.first_name || 'Admin',
+      email: '',
+      phone: contact.phone_number,
+      role: 'admin' as const,
+      time: Date.now(),
+      date: new Date().toISOString(),
+      createdVia: 'telegram-whitelist',
+    };
+    await db.collection('user').doc(adminUid).set(adminData, { merge: true });
+    matchedUser = {
+      uid: adminUid,
+      name: adminData.name,
+      phone: adminData.phone,
+      role: 'admin',
+    };
+  }
+
+  // Fallback — search `user` collection for the phone. Full scan because the
+  // legacy docs don't have a normalized phone field; amortised away by the
+  // admin fast path above and by short-circuiting as soon as we match.
+  if (!matchedUser) {
+    const usersSnap = await db.collection('user').get();
+    for (const doc of usersSnap.docs) {
+      const data = doc.data();
+      const userPhone = normalizePhone(data.phone || '');
+      if (userPhone === phone && phone.length >= 9) {
+        matchedUser = {
+          uid: doc.id,
+          name: data.name || '',
+          phone: data.phone || '',
+          role: data.role || 'user',
+        };
+        break;
+      }
     }
   }
 
   if (!matchedUser) {
+    const signUpUrl = `${(process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.app').replace(/\/$/, '')}/sign-up`;
     // Remove the reply keyboard
     const removeKb: ReplyKeyboardRemove = { remove_keyboard: true };
     await telegram.sendMessage(
@@ -77,7 +112,7 @@ export async function handleContact(message: TelegramMessage): Promise<void> {
         '',
         'Bu telefon raqam bilan ro\'yxatdan o\'tilmagan.',
         '📝 Avval saytda ro\'yxatdan o\'ting:',
-        'https://megahome.uz/sign-up',
+        signUpUrl,
         '',
         'Ro\'yxatdan o\'tgandan so\'ng /start buyrug\'ini yuboring.',
       ].join('\n'),

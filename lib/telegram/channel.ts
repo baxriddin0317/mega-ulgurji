@@ -102,7 +102,7 @@ export async function postWeeklyBestsellers(products: {
       lines.push('');
     });
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.uz';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.app';
     lines.push(`🛒 Buyurtma berish: ${siteUrl}`);
 
     await telegram.sendMessage(channelId, lines.join('\n'));

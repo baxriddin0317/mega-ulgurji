@@ -34,8 +34,10 @@ async function setCart(chatId: number, items: CartItem[]): Promise<void> {
   await cartRef(chatId).set({ items, updatedAt: new Date() });
 }
 
-export async function handleCart(chatId: number): Promise<void> {
-  const items = await getCart(chatId);
+export async function handleCart(chatId: number, preloadedItems?: CartItem[]): Promise<void> {
+  // Callers that just wrote the cart (remove / update qty) pass the new
+  // items in so we skip a redundant Firestore read on every ➕/➖ tap.
+  const items = preloadedItems ?? (await getCart(chatId));
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const text = formatCartSummary(items, total);
 
@@ -92,10 +94,10 @@ export async function handleAddToCart(chatId: number, productId: string, quantit
   );
 }
 
-export async function handleRemoveFromCart(chatId: number, productId: string): Promise<void> {
-  const items = (await getCart(chatId)).filter((i) => i.productId !== productId);
+export async function handleRemoveFromCart(chatId: number, productId: string, currentItems?: CartItem[]): Promise<void> {
+  const items = (currentItems ?? (await getCart(chatId))).filter((i) => i.productId !== productId);
   await setCart(chatId, items);
-  await handleCart(chatId);
+  await handleCart(chatId, items);
 }
 
 export async function handleUpdateCartQty(chatId: number, productId: string, delta: number): Promise<void> {
@@ -105,7 +107,7 @@ export async function handleUpdateCartQty(chatId: number, productId: string, del
 
   const newQty = item.quantity + delta;
   if (newQty <= 0) {
-    return handleRemoveFromCart(chatId, productId);
+    return handleRemoveFromCart(chatId, productId, items);
   }
 
   const db = getDb();
@@ -119,7 +121,7 @@ export async function handleUpdateCartQty(chatId: number, productId: string, del
 
   item.quantity = newQty;
   await setCart(chatId, items);
-  await handleCart(chatId);
+  await handleCart(chatId, items);
 }
 
 export async function handleClearCart(chatId: number): Promise<void> {

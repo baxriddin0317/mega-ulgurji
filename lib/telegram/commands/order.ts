@@ -1,6 +1,6 @@
 import { telegram } from '../bot';
 import { getDb } from '../admin-app';
-import { formatCartSummary, formatOrderNotification } from '../formatter';
+import { formatCartSummary, formatOrderNotification, formatNewOrderAlert } from '../formatter';
 import { confirmOrderKeyboard, mainMenuKeyboard } from '../keyboards';
 import { getCart, clearCart, handleAddToCart } from './cart';
 
@@ -37,11 +37,11 @@ export async function handleOrder(chatId: number): Promise<void> {
 export async function handleConfirmOrder(chatId: number): Promise<void> {
   const db = getDb();
 
-  // Get linked user
-  const userSnap = await db.collection('telegramUsers')
-    .where('chatId', '==', chatId)
-    .limit(1)
-    .get();
+  // Get linked user + cart concurrently — both reads are independent.
+  const [userSnap, items] = await Promise.all([
+    db.collection('telegramUsers').where('chatId', '==', chatId).limit(1).get(),
+    getCart(chatId),
+  ]);
 
   if (userSnap.empty) {
     await telegram.sendMessage(chatId, '❌ Avval hisobingizni ulang: /start');
@@ -64,7 +64,6 @@ export async function handleConfirmOrder(chatId: number): Promise<void> {
   }
   const profile = profileSnap.data()!;
 
-  const items = await getCart(chatId);
   if (items.length === 0) {
     await telegram.sendMessage(chatId, '🛒 Savatcha bo\'sh.');
     return;
@@ -169,36 +168,41 @@ export async function handleConfirmOrder(chatId: number): Promise<void> {
   }
 
   const orderRef = { id: orderId };
+  const summaryItems = items.map((i) => ({ title: i.title, quantity: i.quantity }));
 
-  // Send confirmation
-  await telegram.sendMessage(
-    chatId,
-    formatOrderNotification({
-      id: orderRef.id,
-      clientName: profile.name || '',
-      totalPrice,
-      totalQuantity,
-      basketItems: items.map((i) => ({ title: i.title, quantity: i.quantity })),
-    }),
-    { replyMarkup: mainMenuKeyboard() }
-  );
-
-  // Notify admin
+  // Confirmation to the customer + new-order alert to the admin run in
+  // parallel — both are Telegram sendMessage round-trips and neither
+  // depends on the other. Admin alert failures are logged but do not
+  // block the customer response.
   const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-  if (adminChatId) {
-    const { formatNewOrderAlert } = await import('../formatter');
-    await telegram.sendMessage(
-      adminChatId,
-      formatNewOrderAlert({
+  const adminAlert = adminChatId
+    ? telegram.sendMessage(
+        adminChatId,
+        formatNewOrderAlert({
+          id: orderRef.id,
+          clientName: profile.name || '',
+          clientPhone: profile.phone || '',
+          totalPrice,
+          totalQuantity,
+          basketItems: summaryItems,
+        })
+      ).catch((e) => console.error('[telegram-order] admin alert failed:', e))
+    : Promise.resolve();
+
+  await Promise.all([
+    telegram.sendMessage(
+      chatId,
+      formatOrderNotification({
         id: orderRef.id,
         clientName: profile.name || '',
-        clientPhone: profile.phone || '',
         totalPrice,
         totalQuantity,
-        basketItems: items.map((i) => ({ title: i.title, quantity: i.quantity })),
-      })
-    );
-  }
+        basketItems: summaryItems,
+      }),
+      { replyMarkup: mainMenuKeyboard() }
+    ),
+    adminAlert,
+  ]);
 }
 
 export async function handleCancelOrder(chatId: number): Promise<void> {

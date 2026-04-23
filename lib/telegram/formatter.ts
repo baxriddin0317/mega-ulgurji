@@ -48,7 +48,7 @@ export function formatHelp(): string {
     '',
     '📞 <b>Aloqa:</b>',
     'Telefon: +998 (XX) XXX-XX-XX',
-    'Sayt: megahome.uz',
+    'Sayt: megahome.app',
   ].join('\n');
 }
 
@@ -225,7 +225,7 @@ export function formatNewProductPost(product: {
   category: string;
   description?: string;
 }): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.uz';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.app';
   return [
     '🆕 <b>YANGI MAHSULOT!</b>',
     '',
@@ -242,7 +242,7 @@ export function formatPriceDropPost(product: {
   id: string;
   title: string;
 }, oldPrice: number, newPrice: number): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.uz';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.app';
   const percent = Math.round(((oldPrice - newPrice) / oldPrice) * 100);
   return [
     '🔥 <b>NARX TUSHDI!</b>',
@@ -262,7 +262,7 @@ export function formatBackInStockPost(product: {
   price: string;
   stock?: number;
 }): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.uz';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://megahome.app';
   return [
     '✅ <b>YANA MAVJUD!</b>',
     '',

@@ -18,7 +18,7 @@ export async function handleOrder(chatId: number): Promise<void> {
     return;
   }
 
-  const items = getCart(chatId);
+  const items = await getCart(chatId);
   if (items.length === 0) {
     await telegram.sendMessage(chatId, '🛒 Savatcha bo\'sh.\n\n📦 /products — Mahsulotlarni ko\'ring');
     return;
@@ -64,62 +64,111 @@ export async function handleConfirmOrder(chatId: number): Promise<void> {
   }
   const profile = profileSnap.data()!;
 
-  const items = getCart(chatId);
+  const items = await getCart(chatId);
   if (items.length === 0) {
     await telegram.sendMessage(chatId, '🛒 Savatcha bo\'sh.');
     return;
   }
 
-  // Verify stock for all items
-  for (const item of items) {
-    const productSnap = await db.collection('products').doc(item.productId).get();
-    if (!productSnap.exists) {
-      await telegram.sendMessage(chatId, `❌ "${item.title}" mahsulot topilmadi. Savatchani tekshiring.`);
-      return;
-    }
-    const stock = productSnap.data()?.stock ?? 0;
-    if (stock < item.quantity) {
-      await telegram.sendMessage(
-        chatId,
-        `⚠️ "${item.title}" yetarli emas. Stokda: ${stock} ta, savatchada: ${item.quantity} ta.`
-      );
-      return;
-    }
+  // Atomic validation + stock reservation inside a Firestore transaction,
+  // mirroring /api/orders/create — same price/stock rules regardless of
+  // whether the order was placed from the website or from the bot.
+  let orderId = '';
+  let totalPrice = 0;
+  let totalQuantity = 0;
+  let basketItems: Array<{
+    id: string; title: string; price: string; quantity: number;
+    productImageUrl: { url: string; path: string }[]; category: string;
+    description: string; costPrice?: number; subcategory?: string;
+  }> = [];
+
+  try {
+    const result = await db.runTransaction(async (tx) => {
+      const productRefs = items.map((i) => db.collection('products').doc(i.productId));
+      const productSnaps = await Promise.all(productRefs.map((r) => tx.get(r)));
+
+      const snapshot: Array<{ id: string; available: number; quantity: number; data: FirebaseFirestore.DocumentData }> = [];
+      for (let i = 0; i < productSnaps.length; i++) {
+        const snap = productSnaps[i];
+        const item = items[i];
+        if (!snap.exists) {
+          throw new Error(`"${item.title}" mahsulot topilmadi. /cart tekshiring.`);
+        }
+        const data = snap.data() ?? {};
+        const available = typeof data.stock === 'number' ? data.stock : 0;
+        if (available < item.quantity) {
+          throw new Error(`"${data.title || item.title}" yetarli emas. Stokda: ${available} ta, savatchada: ${item.quantity} ta.`);
+        }
+        snapshot.push({ id: item.productId, available, quantity: item.quantity, data });
+      }
+
+      let tp = 0, tq = 0;
+      const bi: typeof basketItems = [];
+      for (const s of snapshot) {
+        const priceNum = Number(s.data.price);
+        tp += (Number.isFinite(priceNum) ? priceNum : 0) * s.quantity;
+        tq += s.quantity;
+        bi.push({
+          id: s.id,
+          title: String(s.data.title ?? ''),
+          price: String(s.data.price ?? '0'),
+          costPrice: typeof s.data.costPrice === 'number' ? s.data.costPrice : 0,
+          category: String(s.data.category ?? ''),
+          subcategory: s.data.subcategory ? String(s.data.subcategory) : undefined,
+          description: String(s.data.description ?? ''),
+          productImageUrl: Array.isArray(s.data.productImageUrl) ? s.data.productImageUrl : [],
+          quantity: s.quantity,
+        });
+      }
+
+      for (let i = 0; i < productRefs.length; i++) {
+        tx.update(productRefs[i], { stock: snapshot[i].available - snapshot[i].quantity });
+      }
+
+      const orderRef = db.collection('orders').doc();
+      tx.set(orderRef, {
+        clientName: profile.name || '',
+        clientPhone: profile.phone || '',
+        date: new Date(),
+        basketItems: bi,
+        totalPrice: tp,
+        totalQuantity: tq,
+        userUid,
+        status: 'yangi',
+        stockReserved: true,
+        orderNote: 'Telegram bot orqali buyurtma',
+      });
+
+      return { orderId: orderRef.id, totalPrice: tp, totalQuantity: tq, basketItems: bi };
+    });
+    orderId = result.orderId;
+    totalPrice = result.totalPrice;
+    totalQuantity = result.totalQuantity;
+    basketItems = result.basketItems;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Buyurtma yaratilmadi';
+    await telegram.sendMessage(chatId, `⚠️ ${msg}`);
+    return;
   }
 
-  // Build basketItems in ProductT format
-  const basketItems = items.map((item) => ({
-    id: item.productId,
-    title: item.title,
-    price: String(item.price),
-    quantity: item.quantity,
-    productImageUrl: [],
-    category: '',
-    description: '',
-    stock: 0,
-    storageFileId: '',
-  }));
+  // Clear cart (async, fire-and-forget — already reserved)
+  clearCart(chatId).catch(() => {});
 
-  const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
+  // Log stock movements (fire-and-forget — audit trail)
+  const ts = new Date();
+  for (const item of basketItems) {
+    db.collection('stockMovements').add({
+      productId: item.id,
+      productTitle: item.title,
+      type: 'sotish',
+      quantity: -item.quantity,
+      reason: 'Buyurtma yaratildi (Telegram)',
+      reference: orderId,
+      timestamp: ts,
+    }).catch((e) => console.error('stockMovement log failed:', e));
+  }
 
-  // Create order in Firestore
-  const orderData = {
-    clientName: profile.name || '',
-    clientPhone: profile.phone || '',
-    date: new Date(),
-    basketItems,
-    totalPrice,
-    totalQuantity,
-    userUid,
-    status: 'yangi',
-    orderNote: 'Telegram bot orqali buyurtma',
-  };
-
-  const orderRef = await db.collection('orders').add(orderData);
-
-  // Clear cart
-  clearCart(chatId);
+  const orderRef = { id: orderId };
 
   // Send confirmation
   await telegram.sendMessage(
@@ -193,8 +242,9 @@ export async function handleReorder(chatId: number): Promise<void> {
   const lastOrder = ordersSnap.docs[0].data();
   const basketItems = lastOrder.basketItems || [];
 
-  // Clear current cart and add items from last order
-  clearCart(chatId);
+  // Clear current cart and add items from last order (sequential — cart
+  // writes race if we don't serialise)
+  await clearCart(chatId);
   for (const item of basketItems) {
     if (item.id) {
       await handleAddToCart(chatId, item.id, item.quantity || 1);

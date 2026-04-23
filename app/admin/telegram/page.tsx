@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import PanelTitle from '@/components/admin/PanelTitle';
 import { Button } from '@/components/ui/button';
 import { collection, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
-import { fireDB } from '@/firebase/config';
+import { fireDB, auth } from '@/firebase/config';
 import { formatDateTimeShort } from '@/lib/formatDate';
 import toast from 'react-hot-toast';
 import {
@@ -78,9 +78,17 @@ const TelegramPage = () => {
   const handleTestMessage = async () => {
     setTestSending(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        toast.error('Avval tizimga kiring');
+        return;
+      }
       const res = await fetch('/api/telegram/notify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           type: 'daily_summary',
           data: {
@@ -111,19 +119,30 @@ const TelegramPage = () => {
 
     setSending(true);
     try {
-      // Send to each linked user via direct bot API
-      const token = ''; // Token is server-side only — use notify API
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        toast.error('Avval tizimga kiring');
+        return;
+      }
       const res = await fetch('/api/telegram/broadcast', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ text: broadcastText }),
       });
       if (res.ok) {
         const data = await res.json();
-        toast.success(`${data.sent || 0} ta foydalanuvchiga yuborildi`);
+        toast.success(
+          data.skippedOptedOut
+            ? `${data.sent} ta yuborildi · ${data.skippedOptedOut} ta bekor qilgan`
+            : `${data.sent} ta foydalanuvchiga yuborildi`,
+        );
         setBroadcastText('');
       } else {
-        toast.error('Xabar yuborilmadi');
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.error || 'Xabar yuborilmadi');
       }
     } catch {
       toast.error('Xatolik yuz berdi');

@@ -4,15 +4,38 @@ import { formatCartSummary } from '../formatter';
 import { cartKeyboard, emptyCartKeyboard } from '../keyboards';
 import type { CartItem } from '../types';
 
-// In-memory cart storage (resets on server restart — acceptable for MVP)
-const carts = new Map<number, CartItem[]>();
+/**
+ * Telegram-bot cart storage.
+ *
+ * Lives in Firestore under `telegramCarts/{chatId}` because Vercel spins
+ * each bot request up in a fresh serverless instance — a module-level
+ * `Map` (the previous implementation) lost every cart on cold start,
+ * silently breaking the /products → /cart → /order flow in production.
+ *
+ * Docs are keyed by chatId (stringified) for O(1) reads/writes with no
+ * index required. Default-deny rules protect the collection; Admin SDK
+ * bypasses them for every function in this file.
+ */
 
-export function getCart(chatId: number): CartItem[] {
-  return carts.get(chatId) || [];
+function cartRef(chatId: number) {
+  return getDb().collection('telegramCarts').doc(String(chatId));
+}
+
+export async function getCart(chatId: number): Promise<CartItem[]> {
+  const snap = await cartRef(chatId).get();
+  return (snap.exists ? (snap.data()?.items as CartItem[] | undefined) : undefined) ?? [];
+}
+
+async function setCart(chatId: number, items: CartItem[]): Promise<void> {
+  if (items.length === 0) {
+    await cartRef(chatId).delete().catch(() => {});
+    return;
+  }
+  await cartRef(chatId).set({ items, updatedAt: new Date() });
 }
 
 export async function handleCart(chatId: number): Promise<void> {
-  const items = getCart(chatId);
+  const items = await getCart(chatId);
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const text = formatCartSummary(items, total);
 
@@ -39,7 +62,7 @@ export async function handleAddToCart(chatId: number, productId: string, quantit
     return;
   }
 
-  const items = getCart(chatId);
+  const items = await getCart(chatId);
   const existing = items.find((i) => i.productId === productId);
 
   if (existing) {
@@ -62,21 +85,21 @@ export async function handleAddToCart(chatId: number, productId: string, quantit
     });
   }
 
-  carts.set(chatId, items);
+  await setCart(chatId, items);
   await telegram.sendMessage(
     chatId,
-    `✅ <b>${data.title}</b> savatchaga qo'shildi!\n\n🛒 /cart — Savatchani ko'rish`
+    `✅ <b>${data.title}</b> savatchaga qo'shildi!\n\n🛒 /cart — Savatchani ko'rish`,
   );
 }
 
 export async function handleRemoveFromCart(chatId: number, productId: string): Promise<void> {
-  const items = getCart(chatId).filter((i) => i.productId !== productId);
-  carts.set(chatId, items);
+  const items = (await getCart(chatId)).filter((i) => i.productId !== productId);
+  await setCart(chatId, items);
   await handleCart(chatId);
 }
 
 export async function handleUpdateCartQty(chatId: number, productId: string, delta: number): Promise<void> {
-  const items = getCart(chatId);
+  const items = await getCart(chatId);
   const item = items.find((i) => i.productId === productId);
   if (!item) return;
 
@@ -85,7 +108,6 @@ export async function handleUpdateCartQty(chatId: number, productId: string, del
     return handleRemoveFromCart(chatId, productId);
   }
 
-  // Check stock
   const db = getDb();
   const doc = await db.collection('products').doc(productId).get();
   const stock = doc.exists ? (doc.data()?.stock ?? 0) : 0;
@@ -96,18 +118,18 @@ export async function handleUpdateCartQty(chatId: number, productId: string, del
   }
 
   item.quantity = newQty;
-  carts.set(chatId, items);
+  await setCart(chatId, items);
   await handleCart(chatId);
 }
 
 export async function handleClearCart(chatId: number): Promise<void> {
-  carts.delete(chatId);
+  await cartRef(chatId).delete().catch(() => {});
   await telegram.sendMessage(chatId, '🗑 Savatcha tozalandi.', {
     replyMarkup: emptyCartKeyboard(),
   });
 }
 
-// Clear cart externally (used by order handler)
-export function clearCart(chatId: number): void {
-  carts.delete(chatId);
+/** Clear cart externally (called by order confirmation). */
+export async function clearCart(chatId: number): Promise<void> {
+  await cartRef(chatId).delete().catch(() => {});
 }

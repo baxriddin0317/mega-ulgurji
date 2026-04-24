@@ -33,13 +33,13 @@ const Footer = () => {
           <div>
             <h4 className='text-white font-bold mb-4'>Aloqa</h4>
             <div className='flex flex-col gap-3'>
-              <a href='tel:+998880039000' className='flex items-center gap-2 group'>
+              <a href='tel:+998990039000' className='flex items-center gap-2 group'>
                 <Phone className='size-4 text-gray-400 group-hover:text-white shrink-0 transition-colors' />
-                <span className='text-gray-400 text-sm group-hover:text-white transition-colors'>+998 88 003 90 00</span>
+                <span className='text-gray-400 text-sm group-hover:text-white transition-colors'>+998 99 003 90 00</span>
               </a>
               <div className='flex items-center gap-2'>
                 <MapPin className='size-4 text-gray-400 shrink-0' />
-                <span className='text-gray-400 text-sm'>Toshkent, O&apos;zbekiston</span>
+                <span className='text-gray-400 text-sm'>Andijon, O&apos;zbekiston</span>
               </div>
               <div className='flex items-center gap-4 mt-2'>
                 <a href='https://t.me/megahomeuz' target='_blank' rel='noopener noreferrer' aria-label='Telegram'>
